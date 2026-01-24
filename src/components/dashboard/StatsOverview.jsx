@@ -26,7 +26,7 @@ export function StatsOverview({ stats, currentBMI }) {
     ];
 
     return (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-3 md:gap-4">
             {statItems.map((item) => (
                 <Card key={item.title}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

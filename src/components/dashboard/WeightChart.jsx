@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 
 export function WeightChart({ data }) {
     return (
-        <Card className="col-span-4">
+        <Card className="col-span-full">
             <CardHeader>
                 <CardTitle>Weight Progress</CardTitle>
             </CardHeader>
@@ -16,14 +16,16 @@ export function WeightChart({ data }) {
                             <XAxis
                                 dataKey="date"
                                 stroke="#71717a"
-                                fontSize={12}
+                                fontSize={10}
+                                tick={{ fontSize: 10 }}
                                 tickLine={false}
                                 axisLine={false}
                                 minTickGap={30}
                             />
                             <YAxis
                                 stroke="#71717a"
-                                fontSize={12}
+                                fontSize={10}
+                                tick={{ fontSize: 10 }}
                                 tickLine={false}
                                 axisLine={false}
                                 domain={['dataMin - 1', 'dataMax + 1']}

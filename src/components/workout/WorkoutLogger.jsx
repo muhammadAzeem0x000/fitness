@@ -31,9 +31,9 @@ export function WorkoutLogger({ onSaveLog }) {
     const currentExercises = selectedSplit ? EXERCISE_LIBRARY[selectedSplit] : [];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold tracking-tight">Log Workout</h2>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Log Workout</h2>
                 {selectedSplit && (
                     <Button onClick={handleSave} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                         <Save className="h-4 w-4" />
@@ -45,7 +45,7 @@ export function WorkoutLogger({ onSaveLog }) {
             <SplitSelector selectedSplit={selectedSplit} onSelect={handleSplitSelect} />
 
             {selectedSplit && (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid gap-2 md:gap-4 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {currentExercises.map((exercise) => (
                         <ExerciseCard
                             key={exercise}
