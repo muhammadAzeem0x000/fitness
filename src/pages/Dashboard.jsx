@@ -89,13 +89,13 @@ function HeightUpdater({ updateHeight }) {
                 </select>
             </div>
 
-            <div className="flex gap-2 w-full">
+            <div className={`grid gap-2 w-full ${isFeet ? 'grid-cols-[1fr_1fr_auto]' : 'grid-cols-[1fr_auto]'}`}>
                 <input
                     type="number"
                     value={val1}
                     onChange={(e) => setVal1(e.target.value)}
                     placeholder={isFeet ? "Ft" : "Cm"}
-                    className="flex-1 h-11 min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
+                    className="w-full h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white min-w-0"
                 />
                 {isFeet && (
                     <input
@@ -103,10 +103,10 @@ function HeightUpdater({ updateHeight }) {
                         value={val2}
                         onChange={(e) => setVal2(e.target.value)}
                         placeholder="In"
-                        className="flex-1 h-11 min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
+                        className="w-full h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white min-w-0"
                     />
                 )}
-                <Button variant="secondary" className="h-11" onClick={handleUpdate}>
+                <Button variant="secondary" className="h-11 px-4" onClick={handleUpdate}>
                     Update
                 </Button>
             </div>
