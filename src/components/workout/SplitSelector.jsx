@@ -13,6 +13,7 @@ export function SplitSelector({ selectedSplit, onSelect }) {
                     {SPLIT_OPTIONS.map((option) => (
                         <button
                             key={option}
+                            type="button"
                             onClick={() => onSelect(option)}
                             className={`
                 min-h-[3.5rem] p-3 rounded-lg border text-sm font-medium transition-all active:scale-95 touch-manipulation

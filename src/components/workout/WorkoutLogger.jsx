@@ -1,31 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { EXERCISE_LIBRARY } from '../../data/exerciseLibrary';
 import { SplitSelector } from './SplitSelector';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '../ui/Button';
 import { Save } from 'lucide-react';
 
-export function WorkoutLogger({ onSaveLog }) {
+export function WorkoutLogger({ onSaveLog, history = [] }) {
     const [selectedSplit, setSelectedSplit] = useState(null);
-    const [exercises, setExercises] = useState({}); // { "Bench Press": [{weight, reps}, ...] }
+    const [scratchedExercises, setScratchedExercises] = useState({});
+
+    // Find the last session for the selected split
+    const lastSession = useMemo(() => {
+        if (!selectedSplit || !history.length) return null;
+        return history.find(log => log.type === selectedSplit);
+    }, [selectedSplit, history]);
 
     const handleSplitSelect = (split) => {
         setSelectedSplit(split);
-        // Reset exercises or load template? For now reset.
-        setExercises({});
+        setScratchedExercises({});
     };
+
+    const handleUpdateExercise = React.useCallback((exerciseName, setsData) => {
+        setScratchedExercises(prev => ({
+            ...prev,
+            [exerciseName]: setsData
+        }));
+    }, []);
 
     const handleSave = () => {
         if (!selectedSplit) return;
         onSaveLog({
             type: selectedSplit,
-            exercises: exercises,
+            exercises: scratchedExercises,
             timestamp: new Date().toISOString()
         });
-        // Reset or show success
         setSelectedSplit(null);
-        setExercises({});
-        alert("Workout Saved!");
+        setScratchedExercises({});
+        alert("Workout Saved! Great job.");
     };
 
     const currentExercises = selectedSplit ? EXERCISE_LIBRARY[selectedSplit] : [];
@@ -35,7 +46,7 @@ export function WorkoutLogger({ onSaveLog }) {
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Log Workout</h2>
                 {selectedSplit && (
-                    <Button onClick={handleSave} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button type="button" onClick={handleSave} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                         <Save className="h-4 w-4" />
                         Finish Workout
                     </Button>
@@ -46,15 +57,19 @@ export function WorkoutLogger({ onSaveLog }) {
 
             {selectedSplit && (
                 <div className="grid gap-2 md:gap-4 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {currentExercises.map((exercise) => (
-                        <ExerciseCard
-                            key={exercise}
-                            exercise={exercise}
-                            sets={[]} // Passing empty for now, state handled inside or lifted?
-                            // Ideally lifted to setExercises, but for UI mvp leaving loose
-                            onUpdateSets={() => { }}
-                        />
-                    ))}
+                    {currentExercises.map((exercise) => {
+                        // Extract last lookup for this specific exercise
+                        const lastStats = lastSession?.exercises?.[exercise] || null;
+
+                        return (
+                            <ExerciseCard
+                                key={exercise}
+                                exercise={exercise}
+                                lastSession={lastStats}
+                                onUpdateSets={handleUpdateExercise}
+                            />
+                        );
+                    })}
                 </div>
             )}
 

@@ -1,18 +1,21 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Activity, Ruler, Scale } from 'lucide-react';
+import { useUserPreferences } from '../../context/UserPreferencesContext';
 
 export function StatsOverview({ stats, currentBMI }) {
+    const { displayWeight, displayHeight, formatWeightLabel } = useUserPreferences();
+
     const statItems = [
         {
             title: 'Current Weight',
-            value: `${stats.currentWeight} kg`,
+            value: `${displayWeight(stats.currentWeight)} ${formatWeightLabel()}`,
             icon: Scale,
             color: 'text-blue-400'
         },
         {
             title: 'Height',
-            value: `${stats.height} cm`,
+            value: displayHeight(stats.height),
             icon: Ruler,
             color: 'text-emerald-400'
         },

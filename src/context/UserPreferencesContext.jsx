@@ -1,0 +1,78 @@
+import React, { createContext, useContext } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+
+const UserPreferencesContext = createContext();
+
+export function UserPreferencesProvider({ children }) {
+    const [preferences, setPreferences] = useLocalStorage('fitness_preferences', {
+        weightUnit: 'kg', // 'kg' or 'lbs'
+        heightUnit: 'cm', // 'cm' or 'ft'
+    });
+
+    const toggleWeightUnit = () => {
+        setPreferences(prev => ({
+            ...prev,
+            weightUnit: prev.weightUnit === 'kg' ? 'lbs' : 'kg'
+        }));
+    };
+
+    const toggleHeightUnit = () => {
+        setPreferences(prev => ({
+            ...prev,
+            heightUnit: prev.heightUnit === 'cm' ? 'ft' : 'cm'
+        }));
+    };
+
+    // Helper: Convert Kg to User's Unit
+    const displayWeight = (kgValue) => {
+        if (!kgValue) return 0;
+        if (preferences.weightUnit === 'kg') return parseFloat(kgValue.toFixed(1));
+        return parseFloat((kgValue * 2.20462).toFixed(1));
+    };
+
+    // Helper: Convert User's Input to Kg (for DB)
+    const convertWeightToDb = (inputValue) => {
+        const val = parseFloat(inputValue);
+        if (isNaN(val)) return 0;
+        if (preferences.weightUnit === 'kg') return val;
+        return val / 2.20462;
+    };
+
+    // Helper: Convert Cm to User's Unit (Display string only for height usually)
+    const displayHeight = (cmValue) => {
+        if (!cmValue) return '';
+        if (preferences.heightUnit === 'cm') return `${Math.round(cmValue)} cm`;
+
+        // Convert to ft/in
+        const totalInches = cmValue / 2.54;
+        const feet = Math.floor(totalInches / 12);
+        const inches = Math.round(totalInches % 12);
+        return `${feet}'${inches}"`;
+    };
+
+    const formatWeightLabel = () => preferences.weightUnit === 'kg' ? 'kg' : 'lbs';
+
+    const value = {
+        preferences,
+        toggleWeightUnit,
+        toggleHeightUnit,
+        displayWeight,
+        convertWeightToDb,
+        displayHeight,
+        formatWeightLabel
+    };
+
+    return (
+        <UserPreferencesContext.Provider value={value}>
+            {children}
+        </UserPreferencesContext.Provider>
+    );
+}
+
+export function useUserPreferences() {
+    const context = useContext(UserPreferencesContext);
+    if (!context) {
+        throw new Error('useUserPreferences must be used within a UserPreferencesProvider');
+    }
+    return context;
+}
