@@ -32,7 +32,7 @@ export function Header() {
         <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-zinc-800 bg-slate-900/70 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-slate-900/60">
             <div className="container flex h-14 items-center px-3 md:px-6 justify-between">
                 <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
-                    <Dumbbell className="h-6 w-6" />
+                    <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
                     <span>SmartFit</span>
                 </Link>
 
