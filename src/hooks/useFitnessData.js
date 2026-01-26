@@ -121,6 +121,10 @@ export function useFitnessData() {
         }
     };
 
+    const updateHeight = (newHeightCm) => {
+        setUserStats(prev => ({ ...prev, height: parseFloat(newHeightCm) }));
+    };
+
     return {
         userStats,
         weightHistory,
@@ -128,6 +132,7 @@ export function useFitnessData() {
         currentBMI,
         addWeightEntry,
         addWorkoutLog,
+        updateHeight,
         user // Export user if needed by consumers
     };
 }

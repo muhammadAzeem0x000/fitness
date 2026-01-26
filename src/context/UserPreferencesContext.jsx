@@ -10,10 +10,14 @@ export function UserPreferencesProvider({ children }) {
     });
 
     const toggleWeightUnit = () => {
-        setPreferences(prev => ({
-            ...prev,
-            weightUnit: prev.weightUnit === 'kg' ? 'lbs' : 'kg'
-        }));
+        setPreferences(prev => {
+            const isKg = prev.weightUnit === 'kg';
+            return {
+                ...prev,
+                weightUnit: isKg ? 'lbs' : 'kg',
+                heightUnit: isKg ? 'cm' : 'ft'
+            };
+        });
     };
 
     const toggleHeightUnit = () => {
@@ -59,7 +63,14 @@ export function UserPreferencesProvider({ children }) {
         displayWeight,
         convertWeightToDb,
         displayHeight,
-        formatWeightLabel
+        formatWeightLabel,
+        convertHeightToCm: (val1, val2, unit) => {
+            if (unit === 'cm') return parseFloat(val1);
+            // ft + in
+            const feet = parseFloat(val1) || 0;
+            const inches = parseFloat(val2) || 0;
+            return ((feet * 12) + inches) * 2.54;
+        }
     };
 
     return (

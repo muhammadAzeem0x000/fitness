@@ -16,6 +16,7 @@ function App() {
     addWeightEntry,
     addWorkoutLog,
     workoutLogs,
+    updateHeight,
     user
   } = useFitnessData();
 
@@ -33,6 +34,7 @@ function App() {
               currentBMI={currentBMI}
               weightHistory={weightHistory}
               addWeightEntry={addWeightEntry}
+              updateHeight={updateHeight}
             />
           } />
           <Route path="/log" element={

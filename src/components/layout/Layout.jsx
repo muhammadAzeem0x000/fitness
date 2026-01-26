@@ -7,7 +7,7 @@ export function Layout({ children }) {
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 font-sans selection:bg-blue-500/30 overflow-x-hidden">
             <Header />
-            <main key={location.pathname} className="container py-4 px-3 md:px-6 md:py-8 space-y-6 md:space-y-8">
+            <main key={location.pathname} className="container pt-20 pb-4 px-3 md:px-6 md:pt-24 md:pb-8 space-y-6 md:space-y-8">
                 {children}
             </main>
         </div>
