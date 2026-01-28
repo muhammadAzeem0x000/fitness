@@ -4,7 +4,7 @@ import { Activity, Ruler, Scale } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 
 export function StatsOverview({ stats, currentBMI }) {
-    const { displayWeight, displayHeight, formatWeightLabel } = useUserPreferences();
+    const { displayWeight, displayHeight, formatWeightLabel, formatHeightLabel } = useUserPreferences();
 
     const statItems = [
         {
@@ -15,7 +15,7 @@ export function StatsOverview({ stats, currentBMI }) {
         },
         {
             title: 'Height',
-            value: displayHeight(stats.height),
+            value: `${displayHeight(stats.height)} ${formatHeightLabel()}`,
             icon: Ruler,
             color: 'text-emerald-400'
         },

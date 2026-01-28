@@ -45,7 +45,7 @@ export function UserPreferencesProvider({ children }) {
     // Helper: Convert Cm to User's Unit (Display string only for height usually)
     const displayHeight = (cmValue) => {
         if (!cmValue) return '';
-        if (preferences.heightUnit === 'cm') return `${Math.round(cmValue)} cm`;
+        if (preferences.heightUnit === 'cm') return `${Math.round(cmValue)}`;
 
         // Convert to ft/in
         const totalInches = cmValue / 2.54;
@@ -55,18 +55,23 @@ export function UserPreferencesProvider({ children }) {
     };
 
     const formatWeightLabel = () => preferences.weightUnit === 'kg' ? 'kg' : 'lbs';
+    const formatHeightLabel = () => preferences.heightUnit === 'cm' ? 'cm' : '';
 
     const value = {
         preferences,
+        weightUnit: preferences.weightUnit,
+        heightUnit: preferences.heightUnit,
         toggleWeightUnit,
         toggleHeightUnit,
         displayWeight,
         convertWeightToDb,
         displayHeight,
         formatWeightLabel,
+        formatHeightLabel,
         convertHeightToCm: (val1, val2, unit) => {
             if (unit === 'cm') return parseFloat(val1);
-            // ft + in
+
+            // ft + in : val1 is feet, val2 is inches
             const feet = parseFloat(val1) || 0;
             const inches = parseFloat(val2) || 0;
             return ((feet * 12) + inches) * 2.54;

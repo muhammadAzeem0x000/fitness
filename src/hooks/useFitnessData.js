@@ -1,44 +1,66 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { MOCK_USER_STATS } from '../data/mockData';
-import { useLocalStorage } from './useLocalStorage'; // Keeping for userStats/preferences only
 
 export function useFitnessData() {
-    // User Stats (Height - kept in local storage for now as per plan/simplicity)
-    const [userStats, setUserStats] = useLocalStorage('fitness_user_stats', MOCK_USER_STATS);
+    const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
 
-    // State
+    // Core Data
     const [weightHistory, setWeightHistory] = useState([]);
     const [workoutLogs, setWorkoutLogs] = useState([]);
-    const [user, setUser] = useState(null);
+    const [routines, setRoutines] = useState([]);
 
     // Auth Listener
     useEffect(() => {
+        // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
+            if (!session?.user) setLoadingProfile(false);
         });
 
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        // Listen for changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
+            if (!session?.user) {
+                setProfile(null);
+                setLoadingProfile(false);
+            }
         });
 
         return () => subscription.unsubscribe();
     }, []);
 
-    // Use Effect to fetch data when user changes
+    // Fetch User Data
     useEffect(() => {
         if (user) {
+            fetchProfile();
             fetchWeightHistory();
             fetchWorkoutLogs();
-        } else {
-            setWeightHistory([]);
-            setWorkoutLogs([]);
+            fetchRoutines();
         }
     }, [user]);
 
-    // Fetchers
+    const fetchProfile = async () => {
+        setLoadingProfile(true);
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "Row not found" (0 rows)
+            console.error('Error fetching profile:', error);
+        }
+
+        if (data) {
+            setProfile(data);
+        } else {
+            setProfile(null);
+        }
+        setLoadingProfile(false);
+    };
+
     const fetchWeightHistory = async () => {
         const { data, error } = await supabase
             .from('weight_history')
@@ -59,11 +81,28 @@ export function useFitnessData() {
         if (data) setWorkoutLogs(data);
     };
 
+    const fetchRoutines = async () => {
+        const { data, error } = await supabase
+            .from('routines')
+            .select('*')
+            .order('id', { ascending: true });
+
+        if (error) console.error('Error fetching routines:', error);
+        if (data) setRoutines(data);
+    };
+
     // Computed: BMI
     const calculateBMI = (weight, heightCm) => {
         if (!weight || !heightCm) return 0;
         const heightM = heightCm / 100;
         return (weight / (heightM * heightM)).toFixed(1);
+    };
+
+    // Create userStats derivative for compatibility with existing components
+    const userStats = {
+        height: profile?.height || 0,
+        currentWeight: profile?.current_weight || (weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : 0),
+        goalWeight: profile?.goal_weight || 0
     };
 
     const currentBMI = calculateBMI(
@@ -73,35 +112,36 @@ export function useFitnessData() {
 
     // Actions
     const addWeightEntry = async (weight) => {
-        if (!user) return; // Guard clause
+        if (!user) return;
 
         const today = new Date().toISOString().split('T')[0];
         const newWeight = parseFloat(weight);
 
-        // Optimistic Update
-        const newEntry = { date: today, weight: newWeight, user_id: user.id };
-
-        // Check if we need to update existing entry for today or insert new
-        // For simplicity with Supabase, we can just Insert and if logic requires unique per day constraints we handle it.
-        // Let's just INSERT for now.
-
-        const { error } = await supabase
+        // 1. Add to history
+        const { error: historyError } = await supabase
             .from('weight_history')
             .insert({ weight: newWeight, date: today, user_id: user.id });
 
-        if (error) {
-            console.error("Error adding weight:", error);
+        if (historyError) {
+            console.error("Error adding weight:", historyError);
             alert("Failed to save weight");
-        } else {
-            fetchWeightHistory(); // Refresh
-            // Update local stats
-            setUserStats(prev => ({ ...prev, currentWeight: newWeight }));
+            return;
         }
+
+        // 2. Update profile current_weight
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ current_weight: newWeight, updated_at: new Date().toISOString() })
+            .eq('id', user.id);
+
+        if (profileError) console.error("Error updating profile weight:", profileError);
+
+        fetchWeightHistory();
+        fetchProfile();
     };
 
     const addWorkoutLog = async (workoutData) => {
         if (!user) return;
-
         const { type, exercises, timestamp } = workoutData;
 
         const { error } = await supabase
@@ -109,7 +149,7 @@ export function useFitnessData() {
             .insert({
                 user_id: user.id,
                 type,
-                exercises, // JSONB
+                exercises,
                 date: timestamp
             });
 
@@ -121,18 +161,55 @@ export function useFitnessData() {
         }
     };
 
-    const updateHeight = (newHeightCm) => {
-        setUserStats(prev => ({ ...prev, height: parseFloat(newHeightCm) }));
+    const updateHeight = async (newHeightCm) => {
+        if (!user) return;
+
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({
+                id: user.id,
+                height: parseFloat(newHeightCm),
+                updated_at: new Date().toISOString()
+            }); // Upsert ensures if profile doesn't exist (edge case), it creates it.
+
+        if (error) {
+            console.error("Error updating height:", error);
+        } else {
+            fetchProfile();
+        }
+    };
+
+    const updateProfile = async (updates) => {
+        if (!user) return;
+
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({
+                id: user.id,
+                ...updates,
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) {
+            console.error("Error updating profile:", error);
+            throw error;
+        } else {
+            fetchProfile();
+        }
     };
 
     return {
+        user,
+        profile,
+        loadingProfile,
         userStats,
         weightHistory,
         workoutLogs,
+        routines,
         currentBMI,
         addWeightEntry,
         addWorkoutLog,
         updateHeight,
-        user // Export user if needed by consumers
+        updateProfile
     };
 }

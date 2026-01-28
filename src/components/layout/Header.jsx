@@ -1,17 +1,18 @@
 import React from 'react';
-import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit } from 'lucide-react';
+import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
+import { useFitnessData } from '../../hooks/useFitnessData';
 import { Link, useLocation } from 'react-router-dom';
+import { UserProfileDialog } from '../profile/UserProfileDialog';
+import { useState } from 'react';
 
 export function Header() {
     const { preferences, toggleWeightUnit } = useUserPreferences();
+    const { profile } = useFitnessData();
     const location = useLocation();
-
-    const handleSignOut = async () => {
-        await supabase.auth.signOut();
-    };
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const NavLink = ({ to, icon: Icon, label }) => {
         const isActive = location.pathname === to;
@@ -54,11 +55,25 @@ export function Header() {
                         {preferences.weightUnit === 'kg' ? 'KG / FT' : 'LBS / CM'}
                     </Button>
 
-                    <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign Out">
-                        <LogOut className="h-4 w-4 text-zinc-400 hover:text-red-400 transition-colors" />
-                    </Button>
+                    {/* Profile Trigger */}
+                    <button
+                        onClick={() => setIsProfileOpen(true)}
+                        className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 hover:ring-offset-slate-900 transition-all"
+                    >
+                        {profile?.avatar_url ? (
+                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <User className="w-5 h-5 text-zinc-400" />
+                        )}
+                    </button>
+
                 </div>
             </div>
+
+            <UserProfileDialog
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+            />
         </header>
     );
 }
