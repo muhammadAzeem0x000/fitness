@@ -34,7 +34,7 @@ export function Header() {
             <div className="container flex h-14 items-center px-3 md:px-6 justify-between">
                 <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
                     <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-                    <span>SmartFit</span>
+                    <span className="hidden sm:inline">SmartFit</span>
                 </Link>
 
                 <nav className="flex items-center gap-1 sm:gap-2">
