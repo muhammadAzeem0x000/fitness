@@ -4,11 +4,13 @@ import { X, Upload, LogOut, User, Check, Calendar, Camera, Loader2, KeyRound, Ch
 import { useFitnessData } from '../../hooks/useFitnessData';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
 
 export function UserProfileDialog({ isOpen, onClose }) {
     const { profile, updateProfile } = useFitnessData();
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const { toast } = useToast();
 
     // Form State
     const [displayName, setDisplayName] = useState('');
@@ -48,9 +50,11 @@ export function UserProfileDialog({ isOpen, onClose }) {
                 avatar_url: avatarUrl,
                 workout_days: workoutDays
             });
+            toast.success("Profile updated successfully!");
             onClose();
         } catch (error) {
             console.error("Failed to save profile", error);
+            toast.error("Failed to save profile changes.");
         } finally {
             setLoading(false);
         }
@@ -59,11 +63,11 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const handlePasswordUpdate = async (e) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            alert("Passwords do not match!");
+            toast.error("Passwords do not match!");
             return;
         }
         if (newPassword.length < 6) {
-            alert("Password must be at least 6 characters long.");
+            toast.error("Password must be at least 6 characters long.");
             return;
         }
 
@@ -71,12 +75,12 @@ export function UserProfileDialog({ isOpen, onClose }) {
         try {
             const { error } = await supabase.auth.updateUser({ password: newPassword });
             if (error) throw error;
-            alert("Password updated successfully!");
+            toast.success("Password updated successfully!");
             setNewPassword('');
             setConfirmPassword('');
             setPasswordOpen(false);
         } catch (error) {
-            alert("Error updating password: " + error.message);
+            toast.error("Error updating password: " + error.message);
         } finally {
             setPasswordLoading(false);
         }
@@ -118,9 +122,10 @@ export function UserProfileDialog({ isOpen, onClose }) {
 
             setAvatarUrl(data.publicUrl);
             setIsDirty(true);
+            toast.success("Avatar uploaded! Don't forget to save changes.");
         } catch (error) {
             console.error('Error uploading avatar:', error);
-            alert('Error uploading avatar: ' + error.message);
+            toast.error('Error uploading avatar: ' + error.message);
         } finally {
             setUploading(false);
         }

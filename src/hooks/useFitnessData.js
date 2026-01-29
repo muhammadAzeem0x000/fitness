@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
 
 export function useFitnessData() {
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [loadingProfile, setLoadingProfile] = useState(true);
+    const { toast } = useToast();
 
     // Core Data
     const [weightHistory, setWeightHistory] = useState([]);
@@ -33,13 +35,13 @@ export function useFitnessData() {
 
     // Fetch User Data
     useEffect(() => {
-        if (user) {
+        if (user?.id) {
             fetchProfile();
             fetchWeightHistory();
             fetchWorkoutLogs();
             fetchRoutines();
         }
-    }, [user]);
+    }, [user?.id]);
 
     const fetchProfile = async () => {
         setLoadingProfile(true);
@@ -124,7 +126,7 @@ export function useFitnessData() {
 
         if (historyError) {
             console.error("Error adding weight:", historyError);
-            alert("Failed to save weight");
+            toast.error("Failed to save weight");
             return;
         }
 
@@ -155,7 +157,7 @@ export function useFitnessData() {
 
         if (error) {
             console.error("Error logging workout:", error);
-            alert("Failed to save workout");
+            toast.error("Failed to save workout");
         } else {
             fetchWorkoutLogs();
         }

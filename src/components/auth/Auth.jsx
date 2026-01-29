@@ -3,12 +3,14 @@ import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Dumbbell, Loader2, KeyRound, ArrowLeft } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export function Auth() {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [view, setView] = useState('login'); // 'login' or 'forgot-password'
+    const { toast } = useToast();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -19,7 +21,7 @@ export function Auth() {
         });
 
         if (error) {
-            alert(error.message);
+            toast.error(error.message);
         }
         setLoading(false);
     };
@@ -33,9 +35,9 @@ export function Auth() {
         });
 
         if (error) {
-            alert(error.message);
+            toast.error(error.message);
         } else {
-            alert('Check your email for the login link!');
+            toast.success('Check your email for the login link!');
         }
         setLoading(false);
     };
@@ -48,10 +50,10 @@ export function Auth() {
                 redirectTo: window.location.origin,
             });
             if (error) throw error;
-            alert('Password reset link sent to your email!');
+            toast.success('Password reset link sent to your email!');
             setView('login');
         } catch (error) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }

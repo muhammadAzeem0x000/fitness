@@ -4,12 +4,13 @@ import { SplitSelector } from './SplitSelector';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '../ui/Button';
 import { Save, ArrowLeft } from 'lucide-react';
-
+import { useToast } from '../../context/ToastContext';
 
 export function WorkoutLogger({ onSaveLog, history = [], routines = [] }) {
     const [selectedRoutine, setSelectedRoutine] = useState(null);
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [scratchedExercises, setScratchedExercises] = useState({});
+    const { toast } = useToast();
 
     // Find the last session for the selected routine/type
     const lastSession = useMemo(() => {
@@ -54,7 +55,7 @@ export function WorkoutLogger({ onSaveLog, history = [], routines = [] }) {
             timestamp: new Date().toISOString()
         });
 
-        alert("Workout Saved! Great job.");
+        toast.success("Workout Saved! Great job.");
         setSelectedRoutine(null);
         setSelectedTemplate(null);
         setScratchedExercises({});
