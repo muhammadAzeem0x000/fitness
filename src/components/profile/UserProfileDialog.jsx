@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Upload, LogOut, User, Check, Calendar, Camera, Loader2 } from 'lucide-react';
+import { X, Upload, LogOut, User, Check, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp } from 'lucide-react';
 import { useFitnessData } from '../../hooks/useFitnessData';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
@@ -17,6 +17,12 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
 
+    // Password Update State
+    const [passwordOpen, setPasswordOpen] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordLoading, setPasswordLoading] = useState(false);
+
     // Sync with profile when opening
     useEffect(() => {
         if (isOpen && profile) {
@@ -24,6 +30,10 @@ export function UserProfileDialog({ isOpen, onClose }) {
             setAvatarUrl(profile.avatar_url || '');
             setWorkoutDays(profile.workout_days || []);
             setIsDirty(false);
+            // Reset password fields
+            setPasswordOpen(false);
+            setNewPassword('');
+            setConfirmPassword('');
         }
     }, [isOpen, profile]);
 
@@ -43,6 +53,32 @@ export function UserProfileDialog({ isOpen, onClose }) {
             console.error("Failed to save profile", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePasswordUpdate = async (e) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+        if (newPassword.length < 6) {
+            alert("Password must be at least 6 characters long.");
+            return;
+        }
+
+        setPasswordLoading(true);
+        try {
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            alert("Password updated successfully!");
+            setNewPassword('');
+            setConfirmPassword('');
+            setPasswordOpen(false);
+        } catch (error) {
+            alert("Error updating password: " + error.message);
+        } finally {
+            setPasswordLoading(false);
         }
     };
 
@@ -176,6 +212,47 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                 placeholder="E.g. Ace"
                                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-zinc-600"
                             />
+                        </div>
+
+                        {/* Change Password Section (Collapsible) */}
+                        <div className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950/30">
+                            <button
+                                onClick={() => setPasswordOpen(!passwordOpen)}
+                                className="w-full flex items-center justify-between p-3 text-xs font-semibold text-zinc-400 hover:text-zinc-300 uppercase tracking-wider transition-colors"
+                            >
+                                <span className="flex items-center gap-2">
+                                    <KeyRound className="w-4 h-4" /> Change Password
+                                </span>
+                                {passwordOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+
+                            {passwordOpen && (
+                                <div className="p-3 pt-0 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                                    <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        placeholder="New Password"
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                    />
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="Confirm New Password"
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        onClick={handlePasswordUpdate}
+                                        disabled={passwordLoading || !newPassword || !confirmPassword}
+                                        className="w-full"
+                                    >
+                                        {passwordLoading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : null}
+                                        Update Password
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Workout Days */}
