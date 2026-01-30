@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
@@ -20,6 +20,16 @@ export function Auth() {
         setPassword('');
         setConfirmPassword('');
     };
+
+    useEffect(() => {
+        if (view === 'login') {
+            document.title = 'Login | SmartFit';
+        } else if (view === 'signup') {
+            document.title = 'Create Account | SmartFit';
+        } else if (view === 'forgot-password') {
+            document.title = 'Reset Password | SmartFit';
+        }
+    }, [view]);
 
     const handleLogin = async (e) => {
         e.preventDefault();

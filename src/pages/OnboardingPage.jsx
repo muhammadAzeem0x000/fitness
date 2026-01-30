@@ -11,6 +11,10 @@ const OnboardingPage = () => {
     const navigate = useNavigate();
     const { heightUnit, weightUnit, toggleHeightUnit, toggleWeightUnit, convertHeightToCm, convertWeightToDb } = useUserPreferences();
 
+    useEffect(() => {
+        document.title = 'Onboarding | SmartFit';
+    }, []);
+
     // Use Local Storage for persistence
     const [step, setStep] = useLocalStorage('onboarding_step', 1);
 
