@@ -3,14 +3,16 @@ import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User } fro
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
-import { useFitnessData } from '../../hooks/useFitnessData';
+import { useAuth } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useProfile';
 import { Link, useLocation } from 'react-router-dom';
 import { UserProfileDialog } from '../profile/UserProfileDialog';
 import { useState } from 'react';
 
 export function Header() {
     const { preferences, toggleWeightUnit } = useUserPreferences();
-    const { profile } = useFitnessData();
+    const { user } = useAuth();
+    const { profile } = useProfile(user?.id);
     const location = useLocation();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 

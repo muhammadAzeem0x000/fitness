@@ -5,7 +5,10 @@ import { supabase } from '../lib/supabase';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Ruler, Weight, Target, ArrowRight, Check, Dumbbell, Calendar, Info, Loader2 } from 'lucide-react';
+import { Ruler, Weight, Target, ArrowRight, Check, Dumbbell, Calendar, Loader2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 const OnboardingPage = () => {
     const navigate = useNavigate();
@@ -15,46 +18,67 @@ const OnboardingPage = () => {
         document.title = 'Onboarding | SmartFit';
     }, []);
 
-    // Use Local Storage for persistence
+    // Persistence
     const [step, setStep] = useLocalStorage('onboarding_step', 1);
 
-    // Step 1: Biometrics
-    const [formData, setFormData] = useLocalStorage('onboarding_form', {
-        height: '',
-        currentWeight: '',
-        goalWeight: '',
+    // Custom validation for step 1
+    const step1Schema = z.object({
+        height: heightUnit === 'cm' ? z.string().min(1, "Height is required") : z.string().optional(),
+        heightFt: heightUnit === 'ft' ? z.string().min(1, "Feet required") : z.string().optional(),
+        heightIn: heightUnit === 'ft' ? z.string().min(1, "Inches required") : z.string().optional(),
+        currentWeight: z.string().min(1, "Current weight is required"),
+        goalWeight: z.string().min(1, "Goal weight is required"),
     });
 
-    // Step 2: Routine
+    const {
+        register,
+        handleSubmit,
+        trigger,
+        formState: { errors }
+    } = useForm({
+        defaultValues: {
+            height: '',
+            heightFt: '',
+            heightIn: '',
+            currentWeight: '',
+            goalWeight: '',
+        },
+        resolver: zodResolver(step1Schema)
+    });
+
+    // Step 2 State (Routine) - kept separate as it's not standard inputs
     const [routineType, setRoutineType] = useLocalStorage('onboarding_routine_type', 'default');
     const [selectedDays, setSelectedDays] = useLocalStorage('onboarding_custom_days', []);
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [submitError, setSubmitError] = useState(null);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+    const handleNextStep = async () => {
+        const isValid = await trigger();
+        if (isValid) {
+            setStep(2);
+        }
     };
 
-    const handleNextLastStep = async () => {
+    const onSubmit = async (data) => {
         setLoading(true);
-        setError(null);
+        setSubmitError(null);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("No user found");
 
-            // Save Profile
+            // Conversion Logic
             let heightInCm;
             if (heightUnit === 'ft') {
-                heightInCm = convertHeightToCm(formData.heightFt, formData.heightIn, 'ft');
+                heightInCm = convertHeightToCm(data.heightFt, data.heightIn, 'ft');
             } else {
-                heightInCm = convertHeightToCm(formData.height, null, 'cm');
+                heightInCm = convertHeightToCm(data.height, null, 'cm');
             }
 
-            const weightInKg = convertWeightToDb(formData.currentWeight);
-            const goalWeightInKg = convertWeightToDb(formData.goalWeight);
+            const weightInKg = convertWeightToDb(data.currentWeight);
+            const goalWeightInKg = convertWeightToDb(data.goalWeight);
 
+            // 1. Profile Upsert
             const { error: profileError } = await supabase
                 .from('profiles')
                 .upsert({
@@ -67,11 +91,9 @@ const OnboardingPage = () => {
 
             if (profileError) throw profileError;
 
-            // Save Initial Weight to History (so it shows on graph)
-            // Save Initial Weight to History
+            // 2. Weight History
             const today = new Date().toISOString().split('T')[0];
             if (weightInKg > 0) {
-                // Check for existing entry today to avoid duplicates or errors
                 const { data: existingEntry } = await supabase
                     .from('weight_history')
                     .select('id')
@@ -79,78 +101,48 @@ const OnboardingPage = () => {
                     .eq('date', today)
                     .maybeSingle();
 
-                let historyError;
-
                 if (existingEntry) {
-                    const { error } = await supabase
-                        .from('weight_history')
-                        .update({ weight: weightInKg })
-                        .eq('id', existingEntry.id);
-                    historyError = error;
+                    await supabase.from('weight_history').update({ weight: weightInKg }).eq('id', existingEntry.id);
                 } else {
-                    const { error } = await supabase
-                        .from('weight_history')
-                        .insert({
-                            user_id: user.id,
-                            weight: weightInKg,
-                            date: today
-                        });
-                    historyError = error;
-                }
-
-                if (historyError) {
-                    console.error("Error saving weight history:", historyError);
-                    // Don't block onboarding, but log it visible to user? 
-                    // Better to just log for now as throwing might confuse them if profile worked.
-                    // Actually, let's append to error state so they know.
-                    setError("Profile saved, but weight history failed: " + historyError.message);
-                    // Pause to let them see it? No, if we throw, we stop redirect.
-                    // Let's NOT throw, but maybe delay or set a flag?
-                    // We'll trust verifyProfile below.
+                    await supabase.from('weight_history').insert({ user_id: user.id, weight: weightInKg, date: today });
                 }
             }
 
-            // Seed Routine
+            // 3. Routines
             if (routineType === 'default') {
                 const defaultRoutines = [
                     { user_id: user.id, name: 'Push Day', schedule_days: ['Monday'], exercises: [] },
                     { user_id: user.id, name: 'Pull Day', schedule_days: ['Tuesday'], exercises: [] },
                     { user_id: user.id, name: 'Legs Day', schedule_days: ['Wednesday'], exercises: [] },
                 ];
-                const { error: routineError } = await supabase.from('routines').insert(defaultRoutines);
-                if (routineError) console.error("Error seeding default:", routineError);
-            } else if (routineType === 'custom') {
+                await supabase.from('routines').insert(defaultRoutines);
+            } else if (routineType === 'custom' && selectedDays.length > 0) {
                 const customRoutines = selectedDays.map(day => ({
                     user_id: user.id,
                     name: `Workout (${day})`,
                     schedule_days: [day],
                     exercises: []
                 }));
-
-                if (customRoutines.length > 0) {
-                    const { error: routineError } = await supabase.from('routines').insert(customRoutines);
-                    if (routineError) console.error("Error seeding custom:", routineError);
-                }
+                await supabase.from('routines').insert(customRoutines);
             }
 
-            // Verify Profile Created before Redirecting
+            // 4. Verification & Clean up
             const { data: verifyProfile } = await supabase.from('profiles').select('id').eq('id', user.id).single();
 
             if (verifyProfile) {
-                // Clear Storage
                 localStorage.removeItem('onboarding_step');
                 localStorage.removeItem('onboarding_form');
                 localStorage.removeItem('onboarding_routine_type');
                 localStorage.removeItem('onboarding_custom_days');
-
-                // Force Reload to update App State
+                // Force reload
                 window.location.href = '/';
             } else {
-                throw new Error("Profile creation verification failed. Please try again.");
+                throw new Error("Verification failed.");
             }
+
         } catch (err) {
             console.error(err);
-            setError(err.message);
+            setSubmitError(err.message);
         } finally {
             setLoading(false);
         }
@@ -176,14 +168,14 @@ const OnboardingPage = () => {
                 </div>
 
                 <Card className="bg-zinc-900/50 border-zinc-800 p-6 md:p-8 backdrop-blur-xl">
-                    {error && (
+                    {submitError && (
                         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
-                            {error}
+                            {submitError}
                         </div>
                     )}
 
                     {step === 1 && (
-                        <div className="space-y-6">
+                        <form className="space-y-6">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <h2 className="text-xl font-semibold text-white mb-1">Your Biometrics</h2>
@@ -208,23 +200,19 @@ const OnboardingPage = () => {
                                         <div className="flex-1 flex gap-2">
                                             <div className="flex-1 relative">
                                                 <input
+                                                    {...register('heightFt')}
                                                     type="number"
-                                                    name="heightFt"
-                                                    value={formData.heightFt || ''}
-                                                    onChange={handleInputChange}
                                                     placeholder="Feet"
-                                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                                    className={`w-full bg-zinc-950 border ${errors.heightFt ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors`}
                                                 />
                                                 <span className="absolute right-3 top-3 text-zinc-500 text-sm">ft</span>
                                             </div>
                                             <div className="flex-1 relative">
                                                 <input
+                                                    {...register('heightIn')}
                                                     type="number"
-                                                    name="heightIn"
-                                                    value={formData.heightIn || ''}
-                                                    onChange={handleInputChange}
                                                     placeholder="Inches"
-                                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                                    className={`w-full bg-zinc-950 border ${errors.heightIn ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors`}
                                                 />
                                                 <span className="absolute right-3 top-3 text-zinc-500 text-sm">in</span>
                                             </div>
@@ -233,18 +221,17 @@ const OnboardingPage = () => {
                                 ) : (
                                     <div className="flex gap-2">
                                         <input
+                                            {...register('height')}
                                             type="number"
-                                            name="height"
-                                            value={formData.height || ''}
-                                            onChange={handleInputChange}
                                             placeholder="Height in cm"
-                                            className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                            className={`flex-1 bg-zinc-950 border ${errors.height ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors`}
                                         />
                                         <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2">
                                             <span className="text-zinc-400 text-sm">cm</span>
                                         </div>
                                     </div>
                                 )}
+                                {(errors.height || errors.heightFt || errors.heightIn) && <p className="text-xs text-red-500">Height is required</p>}
                             </div>
 
                             {/* Current Weight Input */}
@@ -254,17 +241,16 @@ const OnboardingPage = () => {
                                 </label>
                                 <div className="flex gap-2">
                                     <input
+                                        {...register('currentWeight')}
                                         type="number"
-                                        name="currentWeight"
-                                        value={formData.currentWeight}
-                                        onChange={handleInputChange}
                                         placeholder={`Weight in ${weightUnit || 'kg'}`}
-                                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                        className={`flex-1 bg-zinc-950 border ${errors.currentWeight ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors`}
                                     />
                                     <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2">
                                         <span className="text-zinc-400 text-sm">{weightUnit || 'kg'}</span>
                                     </div>
                                 </div>
+                                {errors.currentWeight && <p className="text-xs text-red-500">{errors.currentWeight.message}</p>}
                             </div>
 
                             {/* Goal Weight Input */}
@@ -274,30 +260,26 @@ const OnboardingPage = () => {
                                 </label>
                                 <div className="flex gap-2">
                                     <input
+                                        {...register('goalWeight')}
                                         type="number"
-                                        name="goalWeight"
-                                        value={formData.goalWeight}
-                                        onChange={handleInputChange}
                                         placeholder={`Goal in ${weightUnit || 'kg'}`}
-                                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                        className={`flex-1 bg-zinc-950 border ${errors.goalWeight ? 'border-red-500' : 'border-zinc-800'} rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors`}
                                     />
                                     <div className="flex items-center gap-2 bg-zinc-950 border border-zinc-800 rounded-lg px-2">
                                         <span className="text-zinc-400 text-sm">{weightUnit || 'kg'}</span>
                                     </div>
                                 </div>
+                                {errors.goalWeight && <p className="text-xs text-red-500">{errors.goalWeight.message}</p>}
                             </div>
 
                             <Button
-                                onClick={() => setStep(2)}
+                                onClick={handleNextStep}
+                                type="button"
                                 className="w-full mt-4"
-                                disabled={
-                                    (!formData.currentWeight || !formData.goalWeight) ||
-                                    (heightUnit === 'ft' ? (!formData.heightFt || !formData.heightIn) : !formData.height)
-                                }
                             >
                                 Next Step <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
-                        </div>
+                        </form>
                     )}
 
                     {step === 2 && (
@@ -322,7 +304,7 @@ const OnboardingPage = () => {
                                 </button>
 
                                 <button
-                                    onClick={() => setRoutineType('custom')} // Just text for now, Logic would be complex for full custom in step 2
+                                    onClick={() => setRoutineType('custom')}
                                     type="button"
                                     className={`p-4 rounded-xl border text-left transition-all ${routineType === 'custom' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
                                 >
@@ -331,7 +313,7 @@ const OnboardingPage = () => {
                                         {routineType === 'custom' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
                                     <h3 className="text-white font-medium mb-1">Customize My Week</h3>
-                                    <p className="text-xs text-zinc-400">Build your own split from scratch. (Coming Soon)</p>
+                                    <p className="text-xs text-zinc-400">Build your own split from scratch.</p>
                                 </button>
                             </div>
 
@@ -368,7 +350,7 @@ const OnboardingPage = () => {
                                     Back
                                 </Button>
                                 <Button
-                                    onClick={handleNextLastStep}
+                                    onClick={handleSubmit(onSubmit)}
                                     className="flex-1 gap-2"
                                     disabled={loading || (routineType === 'custom' && selectedDays.length === 0)}
                                 >

@@ -3,15 +3,26 @@ import { StatsOverview } from '../components/dashboard/StatsOverview';
 import { WeightChart } from '../components/dashboard/WeightChart';
 import { Button } from '../components/ui/Button';
 import { useUserPreferences } from '../context/UserPreferencesContext';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
+import { useWeight } from '../hooks/useWeight';
+import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
 
-export function Dashboard({ userStats, currentBMI, weightHistory, addWeightEntry, updateHeight }) {
-    const { preferences, convertWeightToDb, formatWeightLabel } = useUserPreferences();
+export function Dashboard() {
+    const { user } = useAuth();
+    const { profile, updateHeight } = useProfile(user?.id);
+    const { weightHistory, addWeightEntry } = useWeight(user?.id);
+
+    const { convertWeightToDb, formatWeightLabel } = useUserPreferences();
     const [inputValue, setInputValue] = useState('');
 
-    const handleUpdate = () => {
+    const userStats = getUserStats(profile, weightHistory);
+    const currentBMI = calculateBMI(userStats.currentWeight, userStats.height);
+
+    const handleUpdate = async () => {
         if (!inputValue) return;
         const weightInKg = convertWeightToDb(inputValue);
-        addWeightEntry(weightInKg);
+        await addWeightEntry(weightInKg);
         setInputValue('');
     };
 
@@ -63,10 +74,10 @@ function HeightUpdater({ updateHeight }) {
         setLocalUnit(preferences.heightUnit);
     }, [preferences.heightUnit]);
 
-    const handleUpdate = () => {
+    const handleUpdate = async () => {
         if (!val1) return;
         const heightInCm = convertHeightToCm(val1, val2, localUnit);
-        updateHeight(heightInCm);
+        await updateHeight(heightInCm);
         setVal1('');
         setVal2('');
     };

@@ -4,22 +4,32 @@ import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Dumbbell, Loader2, KeyRound, ArrowLeft, UserPlus } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, signupSchema } from '../../lib/schemas';
 
 export function Auth() {
     const [loading, setLoading] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [view, setView] = useState('login'); // 'login' | 'signup' | 'forgot-password'
     const { toast } = useToast();
 
-    // Reset state when switching views
-    const switchView = (newView) => {
-        setView(newView);
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-    };
+    // Login Form
+    const {
+        register: registerLogin,
+        handleSubmit: handleSubmitLogin,
+        formState: { errors: loginErrors }
+    } = useForm({
+        resolver: zodResolver(loginSchema)
+    });
+
+    // Signup Form
+    const {
+        register: registerSignup,
+        handleSubmit: handleSubmitSignup,
+        formState: { errors: signupErrors }
+    } = useForm({
+        resolver: zodResolver(signupSchema)
+    });
 
     useEffect(() => {
         if (view === 'login') {
@@ -31,12 +41,11 @@ export function Auth() {
         }
     }, [view]);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+    const onLoginSubmit = async (data) => {
         setLoading(true);
         const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+            email: data.email,
+            password: data.password,
         });
 
         if (error) {
@@ -45,45 +54,35 @@ export function Auth() {
         setLoading(false);
     };
 
-    const handleSignUp = async (e) => {
-        e.preventDefault();
-        if (password !== confirmPassword) {
-            toast.error("Passwords do not match");
-            return;
-        }
-        if (password.length < 6) {
-            toast.error("Password must be at least 6 characters");
-            return;
-        }
-
+    const onSignUpSubmit = async (data) => {
         setLoading(true);
         const { error } = await supabase.auth.signUp({
-            email,
-            password,
+            email: data.email,
+            password: data.password,
         });
 
         if (error) {
             toast.error(error.message);
         } else {
-            // Logic handled by Supabase settings:
-            // If email confirmation is ON -> User gets email, can't login yet.
-            // If email confirmation is OFF -> User is logged in automatically or can login immediately.
             toast.success('Account created! Please check your email or log in.');
-            switchView('login');
+            setView('login');
         }
         setLoading(false);
     };
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
+        // Keeping simple controlled input for reset password single field or could use form
+        const email = e.target.email.value;
+
         setLoading(true);
         try {
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin, // Dynamic redirect to current domain (localhost or vercel)
+                redirectTo: window.location.origin,
             });
             if (error) throw error;
             toast.success('Password reset link sent to your email!');
-            switchView('login');
+            setView('login');
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -134,28 +133,30 @@ export function Auth() {
 
                     {/* LOGIN VIEW */}
                     {view === 'login' && (
-                        <form className="space-y-4" onSubmit={handleLogin}>
+                        <form className="space-y-4" onSubmit={handleSubmitLogin(onLoginSubmit)}>
                             <div className="space-y-2">
-                                <input
-                                    className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    type="email"
-                                    placeholder="Email"
-                                    value={email}
-                                    required
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                                <input
-                                    className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    type="password"
-                                    placeholder="Password"
-                                    value={password}
-                                    required
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
+                                <div>
+                                    <input
+                                        {...registerLogin('email')}
+                                        className={`flex h-10 w-full rounded-md border ${loginErrors.email ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        type="email"
+                                        placeholder="Email"
+                                    />
+                                    {loginErrors.email && <p className="text-xs text-red-500 mt-1">{loginErrors.email.message}</p>}
+                                </div>
+                                <div>
+                                    <input
+                                        {...registerLogin('password')}
+                                        className={`flex h-10 w-full rounded-md border ${loginErrors.password ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        type="password"
+                                        placeholder="Password"
+                                    />
+                                    {loginErrors.password && <p className="text-xs text-red-500 mt-1">{loginErrors.password.message}</p>}
+                                </div>
                                 <div className="flex justify-end">
                                     <button
                                         type="button"
-                                        onClick={() => switchView('forgot-password')}
+                                        onClick={() => setView('forgot-password')}
                                         className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                                     >
                                         Forgot your password?
@@ -173,7 +174,7 @@ export function Auth() {
                                 Don't have an account?{' '}
                                 <button
                                     type="button"
-                                    onClick={() => switchView('signup')}
+                                    onClick={() => setView('signup')}
                                     className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
                                 >
                                     Sign Up
@@ -184,32 +185,35 @@ export function Auth() {
 
                     {/* SIGNUP VIEW */}
                     {view === 'signup' && (
-                        <form className="space-y-4" onSubmit={handleSignUp}>
+                        <form className="space-y-4" onSubmit={handleSubmitSignup(onSignUpSubmit)}>
                             <div className="space-y-2">
-                                <input
-                                    className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    type="email"
-                                    placeholder="Email"
-                                    value={email}
-                                    required
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                                <input
-                                    className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    type="password"
-                                    placeholder="Password (min 6 chars)"
-                                    value={password}
-                                    required
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <input
-                                    className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    type="password"
-                                    placeholder="Confirm Password"
-                                    value={confirmPassword}
-                                    required
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                />
+                                <div>
+                                    <input
+                                        {...registerSignup('email')}
+                                        className={`flex h-10 w-full rounded-md border ${signupErrors.email ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        type="email"
+                                        placeholder="Email"
+                                    />
+                                    {signupErrors.email && <p className="text-xs text-red-500 mt-1">{signupErrors.email.message}</p>}
+                                </div>
+                                <div>
+                                    <input
+                                        {...registerSignup('password')}
+                                        className={`flex h-10 w-full rounded-md border ${signupErrors.password ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        type="password"
+                                        placeholder="Password (min 6 chars)"
+                                    />
+                                    {signupErrors.password && <p className="text-xs text-red-500 mt-1">{signupErrors.password.message}</p>}
+                                </div>
+                                <div>
+                                    <input
+                                        {...registerSignup('confirmPassword')}
+                                        className={`flex h-10 w-full rounded-md border ${signupErrors.confirmPassword ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        type="password"
+                                        placeholder="Confirm Password"
+                                    />
+                                    {signupErrors.confirmPassword && <p className="text-xs text-red-500 mt-1">{signupErrors.confirmPassword.message}</p>}
+                                </div>
                             </div>
                             <Button
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -222,7 +226,7 @@ export function Auth() {
                                 Already have an account?{' '}
                                 <button
                                     type="button"
-                                    onClick={() => switchView('login')}
+                                    onClick={() => setView('login')}
                                     className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
                                 >
                                     Log In
@@ -236,12 +240,11 @@ export function Auth() {
                         <form className="space-y-4" onSubmit={handleResetPassword}>
                             <div className="space-y-2">
                                 <input
+                                    name="email"
                                     className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     type="email"
                                     placeholder="Email address"
-                                    value={email}
                                     required
-                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
                             <Button
@@ -255,7 +258,7 @@ export function Auth() {
                                 variant="ghost"
                                 className="w-full text-slate-400 hover:text-white"
                                 type="button"
-                                onClick={() => switchView('login')}
+                                onClick={() => setView('login')}
                                 disabled={loading}
                             >
                                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Login

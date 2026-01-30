@@ -5,11 +5,17 @@ import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp } 
 import { generateHealthReport } from '../lib/openai';
 import { supabase } from '../lib/supabase';
 import ReactMarkdown from 'react-markdown';
-import { useFitnessData } from '../hooks/useFitnessData';
+import { useAuth } from '../hooks/useAuth';
+import { useWeight } from '../hooks/useWeight';
+import { useWorkouts } from '../hooks/useWorkouts';
+import { useProfile } from '../hooks/useProfile';
 
-export function AiCoach({ weightHistory, workoutLogs, user }) {
+export function AiCoach() {
+    const { user } = useAuth();
+    const { weightHistory } = useWeight(user?.id);
+    const { workoutLogs } = useWorkouts(user?.id);
+    const { profile } = useProfile(user?.id);
 
-    const { profile } = useFitnessData();
     const [loading, setLoading] = useState(false);
     const [allReports, setAllReports] = useState([]);
     const [selectedReport, setSelectedReport] = useState(null);
