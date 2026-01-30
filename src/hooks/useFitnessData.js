@@ -58,6 +58,16 @@ export function useFitnessData() {
         if (data) {
             setProfile(data);
         } else {
+            // Profile missing. Is the user actually valid?
+            const { error: authError } = await supabase.auth.getUser();
+            if (authError) {
+                // User is deleted/invalid.
+                await supabase.auth.signOut();
+                setUser(null);
+                setProfile(null);
+                return;
+            }
+            // User is valid, just has no profile (Brand new user).
             setProfile(null);
         }
         setLoadingProfile(false);
