@@ -3,7 +3,7 @@ import { EXERCISE_LIBRARY, SPLIT_OPTIONS } from '../../data/exerciseLibrary';
 import { SplitSelector } from './SplitSelector';
 import { ExerciseCard } from './ExerciseCard';
 import { Button } from '../ui/Button';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft, Share2 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
 export function WorkoutLogger({ onSaveLog, history = [], routines = [] }) {
@@ -46,9 +46,6 @@ export function WorkoutLogger({ onSaveLog, history = [], routines = [] }) {
     const handleSave = () => {
         if (!selectedRoutine) return;
 
-        // Use routine name, append template if used? or just Routine Name.
-        // User said "goes into database like this".
-        // Let's stick to Routine Name as primary type.
         onSaveLog({
             type: selectedRoutine.name,
             exercises: scratchedExercises,
@@ -61,15 +58,55 @@ export function WorkoutLogger({ onSaveLog, history = [], routines = [] }) {
         setScratchedExercises({});
     };
 
+    const handleShare = async () => {
+        if (!selectedRoutine || Object.keys(scratchedExercises).length === 0) {
+            toast.error("Log some exercises first!");
+            return;
+        }
+
+        let summary = `🔥 I just crushed a ${selectedRoutine.name} workout on SmartFit!\n\n`;
+
+        Object.entries(scratchedExercises).forEach(([name, sets]) => {
+            if (sets && sets.length > 0) {
+                // Find best set or just list count
+                const maxWeight = Math.max(...sets.map(s => Number(s.weight) || 0));
+                summary += `💪 ${name}: ${sets.length} sets (Best: ${maxWeight}kg)\n`;
+            }
+        });
+
+        summary += `\nJoin me on SmartFit!`;
+
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'My SmartFit Workout',
+                    text: summary,
+                });
+            } else {
+                await navigator.clipboard.writeText(summary);
+                toast.success("Workout summary copied to clipboard!");
+            }
+        } catch (err) {
+            console.error("Share failed:", err);
+            // Fallback if share was cancelled or failed
+        }
+    };
+
     return (
         <div className="space-y-4 md:space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Log Workout</h2>
                 {activeExercises.length > 0 && (
-                    <Button type="button" onClick={handleSave} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
-                        <Save className="h-4 w-4" />
-                        Finish Workout
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button type="button" variant="secondary" onClick={handleShare} className="gap-2">
+                            <Share2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">Share</span>
+                        </Button>
+                        <Button type="button" onClick={handleSave} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                            <Save className="h-4 w-4" />
+                            Finish Workout
+                        </Button>
+                    </div>
                 )}
             </div>
 

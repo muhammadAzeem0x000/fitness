@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { StatsOverview } from '../components/dashboard/StatsOverview';
 import { WeightChart } from '../components/dashboard/WeightChart';
+import { VolumeChart } from '../components/dashboard/VolumeChart';
+import { WorkoutHistoryList } from '../components/dashboard/WorkoutHistoryList';
 import { Button } from '../components/ui/Button';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
+import { useWorkouts } from '../hooks/useWorkouts';
 import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
 
 export function Dashboard() {
     const { user } = useAuth();
     const { profile, updateHeight } = useProfile(user?.id);
     const { weightHistory, addWeightEntry } = useWeight(user?.id);
+    const { workoutLogs } = useWorkouts(user?.id);
 
     const { convertWeightToDb, formatWeightLabel } = useUserPreferences();
     const [inputValue, setInputValue] = useState('');
@@ -29,36 +33,46 @@ export function Dashboard() {
     return (
         <div className="grid gap-6 animate-in fade-in duration-500">
             <StatsOverview stats={userStats} currentBMI={currentBMI} />
-            <WeightChart data={weightHistory} />
 
-            <div className="grid md:grid-cols-2 gap-4">
-                {/* Quick Weight Entry */}
-                <div className="p-4 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30">
-                    <h3 className="text-sm font-medium text-zinc-400 mb-3">
-                        Quick Update Weight ({formatWeightLabel()})
-                    </h3>
-                    <div className="flex gap-2 w-full">
-                        <input
-                            type="number"
-                            step="0.1"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            placeholder={`Enter (${formatWeightLabel()})`}
-                            className="flex-1 h-11 min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleUpdate();
-                                }
-                            }}
-                        />
-                        <Button variant="secondary" className="h-11" onClick={handleUpdate}>
-                            Update
-                        </Button>
-                    </div>
+            <div className="grid lg:grid-cols-2 gap-6">
+                <WeightChart data={weightHistory} />
+                <VolumeChart workouts={workoutLogs} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <WorkoutHistoryList workouts={workoutLogs} />
                 </div>
 
-                {/* Quick Height Entry */}
-                <HeightUpdater updateHeight={updateHeight} />
+                <div className="space-y-6">
+                    {/* Quick Weight Entry */}
+                    <div className="p-4 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30">
+                        <h3 className="text-sm font-medium text-zinc-400 mb-3">
+                            Quick Update Weight ({formatWeightLabel()})
+                        </h3>
+                        <div className="flex gap-2 w-full">
+                            <input
+                                type="number"
+                                step="0.1"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                placeholder={`Enter (${formatWeightLabel()})`}
+                                className="flex-1 h-11 min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleUpdate();
+                                    }
+                                }}
+                            />
+                            <Button variant="secondary" className="h-11" onClick={handleUpdate}>
+                                Update
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Quick Height Entry */}
+                    <HeightUpdater updateHeight={updateHeight} />
+                </div>
             </div>
         </div>
     );
