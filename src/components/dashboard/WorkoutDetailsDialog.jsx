@@ -52,7 +52,7 @@ export function WorkoutDetailsDialog({ isOpen, onClose, workout }) {
                                                 <span className="text-zinc-500 font-mono text-xs w-6">#{sIndex + 1}</span>
                                                 <div className="flex items-center gap-1.5 text-zinc-300">
                                                     <Scale className="w-3.5 h-3.5 text-zinc-500" />
-                                                    <span className="font-medium text-white">{set.weight}</span>
+                                                    <span className="font-medium text-white">{set.weight}</span> kg
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 text-zinc-300">
