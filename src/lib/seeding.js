@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export const DEFAULT_EXERCISES = {
     Chest: [
-        "Barbell Bench Press", "Incline Dumbbell Press", "Dumbbell Flyes", "Cable Crossovers",
+        "Barbell Bench Press", "Incline Dumbbell Press", "Dumbbell Flyes", "Dumbbell Pullover", "Cable Crossovers",
         "Push-Ups", "Machine Chest Press", "Incline Barbell Press", "Decline Bench Press",
         "Pec Deck Fly", "Dips (Chest Focus)", "Smith Machine Bench Press", "Landmine Press",
         "Svend Press", "Plate Press", "Floor Press"
