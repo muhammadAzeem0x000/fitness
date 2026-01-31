@@ -8,9 +8,8 @@ export const DEFAULT_EXERCISES = {
         "Svend Press", "Plate Press", "Floor Press"
     ],
     Back: [
-        "Deadlift", "Pull-Ups", "Barbell Rows", "Lat Pulldowns", "Seated Cable Rows",
-        "Face Pulls", "T-Bar Rows", "Single Arm Dumbbell Row", "Chin-Ups", "Straight Arm Pulldowns",
-        "Rack Pulls", "Meadows Row", "Renegade Row", "Back Extensions", "Good Mornings"
+        "Seated Cable Rows", "Incline T-Bar Rows", "Lat Pulldowns", "Behind Neck Lat Pull Down", "Iso Lateral Pull Down", "Seated Row Machine", "Face Pulls", "Single Arm Dumbbell Row", "Straight Arm Lat Pull Down", "Deadlift", "Pull-Ups", "Barbell Rows",
+        "Chin-Ups", "Rack Pulls", "Meadows Row", "Renegade Row", "Back Extensions", "Good Mornings"
     ],
     Shoulders: [
         "Overhead Press (OHP)", "Seated Dumbbell Press", "Lateral Raises", "Front Raises", "Reverse Flyes",
