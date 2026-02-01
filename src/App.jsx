@@ -5,79 +5,128 @@ const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ defau
 const WorkoutLoggerPage = lazy(() => import('./pages/WorkoutLoggerPage').then(module => ({ default: module.WorkoutLoggerPage })));
 const AiCoach = lazy(() => import('./pages/AiCoach').then(module => ({ default: module.AiCoach })));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+import LandingPage from './pages/LandingPage';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
-
-// Auth Wrapper to handle Onboarding Redirection
-const AuthWrapper = ({ children, profile, loadingProfile }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loadingProfile) {
-      if (!profile && location.pathname !== '/onboarding') {
-        navigate('/onboarding');
-      } else if (profile && location.pathname === '/onboarding') {
-        navigate('/');
-      }
-    }
-  }, [profile, loadingProfile, location.pathname, navigate]);
-
-  if (loadingProfile) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white"><Loader /></div>;
-  }
-
-  return children;
-};
 
 // Simple Loader Component
 const Loader = () => (
   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
 );
 
-function App() {
-  const { user, loading: authLoading } = useAuth();
-  const { profile, isLoading: profileLoading } = useProfile(user?.id);
+const FullScreenLoader = () => (
+  <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white"><Loader /></div>
+);
 
-  if (authLoading) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white"><Loader /></div>;
-  }
+// Protected Route Wrapper
+const RequireAuth = ({ children }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <FullScreenLoader />;
 
   if (!user) {
-    return <Auth />;
+    return <Navigate to="/auth" replace state={{ from: location }} />;
   }
 
+  return children;
+};
+
+// Public Route (Redirects to Dashboard if logged in)
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <FullScreenLoader />;
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
+// Onboarding Wrapper logic
+const AppContent = () => {
+  const { user } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile(user?.id);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Onboarding Redirect Verification
+  useEffect(() => {
+    if (user && !profileLoading) {
+      const isOnboarding = location.pathname === '/onboarding';
+      if (!profile && !isOnboarding) {
+        navigate('/onboarding');
+      } else if (profile && isOnboarding) {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, profile, profileLoading, location.pathname, navigate]);
+
+  if (user && profileLoading) return <FullScreenLoader />;
+
+  return (
+    <Suspense fallback={<FullScreenLoader />}>
+      <Routes>
+        {/* Public Marketing Page */}
+        <Route path="/" element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        } />
+
+        {/* Login/Signup */}
+        <Route path="/auth" element={
+          <PublicRoute>
+            <Auth />
+          </PublicRoute>
+        } />
+
+        {/* Protected Routes */}
+        <Route path="/onboarding" element={
+          <RequireAuth>
+            <OnboardingPage />
+          </RequireAuth>
+        } />
+
+        <Route path="/dashboard" element={
+          <RequireAuth>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </RequireAuth>
+        } />
+
+        <Route path="/log" element={
+          <RequireAuth>
+            <Layout>
+              <WorkoutLoggerPage />
+            </Layout>
+          </RequireAuth>
+        } />
+
+        <Route path="/ai-coach" element={
+          <RequireAuth>
+            <Layout>
+              <AiCoach />
+            </Layout>
+          </RequireAuth>
+        } />
+
+        {/* Catch All */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
+function App() {
   return (
     <UserPreferencesProvider>
-      <AuthWrapper profile={profile} loadingProfile={profileLoading}>
-        <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center text-white"><Loader /></div>}>
-          <Routes>
-            <Route path="/onboarding" element={<OnboardingPage />} />
-
-            <Route path="/" element={
-              <Layout>
-                <Dashboard />
-              </Layout>
-            } />
-
-            <Route path="/log" element={
-              <Layout>
-                <WorkoutLoggerPage />
-              </Layout>
-            } />
-
-            <Route path="/ai-coach" element={
-              <Layout>
-                <AiCoach />
-              </Layout>
-            } />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </AuthWrapper>
+      <AppContent />
     </UserPreferencesProvider>
   );
 }
