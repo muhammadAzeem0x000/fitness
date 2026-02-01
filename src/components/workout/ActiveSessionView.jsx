@@ -73,9 +73,9 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
     };
 
     return (
-        <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-8rem)] animate-in slide-in-from-right-8 duration-500">
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
             {/* Header (Fixed) */}
-            <div className="flex-none mb-4 space-y-2 border-b border-zinc-800/50 pb-2">
+            <div className="flex-none mb-4 space-y-2 border-b border-zinc-800/50 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8">
@@ -126,7 +126,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
             </div>
 
             {/* Footer Action (Fixed) */}
-            <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900/95 backdrop-blur-sm -mx-1 px-1 mt-auto">
+            <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900 mt-auto">
                 <Button
                     onClick={handleFinish}
                     className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 text-base font-semibold"

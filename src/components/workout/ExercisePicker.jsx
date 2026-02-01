@@ -42,13 +42,13 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-120px)] animate-in slide-in-from-right-8 duration-500">
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
             {/* Header Section (Fixed) */}
-            <div className="flex-none space-y-4 pb-4">
+            <div className="flex-none space-y-4 py-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold text-white">Select {category} Exercises</h2>
-                        <p className="text-zinc-400">Choose exercises or add your own.</p>
+                        <h2 className="text-xl md:text-2xl font-bold text-white">Select {category} Exercises</h2>
+                        <p className="text-zinc-400 text-xs md:text-sm">Choose exercises or add your own.</p>
                     </div>
                     <Button variant="ghost" onClick={onBack}>Back</Button>
                 </div>
@@ -81,7 +81,6 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
             {/* List Section (Scrollable) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2 pb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {/* Custom Items appearing first */}
                     {customInputs.map((custom, idx) => (
                         <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-white shrink-0">
                             <span>{custom} (Custom)</span>
@@ -109,7 +108,7 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
             </div>
 
             {/* Footer Action (Fixed) */}
-            <div className="flex-none pt-4 border-t border-zinc-800 text-right bg-slate-900/95 backdrop-blur-sm -mx-1 px-1">
+            <div className="flex-none pt-4 border-t border-zinc-800 text-right bg-slate-900 mt-auto">
                 <Button
                     onClick={handleFinish}
                     disabled={selected.length === 0}
