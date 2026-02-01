@@ -73,55 +73,65 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
     };
 
     return (
-        <div className="animate-in slide-in-from-right-8 duration-500">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={onBack}>
-                        <ArrowLeft className="w-5 h-5" />
-                    </Button>
-                    <div>
-                        <h2 className="text-2xl font-bold text-white">{category} Session</h2>
-                        <p className="text-zinc-500 text-sm">
-                            {lastWorkout ? `Last: ${new Date(lastWorkout.date).toLocaleDateString()} ` : 'First time logging this!'}
-                        </p>
+        <div className="flex flex-col h-[80vh] md:h-[85vh] animate-in slide-in-from-right-8 duration-500">
+            {/* Header (Fixed) */}
+            <div className="flex-none mb-4 space-y-2 border-b border-zinc-800/50 pb-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8">
+                            <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                        <div>
+                            <h2 className="text-xl font-bold text-white">{category}</h2>
+                            <p className="text-zinc-500 text-xs">
+                                {lastWorkout ? `Last: ${new Date(lastWorkout.date).toLocaleDateString()} ` : 'First time logging this!'}
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <div className="flex gap-2">
-                    <Button variant="secondary" size="icon" onClick={handleShare}>
-                        <Share2 className="w-4 h-4" />
-                    </Button>
-                    <Button onClick={handleFinish} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                        <Save className="w-4 h-4 mr-2" /> Finish
+                    {/* Share Button only here, Finish moved to footer */}
+                    <Button variant="secondary" size="sm" onClick={handleShare} className="h-8">
+                        <Share2 className="w-3.5 h-3.5 mr-1" /> Share
                     </Button>
                 </div>
             </div>
 
-            {/* Active List */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {activeExercises.length === 0 && (
-                    <div className="col-span-full text-center py-12 text-zinc-500 border-2 border-dashed border-zinc-800 rounded-xl">
-                        Add exercises using the manager above to start logging.
-                    </div>
-                )}
+            {/* Active List (Scrollable) */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pb-4 min-h-0 space-y-4">
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                    {activeExercises.length === 0 && (
+                        <div className="col-span-full text-center py-12 text-zinc-500 border-2 border-dashed border-zinc-800 rounded-xl">
+                            Add exercises using the manager below to start logging.
+                        </div>
+                    )}
 
-                {activeExercises.map(name => {
-                    const lastStats = lastWorkout?.exercises?.[name] || null;
-                    return (
-                        <ExerciseCard
-                            key={name}
-                            exercise={name}
-                            lastSession={lastStats}
-                            onUpdateSets={handleUpdateExercise}
-                        />
-                    );
-                })}
+                    {activeExercises.map(name => {
+                        const lastStats = lastWorkout?.exercises?.[name] || null;
+                        return (
+                            <ExerciseCard
+                                key={name}
+                                exercise={name}
+                                lastSession={lastStats}
+                                onUpdateSets={handleUpdateExercise}
+                            />
+                        );
+                    })}
+                </div>
+
+                {/* Add More Button (Bottom of list) */}
+                <div className="flex justify-center pt-2">
+                    <Button variant="outline" size="sm" onClick={onAddMore} className="border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 w-full md:w-auto text-xs">
+                        <Plus className="w-3 h-3 mr-2" /> Add More Exercises
+                    </Button>
+                </div>
             </div>
 
-            {/* Add More Button (Bottom) */}
-            <div className="mt-8 flex justify-center">
-                <Button variant="outline" onClick={onAddMore} className="border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 w-full md:w-auto">
-                    <Plus className="w-4 h-4 mr-2" /> Add More Exercises
+            {/* Footer Action (Fixed) */}
+            <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900/95 backdrop-blur-sm -mx-1 px-1 mt-auto">
+                <Button
+                    onClick={handleFinish}
+                    className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 text-base font-semibold"
+                >
+                    <Save className="w-4 h-4 mr-2" /> Finish Workout
                 </Button>
             </div>
         </div>
