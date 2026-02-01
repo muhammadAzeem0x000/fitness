@@ -42,73 +42,78 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
     };
 
     return (
-        <div className="animate-in slide-in-from-right-8 duration-500 space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-white">Select {category} Exercises</h2>
-                    <p className="text-zinc-400">Choose exercises or add your own.</p>
-                </div>
-                <Button variant="ghost" onClick={onBack}>Back</Button>
-            </div>
-
-            {/* Search / Custom Add */}
-            <div className="relative">
-                <Search className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search or type to add custom..."
-                    className="w-full h-12 bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all placeholder:text-zinc-600"
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleAddCustom();
-                    }}
-                />
-                {search && filtered.length === 0 && (
-                    <Button
-                        size="sm"
-                        onClick={handleAddCustom}
-                        className="absolute right-2 top-2 bg-blue-600 hover:bg-blue-500"
-                    >
-                        <Plus className="w-4 h-4 mr-1" /> Add "{search}"
-                    </Button>
-                )}
-            </div>
-
-            {/* List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                {/* Custom Items appearing first */}
-                {customInputs.map((custom, idx) => (
-                    <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-white">
-                        <span>{custom} (Custom)</span>
-                        <Check className="w-5 h-5 text-blue-400" />
+        <div className="flex flex-col h-[calc(100vh-120px)] animate-in slide-in-from-right-8 duration-500">
+            {/* Header Section (Fixed) */}
+            <div className="flex-none space-y-4 pb-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-white">Select {category} Exercises</h2>
+                        <p className="text-zinc-400">Choose exercises or add your own.</p>
                     </div>
-                ))}
+                    <Button variant="ghost" onClick={onBack}>Back</Button>
+                </div>
 
-                {filtered.map(ex => {
-                    const isSelected = selected.includes(ex.name);
-                    return (
-                        <button
-                            key={ex.id}
-                            onClick={() => handleToggle(ex.name)}
-                            className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${isSelected
+                {/* Search / Custom Add */}
+                <div className="relative z-10">
+                    <Search className="absolute left-3 top-3 w-5 h-5 text-zinc-500" />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search or type to add custom..."
+                        className="w-full h-12 bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all placeholder:text-zinc-600"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleAddCustom();
+                        }}
+                    />
+                    {search && filtered.length === 0 && (
+                        <Button
+                            size="sm"
+                            onClick={handleAddCustom}
+                            className="absolute right-2 top-2 bg-blue-600 hover:bg-blue-500"
+                        >
+                            <Plus className="w-4 h-4 mr-1" /> Add "{search}"
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {/* List Section (Scrollable) */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2 pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {/* Custom Items appearing first */}
+                    {customInputs.map((custom, idx) => (
+                        <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-white shrink-0">
+                            <span>{custom} (Custom)</span>
+                            <Check className="w-5 h-5 text-blue-400" />
+                        </div>
+                    ))}
+
+                    {filtered.map(ex => {
+                        const isSelected = selected.includes(ex.name);
+                        return (
+                            <button
+                                key={ex.id}
+                                onClick={() => handleToggle(ex.name)}
+                                className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left shrink-0 ${isSelected
                                     ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20'
                                     : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-                                }`}
-                        >
-                            <span className="font-medium">{ex.name}</span>
-                            {isSelected && <Check className="w-5 h-5 text-white" />}
-                        </button>
-                    );
-                })}
+                                    }`}
+                            >
+                                <span className="font-medium">{ex.name}</span>
+                                {isSelected && <Check className="w-5 h-5 text-white" />}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* Footer Action */}
-            <div className="pt-4 border-t border-zinc-800 text-right">
+            {/* Footer Action (Fixed) */}
+            <div className="flex-none pt-4 border-t border-zinc-800 text-right bg-slate-900/95 backdrop-blur-sm -mx-1 px-1">
                 <Button
                     onClick={handleFinish}
                     disabled={selected.length === 0}
-                    className="w-full md:w-auto px-8 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full md:w-auto px-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20"
                 >
                     Start Logging ({selected.length})
                 </Button>

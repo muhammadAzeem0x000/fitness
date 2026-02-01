@@ -21,10 +21,15 @@ export function Layout({ children }) {
     }, [location.pathname]);
 
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-100 font-sans selection:bg-blue-500/30 overflow-x-hidden">
-            <Header />
-            <main key={location.pathname} className="container pt-20 pb-4 px-3 md:px-6 md:pt-24 md:pb-8 space-y-6 md:space-y-8">
-                {children}
+        <div className="h-screen bg-slate-900 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
+            <div className="flex-none z-50">
+                <Header />
+            </div>
+
+            <main key={location.pathname} className="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-4 px-3 md:px-6 md:pt-6 md:pb-8">
+                <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+                    {children}
+                </div>
             </main>
         </div>
     );
