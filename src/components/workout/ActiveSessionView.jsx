@@ -73,7 +73,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
     };
 
     return (
-        <div className="flex flex-col h-[80vh] md:h-[85vh] animate-in slide-in-from-right-8 duration-500">
+        <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-8rem)] animate-in slide-in-from-right-8 duration-500">
             {/* Header (Fixed) */}
             <div className="flex-none mb-4 space-y-2 border-b border-zinc-800/50 pb-2">
                 <div className="flex items-center justify-between">

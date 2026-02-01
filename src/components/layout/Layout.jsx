@@ -21,7 +21,7 @@ export function Layout({ children }) {
     }, [location.pathname]);
 
     return (
-        <div className="h-screen bg-slate-900 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
+        <div className="h-[100dvh] bg-slate-900 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
             <div className="flex-none z-50">
                 <Header />
             </div>
