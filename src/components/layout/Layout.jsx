@@ -26,7 +26,7 @@ export function Layout({ children }) {
                 <Header />
             </div>
 
-            <main key={location.pathname} className="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-4 px-3 md:px-6 md:pt-6 md:pb-8">
+            <main key={location.pathname} className="flex-1 overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-6 md:pb-8">
                 <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
                     {children}
                 </div>
