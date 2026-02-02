@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
 import { ArrowLeft } from 'lucide-react';
 
-export function WorkoutLogger({ onSaveLog }) {
+export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const { user } = useAuth();
 
     // Step 1: Routine
@@ -60,6 +60,7 @@ export function WorkoutLogger({ onSaveLog }) {
                 onBack={() => setIsLogging(false)}
                 onSave={handleSave}
                 onAddMore={() => setIsLogging(false)} // Go back to picker to add more
+                defaultReps={defaultReps}
             />
         );
     }

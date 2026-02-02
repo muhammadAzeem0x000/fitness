@@ -18,6 +18,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const [displayName, setDisplayName] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [workoutDays, setWorkoutDays] = useState([]);
+    const [defaultReps, setDefaultReps] = useState(12);
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -33,6 +34,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
             setDisplayName(profile.display_name || '');
             setAvatarUrl(profile.avatar_url || '');
             setWorkoutDays(profile.workout_days || []);
+            setDefaultReps(profile.default_reps || 12);
             setIsDirty(false);
             // Reset password fields
             setPasswordOpen(false);
@@ -50,7 +52,8 @@ export function UserProfileDialog({ isOpen, onClose }) {
             await updateProfile({
                 display_name: displayName,
                 avatar_url: avatarUrl,
-                workout_days: workoutDays
+                workout_days: workoutDays,
+                default_reps: parseInt(defaultReps) || 12
             });
             toast.success("Profile updated successfully!");
             onClose();
@@ -284,6 +287,24 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                     );
                                 })}
                             </div>
+                        </div>
+
+                        {/* Default Reps Preference */}
+                        <div>
+                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 block">
+                                Default Reps (Auto-fill)
+                            </label>
+                            <input
+                                type="number"
+                                value={defaultReps}
+                                onChange={(e) => {
+                                    setDefaultReps(e.target.value);
+                                    setIsDirty(true);
+                                }}
+                                placeholder="e.g. 12"
+                                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-zinc-600"
+                            />
+                            <p className="text-[10px] text-zinc-500 mt-1">This value will be pre-filled when you log a new exercise.</p>
                         </div>
 
                     </div>

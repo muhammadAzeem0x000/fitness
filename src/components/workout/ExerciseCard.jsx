@@ -2,13 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '../ui/Card';
 import { History } from 'lucide-react';
 
-export function ExerciseCard({ exercise, lastSession, onUpdateSets }) {
-    // Initialize 3 sets by default
-    const [sets, setSets] = useState([
-        { weight: '', reps: '' },
-        { weight: '', reps: '' },
-        { weight: '', reps: '' }
-    ]);
+export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps = 12 }) {
+    // Initialize 3 sets by default, pre-filling from history if available
+    const [sets, setSets] = useState(() => {
+        const initialSets = [];
+        for (let i = 0; i < 3; i++) {
+            if (lastSession && lastSession[i]) {
+                initialSets.push({
+                    weight: lastSession[i].weight || '',
+                    reps: lastSession[i].reps || defaultReps
+                });
+            } else {
+                initialSets.push({ weight: '', reps: defaultReps });
+            }
+        }
+        return initialSets;
+    });
 
     // Lift state up whenever local state changes
     useEffect(() => {
