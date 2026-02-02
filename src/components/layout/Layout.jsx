@@ -20,16 +20,22 @@ export function Layout({ children }) {
         document.title = title;
     }, [location.pathname]);
 
+    const isFixedLayout = ['/ai-coach', '/log'].includes(location.pathname);
+
     return (
         <div className="h-[100dvh] bg-slate-900 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
             <div className="flex-none z-50">
                 <Header />
             </div>
 
-            <main key={location.pathname} className="flex-1 overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-6 md:pb-8">
-                <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
-                    {children}
-                </div>
+            <main key={location.pathname} className={`flex-1 ${isFixedLayout ? 'overflow-hidden p-0' : 'overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-6 md:pb-8'}`}>
+                {isFixedLayout ? (
+                    children
+                ) : (
+                    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+                        {children}
+                    </div>
+                )}
             </main>
         </div>
     );

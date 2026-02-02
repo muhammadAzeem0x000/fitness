@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp } from 'lucide-react';
+import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft } from 'lucide-react';
 import { generateHealthReport } from '../lib/openai';
 import { supabase } from '../lib/supabase';
 import ReactMarkdown from 'react-markdown';
@@ -52,6 +52,15 @@ export function AiCoach() {
         }
     };
 
+    const [showHistoryMobile, setShowHistoryMobile] = useState(true);
+
+    // Auto-switch to report view on mobile when report selected or generated
+    useEffect(() => {
+        if (selectedReport) {
+            setShowHistoryMobile(false);
+        }
+    }, [selectedReport]);
+
     const handleGenerateReport = async () => {
         setLoading(true);
         setError(null);
@@ -82,6 +91,7 @@ export function AiCoach() {
             // Add to local state
             setAllReports(prev => [data, ...prev]);
             setSelectedReport(data);
+            setShowHistoryMobile(false); // Switch to view
         } catch (err) {
             console.error(err);
             const msg = err.message || "Unknown error";
@@ -101,28 +111,32 @@ export function AiCoach() {
     const historyList = allReports.filter(r => (r.report_type || 'weekly') === activeTab);
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col h-full p-4 md:p-6 gap-4 md:gap-6 animate-in fade-in duration-500 max-w-7xl mx-auto w-full">
+            {/* Header (Fixed) */}
+            <div className="flex-none flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
                         <Bot className="h-8 w-8 text-blue-500" />
                         Master AI Coach
                     </h1>
-                    <p className="text-zinc-400 mt-1">
+                    <p className="text-zinc-400 text-sm md:text-base mt-1">
                         Your personal elite fitness strategist.
                     </p>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex p-1 bg-zinc-900 rounded-xl gap-1 overflow-x-auto">
+            {/* Tabs (Fixed) */}
+            <div className="flex-none flex p-1 bg-zinc-900 rounded-xl gap-1 overflow-x-auto shrink-0">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
+                            onClick={() => {
+                                setActiveTab(tab.id);
+                                setShowHistoryMobile(true); // Go back to list on tab change
+                            }}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap
                             ${isActive ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}
                         >
@@ -133,34 +147,38 @@ export function AiCoach() {
                 })}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* Sidebar: History List */}
-                <div className="space-y-4">
+            {/* Main Content Area (Scrollable Panels) */}
+            <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 relative">
+                {/* Sidebar: History List (Visible if showHistoryMobile is true OR on Desktop) */}
+                <div className={`${showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-1 flex-col h-full min-h-0 gap-4`}>
                     <Button
                         onClick={handleGenerateReport}
                         disabled={loading}
-                        className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                        className="flex-none w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20"
                     >
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
                         {loading ? 'Analyzing...' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
                     </Button>
 
-                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden flex flex-col max-h-[500px]">
-                        <div className="p-3 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
+                    <div className="flex-1 min-h-0 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+                        <div className="flex-none p-3 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
                             <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Past Reports</h3>
                         </div>
-                        <div className="overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                             {historyList.length > 0 ? (
                                 historyList.map((item) => (
                                     <button
                                         key={item.id}
-                                        onClick={() => setSelectedReport(item)}
-                                        className={`w-full text-left p-3 rounded-lg text-sm transition-colors border ${selectedReport?.id === item.id
-                                            ? 'bg-blue-500/10 border-blue-500/20 text-blue-200'
+                                        onClick={() => {
+                                            setSelectedReport(item);
+                                            setShowHistoryMobile(false);
+                                        }}
+                                        className={`w-full text-left p-3 rounded-lg text-sm transition-all border ${selectedReport?.id === item.id
+                                            ? 'bg-blue-500/10 border-blue-500/20 text-blue-200 shadow-sm'
                                             : 'border-transparent text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                                             }`}
                                     >
-                                        <div className="font-medium">
+                                        <div className="font-medium truncate">
                                             {new Date(item.created_at).toLocaleDateString()}
                                         </div>
                                         <div className="text-xs opacity-60 mt-0.5">
@@ -169,7 +187,8 @@ export function AiCoach() {
                                     </button>
                                 ))
                             ) : (
-                                <div className="p-4 text-center text-xs text-zinc-600">
+                                <div className="p-8 text-center text-xs text-zinc-600 flex flex-col items-center gap-2">
+                                    <FileText className="w-8 h-8 opacity-20" />
                                     No {activeTab} reports yet.
                                 </div>
                             )}
@@ -177,36 +196,59 @@ export function AiCoach() {
                     </div>
                 </div>
 
-                {/* Main Content: Report View */}
-                <div className="md:col-span-3 space-y-4">
+                {/* Right Panel: Report View (Visible if showHistoryMobile is false OR on Desktop) */}
+                <div className={`${!showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-3 flex-col h-full min-h-0 space-y-4`}>
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-2">
-                            <AlertCircle className="h-5 w-5" />
+                        <div className="flex-none bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-2 animate-in slide-in-from-top-2">
+                            <AlertCircle className="h-5 w-5 shrink-0" />
                             {error}
                         </div>
                     )}
 
                     {selectedReport ? (
-                        <Card className="border-blue-500/30 h-full">
-                            <CardHeader className="border-b border-zinc-800/50 bg-blue-500/5">
-                                <CardTitle className="flex items-center gap-2">
-                                    <FileText className="h-5 w-5 text-blue-400" />
+                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-slate-950">
+                            <CardHeader className="flex-none border-b border-zinc-800/50 bg-blue-500/5 py-4">
+                                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                                    {/* Mobile Back Button */}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-zinc-400"
+                                        onClick={() => setShowHistoryMobile(true)}
+                                    >
+                                        <ArrowLeft className="w-5 h-5" />
+                                    </Button>
+
+                                    <FileText className="h-5 w-5 text-blue-400 hidden md:block" />
                                     {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Analysis
-                                    <span className="text-xs font-normal text-zinc-500 ml-auto bg-zinc-900/50 px-2 py-1 rounded">
-                                        {new Date(selectedReport.created_at).toLocaleString()}
-                                    </span>
+                                    <div className="ml-auto flex items-center gap-2">
+                                        <span className="text-xs font-normal text-zinc-500 bg-zinc-900/80 px-2 py-1 rounded border border-zinc-800">
+                                            {new Date(selectedReport.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="pt-6 prose prose-invert max-w-none">
+                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:text-blue-100 prose-a:text-blue-400 prose-strong:text-white prose-li:text-zinc-300">
                                 <ReactMarkdown>{selectedReport.report_text}</ReactMarkdown>
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-800 rounded-xl h-full bg-zinc-900/20">
-                            <Bot className="h-12 w-12 text-zinc-600 mb-4" />
-                            <h3 className="text-lg font-medium text-zinc-400">Ready to Analyze</h3>
-                            <p className="text-zinc-500 max-w-sm text-center mt-2 px-4">
-                                Generate a new {activeTab} report or select a past one from the history list.
+                        <div className="flex-1 flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-800/50 rounded-xl bg-zinc-900/20 text-center">
+                            {/* Mobile Back Button State for Empty */}
+                            <Button
+                                variant="ghost"
+                                className="md:hidden absolute top-4 left-4 text-zinc-400"
+                                onClick={() => setShowHistoryMobile(true)}
+                            >
+                                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                            </Button>
+
+                            <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center mb-6 shadow-xl border border-zinc-800">
+                                <Bot className="h-10 w-10 text-zinc-600" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Ready to Analyze</h3>
+                            <p className="text-zinc-500 max-w-md mx-auto leading-relaxed">
+                                Select a report type from the tabs above and click "New Report" to generate AI insights, or view past analysis from the sidebar.
                             </p>
                         </div>
                     )}
