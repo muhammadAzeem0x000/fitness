@@ -32,12 +32,13 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     const typeCount = {};
     const keyLifts = {}; // Stores max weight for key movements
 
-    relevantWorkouts.forEach(workout => {
+    relevantWorkouts.forEach((workout, i) => {
         // 1. Frequency
         typeCount[workout.type] = (typeCount[workout.type] || 0) + 1;
 
         // Ensure exercises is an array (handle potential JSON string or missing data)
         let exercises = workout.exercises;
+
         if (typeof exercises === 'string') {
             try {
                 exercises = JSON.parse(exercises);
@@ -47,9 +48,12 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
         }
         if (exercises && typeof exercises === 'object' && !Array.isArray(exercises)) {
             // Convert Object-based logs (ActiveSessionView) to Array
-            exercises = Object.entries(exercises).map(([name, sets]) => ({ name, sets }));
+            const entries = Object.entries(exercises);
+            exercises = entries.map(([name, sets]) => ({ name, sets }));
         }
-        if (!Array.isArray(exercises)) exercises = [];
+        if (!Array.isArray(exercises)) {
+            exercises = [];
+        }
 
         if (exercises.length > 0) {
             exercises.forEach(exercise => {
