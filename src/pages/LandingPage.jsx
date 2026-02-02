@@ -19,10 +19,10 @@ export default function LandingPage() {
                             </span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <button onClick={() => navigate('/auth')} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                            <button onClick={() => navigate('/auth', { state: { view: 'login' } })} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
                                 Login
                             </button>
-                            <Button onClick={() => navigate('/auth')} className="bg-white text-slate-950 hover:bg-slate-200 transition-transform active:scale-95">
+                            <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} className="bg-white text-slate-950 hover:bg-slate-200 transition-transform active:scale-95">
                                 Get Started
                             </Button>
                         </div>
@@ -55,10 +55,10 @@ export default function LandingPage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000">
-                        <Button onClick={() => navigate('/auth')} size="lg" className="w-full sm:w-auto text-lg h-12 px-8 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-1">
+                        <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} size="lg" className="w-full sm:w-auto text-lg h-12 px-8 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-1">
                             Start for Free <ArrowRight className="ml-2 w-5 h-5" />
                         </Button>
-                        <Button onClick={() => navigate('/auth')} size="lg" variant="secondary" className="w-full sm:w-auto text-lg h-12 px-8 bg-slate-800 text-white hover:bg-slate-700 border border-slate-700 hover:border-slate-500 transition-all hover:-translate-y-1">
+                        <Button onClick={() => navigate('/auth', { state: { view: 'login' } })} size="lg" variant="secondary" className="w-full sm:w-auto text-lg h-12 px-8 bg-slate-800 text-white hover:bg-slate-700 border border-slate-700 hover:border-slate-500 transition-all hover:-translate-y-1">
                             <LogIn className="mr-2 w-5 h-5" /> Login
                         </Button>
                     </div>
@@ -186,7 +186,7 @@ export default function LandingPage() {
                             Join thousands of lifters pushing their limits with SmartFit. It's free to start.
                         </p>
                         <div className="relative z-10">
-                            <Button onClick={() => navigate('/auth')} size="lg" className="bg-white text-blue-600 hover:bg-blue-50 border-none">
+                            <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} size="lg" className="bg-white text-blue-600 hover:bg-blue-50 border-none">
                                 <UserPlus className="w-5 h-5 mr-2" /> Create Free Account
                             </Button>
                         </div>

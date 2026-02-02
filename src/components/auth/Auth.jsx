@@ -7,10 +7,12 @@ import { useToast } from '../../context/ToastContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, signupSchema } from '../../lib/schemas';
+import { useLocation } from 'react-router-dom';
 
 export function Auth() {
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
-    const [view, setView] = useState('login'); // 'login' | 'signup' | 'forgot-password'
+    const [view, setView] = useState(location.state?.view || 'login'); // 'login' | 'signup' | 'forgot-password'
     const { toast } = useToast();
 
     // Login Form
