@@ -45,10 +45,13 @@ export const seedExercises = async () => {
         return { success: false, error: countError };
     }
 
+    /* Force update enabled
     if (count > 0) {
         console.log("Exercises table already populated.");
         return { success: true, message: "Already populated" };
     }
+    */
+    console.log("Exercises table exists. Running Upsert to ensure defaults are up to date.");
 
     const payload = [];
     Object.entries(DEFAULT_EXERCISES).forEach(([category, exercises]) => {
@@ -57,9 +60,10 @@ export const seedExercises = async () => {
         });
     });
 
+    // Use upsert to update existing or insert new. Assumes 'name' is unique/PK.
     const { error: insertError } = await supabase
         .from('exercises')
-        .insert(payload);
+        .upsert(payload, { onConflict: 'name' });
 
     if (insertError) {
         console.error("Error inserting exercises:", insertError);
