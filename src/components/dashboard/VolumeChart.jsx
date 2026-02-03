@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LabelList } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { TrendingUp, BarChart3 } from 'lucide-react';
+import { useUserPreferences } from '../../context/UserPreferencesContext';
 
 export function VolumeChart({ workouts }) {
+    const { formatWeightLabel } = useUserPreferences();
     const data = useMemo(() => {
         if (!workouts || workouts.length === 0) return [];
 
@@ -39,6 +41,23 @@ export function VolumeChart({ workouts }) {
 
     if (!workouts || workouts.length === 0) return null;
 
+    const CustomLabel = (props) => {
+        const { x, y, value, index } = props;
+        const entry = data[index];
+        const formattedValue = value > 999 ? `${(value / 1000).toFixed(1)}k` : value;
+        const unit = formatWeightLabel(); // e.g. "kg" or "lbs"
+        return (
+            <g>
+                <text x={x} y={y - 20} fill="#ffffff" textAnchor="middle" fontSize={10} fontWeight="500">
+                    {formattedValue} <tspan fontSize={8} fill="#94a3b8">{unit}</tspan>
+                </text>
+                <text x={x} y={y - 8} fill="#cbd5e1" textAnchor="middle" fontSize={9}>
+                    {entry?.type || ''}
+                </text>
+            </g>
+        );
+    };
+
     return (
         <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -50,7 +69,7 @@ export function VolumeChart({ workouts }) {
             <CardContent>
                 <div className="h-[200px] w-full mt-4">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data}>
+                        <LineChart data={data} margin={{ top: 40, right: 20, left: 30, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                             <XAxis
                                 dataKey="date"
@@ -65,6 +84,8 @@ export function VolumeChart({ workouts }) {
                                 tickLine={false}
                                 axisLine={false}
                                 tickFormatter={(value) => `${(value / 1000).toFixed(1)}k`}
+                                width={60}
+                                padding={{ top: 60, bottom: 0 }}
                             />
                             <Tooltip
                                 contentStyle={{
@@ -83,7 +104,9 @@ export function VolumeChart({ workouts }) {
                                 strokeWidth={2}
                                 dot={{ fill: '#3b82f6', strokeWidth: 0, r: 4 }}
                                 activeDot={{ r: 6, fill: '#60a5fa' }}
-                            />
+                            >
+                                <LabelList content={<CustomLabel />} />
+                            </Line>
                         </LineChart>
                     </ResponsiveContainer>
                 </div>

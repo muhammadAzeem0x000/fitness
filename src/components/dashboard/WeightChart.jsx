@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 
@@ -21,7 +21,7 @@ export function WeightChart({ data }) {
             <CardContent className="pl-0 sm:pl-2">
                 <div className="h-[300px] w-full min-w-0">
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData}>
+                        <LineChart data={chartData} margin={{ top: 30, right: 30, left: 30, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                             <XAxis
                                 dataKey="date"
@@ -38,7 +38,8 @@ export function WeightChart({ data }) {
                                 tick={{ fontSize: 10 }}
                                 tickLine={false}
                                 axisLine={false}
-                                domain={['dataMin - 1', 'dataMax + 1']}
+                                domain={['auto', 'auto']}
+                                padding={{ top: 40, bottom: 10 }}
                             />
                             <Tooltip
                                 contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
@@ -52,7 +53,18 @@ export function WeightChart({ data }) {
                                 strokeWidth={2}
                                 dot={{ r: 4, fill: '#3b82f6' }}
                                 activeDot={{ r: 6 }}
-                            />
+                            >
+                                <LabelList
+                                    dataKey="weight"
+                                    position="top"
+                                    offset={10}
+                                    className="text-[10px] font-medium"
+                                    fill="#ffffff"
+                                    fontSize={10}
+                                    fontWeight={500}
+                                    formatter={(value) => `${value} ${formatWeightLabel()}`}
+                                />
+                            </Line>
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
