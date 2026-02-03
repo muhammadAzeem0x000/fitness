@@ -17,9 +17,8 @@ export const DEFAULT_EXERCISES = {
         "Push Press", "Behind The Neck Press", "Egyptian Lateral Raises", "Lu Raises", "Military Press"
     ],
     Arms: [
-        "Barbell Curl", "Dumbbell Curl", "Hammer Curl", "Preacher Curl", "Concentration Curl",
-        "Tricep Pushdowns", "Skullcrushers", "Overhead Tricep Extension", "Close Grip Bench Press", "Dips",
-        "Cable Curls", "Spider Curls", "Kickbacks", "Waiters Curl", "Reverse Grip Pushdown"
+        "Standing Barbell Curl", "Incline Dumbbell Curl", "Standing Hammer Curl", "Straight Bar Tricep Pushdown", "EZ Bar Preacher Curl", "Rope Pushdown", "Seated Dumbbell Tricep Extension", "Single Arm Dumbell Overhead Extension",
+        "Close Grip Barbell", "Close Grip Bench Press", "Straight Bar Cable Curl", "Machine Bicep Curl", "Spider Curls", "Kickbacks", "Waiters Curl", "Reverse Grip Pushdown"
     ],
     Legs: [
         "Barbell Squat", "Leg Press", "Romanian Deadlift", "Leg Extensions", "Lying Leg Curls",
