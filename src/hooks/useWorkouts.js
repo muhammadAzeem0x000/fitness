@@ -18,6 +18,8 @@ export function useWorkouts(userId, type = null) {
             return data;
         },
         enabled: !!userId,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        refetchOnWindowFocus: false,
     });
 
     // 2. Routines
@@ -34,6 +36,8 @@ export function useWorkouts(userId, type = null) {
             return data;
         },
         enabled: !!userId,
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
     });
 
     // 3. Exercises (Global List)
@@ -52,6 +56,7 @@ export function useWorkouts(userId, type = null) {
             return data;
         },
         staleTime: 1000 * 60 * 60, // 1 hour
+        refetchOnWindowFocus: false,
     });
 
     // 4. Last Workout by Type (Specific Category)
@@ -72,6 +77,8 @@ export function useWorkouts(userId, type = null) {
             return data;
         },
         enabled: !!userId && !!type,
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
     });
 
     // Mutation: Add Log

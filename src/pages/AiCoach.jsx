@@ -9,48 +9,51 @@ import { useAuth } from '../hooks/useAuth';
 import { useWeight } from '../hooks/useWeight';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { useProfile } from '../hooks/useProfile';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function AiCoach() {
     const { user } = useAuth();
     const { weightHistory } = useWeight(user?.id);
     const { workoutLogs } = useWorkouts(user?.id);
     const { profile } = useProfile(user?.id);
+    const queryClient = useQueryClient();
 
-    const [loading, setLoading] = useState(false);
-    const [allReports, setAllReports] = useState([]);
+    const [loading, setLoading] = useState(false); // Keep for generation state
     const [selectedReport, setSelectedReport] = useState(null);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('weekly');
 
-    // Fetch all reports on mount
-    useEffect(() => {
-        if (user) {
-            fetchAllReports();
-        }
-    }, [user]);
+    // Fetch reports with React Query
+    const { data: allReports = [] } = useQuery({
+        queryKey: ['aiReports', user?.id],
+        queryFn: async () => {
+            if (!user) return [];
+            const { data, error } = await supabase
+                .from('ai_reports')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            return data;
+        },
+        enabled: !!user,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        refetchOnWindowFocus: false
+    });
 
-    // When tab changes, reset selection to latest of that type? 
-    // Or just filter the list. Let's auto-select the latest of that type if available.
+    // Auto-select latest report when tab changes or data loads
     useEffect(() => {
         const typeReports = allReports.filter(r => (r.report_type || 'weekly') === activeTab);
         if (typeReports.length > 0) {
+            // Only select if nothing is selected or if the selected one is not of the current type
+            // Actually, simplified behavior: Always top one for now when tab changes is good default.
+            // But we might want to keep selection if switching tabs back and forth? 
+            // The user request implies "focused and displayed previously", which usually means "show me the latest".
             setSelectedReport(typeReports[0]);
         } else {
             setSelectedReport(null);
         }
     }, [activeTab, allReports]);
-
-    const fetchAllReports = async () => {
-        const { data, error } = await supabase
-            .from('ai_reports')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-
-        if (data) {
-            setAllReports(data);
-        }
-    };
 
     const [showHistoryMobile, setShowHistoryMobile] = useState(true);
 
@@ -88,8 +91,10 @@ export function AiCoach() {
 
             if (dbError) throw dbError;
 
-            // Add to local state
-            setAllReports(prev => [data, ...prev]);
+            // Invalidate cache
+            queryClient.invalidateQueries(['aiReports', user.id]);
+
+            // Set selection directly (instant feedback)
             setSelectedReport(data);
             setShowHistoryMobile(false); // Switch to view
         } catch (err) {

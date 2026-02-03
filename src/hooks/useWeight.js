@@ -17,6 +17,8 @@ export function useWeight(userId) {
             return data;
         },
         enabled: !!userId,
+        staleTime: 1000 * 60 * 10, // 10 minutes
+        refetchOnWindowFocus: false,
     });
 
     const addWeightEntryMutation = useMutation({
