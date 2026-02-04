@@ -22,7 +22,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const [isLogging, setIsLogging] = useState(false);
 
     // Data Fetching
-    const { exercises, routines, lastWorkoutByType, isLoading } = useWorkouts(user?.id, selectedCategory);
+    const { exercises, routines, lastWorkoutByType, workoutLogs, isLoading } = useWorkouts(user?.id, selectedCategory);
     const { toast } = useToast();
 
     // Seeding Check
@@ -61,6 +61,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                 onSave={handleSave}
                 onAddMore={() => setIsLogging(false)} // Go back to picker to add more
                 defaultReps={defaultReps}
+                exerciseHistory={workoutLogs}
             />
         );
     }

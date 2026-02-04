@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 import { ExerciseCard } from './ExerciseCard';
 import { useToast } from '../../context/ToastContext';
 
-export function ActiveSessionView({ category, initialExercises, lastWorkout, onBack, onSave, onAddMore, defaultReps = 12 }) {
+export function ActiveSessionView({ category, initialExercises, lastWorkout, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
     const [activeExercises, setActiveExercises] = useState([]);
     const [loggedData, setLoggedData] = useState({});
     const { toast } = useToast();
@@ -113,6 +113,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
                                 lastSession={lastStats}
                                 onUpdateSets={handleUpdateExercise}
                                 defaultReps={defaultReps}
+                                exerciseHistory={exerciseHistory}
                             />
                         );
                     })}
