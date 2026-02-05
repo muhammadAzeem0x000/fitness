@@ -97,7 +97,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     // --- STEP 2: SELECT MUSCLE GROUP ---
     if (selectedRoutine) {
         return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 pt-6 px-3 md:px-6">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => setSelectedRoutine(null)}>
                         <ArrowLeft className="w-5 h-5" />
@@ -115,7 +115,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
 
     // --- STEP 1: SELECT ROUTINE (DAY) ---
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500 pt-6 px-3 md:px-6">
             <div>
                 <h2 className="text-3xl font-bold tracking-tight text-white mb-2">Log Workout</h2>
                 <p className="text-zinc-400">Select your current split day to begin.</p>
