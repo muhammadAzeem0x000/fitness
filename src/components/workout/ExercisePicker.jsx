@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Search, Plus, Check } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-export function ExercisePicker({ category, availableExercises, onComplete, onBack }) {
-    const [selected, setSelected] = useState([]);
+export function ExercisePicker({ category, availableExercises, onComplete, onBack, initialSelection = [] }) {
+    const [selected, setSelected] = useState(initialSelection);
     const [search, setSearch] = useState('');
     const [customInputs, setCustomInputs] = useState([]); // List of custom added strings
 

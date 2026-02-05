@@ -84,6 +84,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
             <ExercisePicker
                 category={selectedCategory}
                 availableExercises={categoryExercises}
+                initialSelection={selectedExercises}
                 onComplete={(exercises) => {
                     setSelectedExercises(exercises);
                     setIsLogging(true);
