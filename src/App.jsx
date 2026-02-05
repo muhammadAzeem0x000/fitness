@@ -5,6 +5,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ defau
 const WorkoutLoggerPage = lazy(() => import('./pages/WorkoutLoggerPage').then(module => ({ default: module.WorkoutLoggerPage })));
 const AiCoach = lazy(() => import('./pages/AiCoach').then(module => ({ default: module.AiCoach })));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const SharedWorkout = lazy(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
 import LandingPage from './pages/LandingPage';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
@@ -54,8 +55,13 @@ const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Onboarding Redirect Verification
+  // Onboarding Redirect Verification (skip for public share pages)
   useEffect(() => {
+    // Don't redirect if on public share page
+    if (location.pathname.startsWith('/share/')) {
+      return;
+    }
+
     if (user && !profileLoading) {
       const isOnboarding = location.pathname === '/onboarding';
       if (!profile && !isOnboarding) {
@@ -126,7 +132,15 @@ const AppContent = () => {
 function App() {
   return (
     <UserPreferencesProvider>
-      <AppContent />
+      <Suspense fallback={<FullScreenLoader />}>
+        <Routes>
+          {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
+          <Route path="/share/:shareId" element={<SharedWorkout />} />
+
+          {/* All other routes */}
+          <Route path="/*" element={<AppContent />} />
+        </Routes>
+      </Suspense>
     </UserPreferencesProvider>
   );
 }
