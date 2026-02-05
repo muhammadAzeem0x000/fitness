@@ -6,9 +6,138 @@
   body {
     @apply bg-slate-900 text-slate-100 antialiased;
   }
+
+  /* Smooth scrolling with GPU acceleration */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Optimize scrolling containers */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@layer components {
+
+  /* Button micro-interactions - optimized */
+  .btn-hover {
+    @apply transition-transform duration-200 ease-out;
+    will-change: transform;
+  }
+
+  .btn-hover:hover {
+    transform: scale(1.05);
+  }
+
+  .btn-hover:active {
+    transform: scale(0.95);
+  }
+
+  /* Card hover effects - GPU accelerated */
+  .card-interactive {
+    @apply transition-all duration-300 ease-out;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-4px) translateZ(0);
+  }
+
+  /* Input focus glow - optimized */
+  .input-glow {
+    @apply transition-all duration-200;
+  }
+
+  .input-glow:focus {
+    @apply ring-2 ring-blue-500/50 shadow-lg shadow-blue-500/20;
+  }
+
+  /* Smooth fade-in animation - GPU accelerated */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+    will-change: opacity, transform;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px) translateZ(0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) translateZ(0);
+    }
+  }
+
+  /* Slide up animation - GPU accelerated */
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+    will-change: opacity, transform;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) translateZ(0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) translateZ(0);
+    }
+  }
+
+  /* Pulse animation for notifications */
+  .animate-pulse-slow {
+    animation: pulseSlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseSlow {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* Shimmer effect for loading - optimized */
+  .shimmer {
+    background: linear-gradient(90deg,
+        rgba(39, 39, 42, 0) 0%,
+        rgba(63, 63, 70, 0.4) 50%,
+        rgba(39, 39, 42, 0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    will-change: background-position;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
 }
 
 @layer utilities {
+
+  /* Custom scrollbar - optimized */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(113, 113, 122, 0.5) rgb(24, 24, 27);
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -20,5 +149,12 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-zinc-700/50 rounded-full hover:bg-zinc-600 transition-colors;
+  }
+
+  /* Prevent layout shift during animations */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 }

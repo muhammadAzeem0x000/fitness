@@ -3,25 +3,33 @@ import { StatsOverview } from '../components/dashboard/StatsOverview';
 import { WeightChart } from '../components/dashboard/WeightChart';
 import { VolumeChart } from '../components/dashboard/VolumeChart';
 import { WorkoutHistoryList } from '../components/dashboard/WorkoutHistoryList';
+import { PersonalRecords } from '../components/dashboard/PersonalRecords';
+import { StreakCard } from '../components/dashboard/StreakCard';
 import { Button } from '../components/ui/Button';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonCard, SkeletonChart } from '../components/ui/Skeleton';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
+import { Dumbbell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
+    const navigate = useNavigate();
     const { user } = useAuth();
-    const { profile, updateHeight } = useProfile(user?.id);
-    const { weightHistory, addWeightEntry } = useWeight(user?.id);
-    const { workoutLogs } = useWorkouts(user?.id);
+    const { profile, updateHeight, isLoading: profileLoading } = useProfile(user?.id);
+    const { weightHistory, addWeightEntry, isLoading: weightLoading } = useWeight(user?.id);
+    const { workoutLogs, isLoading: workoutsLoading } = useWorkouts(user?.id);
 
     const { convertWeightToDb, formatWeightLabel } = useUserPreferences();
     const [inputValue, setInputValue] = useState('');
 
     const userStats = getUserStats(profile, weightHistory);
     const currentBMI = calculateBMI(userStats.currentWeight, userStats.height);
+    const isLoading = profileLoading || weightLoading || workoutsLoading;
 
     const handleUpdate = async () => {
         if (!inputValue) return;
@@ -30,18 +38,59 @@ export function Dashboard() {
         setInputValue('');
     };
 
+    // Show empty state if no workouts
+    const hasWorkouts = workoutLogs && workoutLogs.length > 0;
+
     return (
         <div className="grid gap-6 animate-in fade-in duration-500">
             <StatsOverview stats={userStats} currentBMI={currentBMI} />
 
-            <div className="grid lg:grid-cols-2 gap-6">
-                <WeightChart data={weightHistory} />
-                <VolumeChart workouts={workoutLogs} />
+            {/* Streak and PRs Row */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {isLoading ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : (
+                    <>
+                        <StreakCard workouts={workoutLogs} />
+                        <PersonalRecords workouts={workoutLogs} />
+                    </>
+                )}
             </div>
 
+            {/* Charts Row */}
+            <div className="grid lg:grid-cols-2 gap-6">
+                {isLoading ? (
+                    <>
+                        <SkeletonChart />
+                        <SkeletonChart />
+                    </>
+                ) : (
+                    <>
+                        <WeightChart data={weightHistory} />
+                        <VolumeChart workouts={workoutLogs} />
+                    </>
+                )}
+            </div>
+
+            {/* Main Content + Sidebar */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <WorkoutHistoryList workouts={workoutLogs} />
+                    {isLoading ? (
+                        <SkeletonCard count={3} />
+                    ) : !hasWorkouts ? (
+                        <EmptyState
+                            icon={Dumbbell}
+                            title="No Workouts Yet"
+                            description="Start tracking your fitness journey by logging your first workout. Click the button below to get started!"
+                            actionLabel="Log First Workout"
+                            onAction={() => navigate('/log')}
+                        />
+                    ) : (
+                        <WorkoutHistoryList workouts={workoutLogs} />
+                    )}
                 </div>
 
                 <div className="space-y-6">

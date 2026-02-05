@@ -18,7 +18,7 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     let daysToLookBack = 7;
     let promoText = "";
 
-    if (reportType === 'daily') daysToLookBack = 1;
+    if (reportType === 'daily') daysToLookBack = 3; // Extended from 1 to 3 days to catch recent entries
     if (reportType === 'monthly') daysToLookBack = 30;
 
     const cutoffDate = new Date();
@@ -86,13 +86,41 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     const frequencyString = Object.entries(typeCount).map(([type, count]) => `${type}: ${count}`).join(', ') || "None";
     const keyLiftsString = Object.entries(keyLifts).map(([name, weight]) => `${name} (${weight}kg)`).join(', ') || "None detected";
 
-    // ------------------------
+    // Check if this is a fresh account (no workout data)
+    const isFreshAccount = relevantWorkouts.length === 0;
 
-    const dataString = `
+    // Build data string based on available data
+    let dataString = `
     User Name: ${displayName || "Athlete"}
     Scheduled Workout Days: ${workoutDays && workoutDays.length > 0 ? workoutDays.join(', ') : "Flexible"}
     Duration: Last ${daysToLookBack} Days
+    `;
+
+    if (isFreshAccount) {
+        // For fresh accounts, use only onboarding/profile data
+        const currentWeight = relevantWeights.length > 0 ? relevantWeights[relevantWeights.length - 1].weight : userProfile.currentWeight || 0;
+        const height = userProfile.height || 0;
+        const targetWeight = userProfile.targetWeight || 0;
+        const bmi = height > 0 ? ((currentWeight / ((height / 100) ** 2))).toFixed(1) : 0;
+
+        dataString += `
+    --- PROFILE DATA (Fresh Account - No Workout History Yet) ---
+    Current Weight: ${currentWeight > 0 ? currentWeight + 'kg' : 'Not provided'}
+    Height: ${height > 0 ? height + 'cm' : 'Not provided'}
+    BMI: ${bmi > 0 ? bmi : 'Not calculable'}
+    Target Weight: ${targetWeight > 0 ? targetWeight + 'kg' : 'Not set yet'}
     
+    NOTE: User has not logged any workouts yet. Provide starter recommendations based on their profile.
+        `;
+    } else {
+        // For existing users with workout data
+        // Always show most recent weight even if outside the filter window
+        const mostRecentWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1] : null;
+        const weightChange = relevantWeights.length >= 2
+            ? (relevantWeights[relevantWeights.length - 1].weight - relevantWeights[0].weight).toFixed(1)
+            : 0;
+
+        dataString += `
     --- METRICS ---
     Workouts Completed: ${relevantWorkouts.length}
     Split Breakdown: ${frequencyString}
@@ -102,12 +130,20 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     Top Lifts (Max Weight): ${keyLiftsString}
     
     --- BODY METRICS ---
-    Weight Entries: ${relevantWeights.length}
-    Latest Weight: ${relevantWeights.length > 0 ? relevantWeights[relevantWeights.length - 1].weight + 'kg' : 'No recent data'}
-    `;
+    Weight Entries (in ${daysToLookBack} days): ${relevantWeights.length}
+    Latest Weight: ${mostRecentWeight ? `${mostRecentWeight.weight}kg (recorded ${new Date(mostRecentWeight.date).toLocaleDateString()})` : 'No data'}
+    Weight Change (period): ${weightChange > 0 ? '+' : ''}${weightChange}kg
+        `;
+    }
 
     let specificInstruction = "";
-    if (reportType === 'daily') {
+    if (isFreshAccount) {
+        specificInstruction = `This user has not logged any workouts yet. Based on their profile data (height, weight, BMI, target weight), provide:
+        1. Encouragement to start their fitness journey
+        2. Beginner-friendly workout plan recommendations based on their goals
+        3. Tips for getting started with the SmartFit app
+        Keep it motivating and actionable. Don't mention lack of data negatively - focus on the exciting journey ahead.`;
+    } else if (reportType === 'daily') {
         specificInstruction = "Critique today's session (if any) and the most recent weight fluctuation. Be quick and punchy.";
     } else if (reportType === 'weekly') {
         specificInstruction = "Analyze volume trends and consistency over the last week. Give 3 actionable tips for next week.";

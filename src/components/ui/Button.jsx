@@ -9,11 +9,11 @@ export function Button({
     ...props
 }) {
     const variants = {
-        default: "bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm",
-        destructive: "bg-red-500 text-slate-50 hover:bg-red-500/90 shadow-sm",
-        outline: "border border-zinc-800 bg-transparent hover:bg-zinc-800 hover:text-slate-100",
-        secondary: "bg-zinc-800 text-slate-100 hover:bg-zinc-800/80",
-        ghost: "hover:bg-zinc-800 hover:text-slate-100",
+        default: "bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm btn-hover",
+        destructive: "bg-red-500 text-slate-50 hover:bg-red-500/90 shadow-sm btn-hover",
+        outline: "border border-zinc-800 bg-transparent hover:bg-zinc-800 hover:text-slate-100 btn-hover",
+        secondary: "bg-zinc-800 text-slate-100 hover:bg-zinc-800/80 btn-hover",
+        ghost: "hover:bg-zinc-800 hover:text-slate-100 btn-hover",
         link: "text-slate-100 underline-offset-4 hover:underline",
     };
 

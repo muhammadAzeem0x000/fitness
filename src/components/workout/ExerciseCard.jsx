@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '../ui/Card';
-import { History, Trophy } from 'lucide-react';
+import { History, Trophy, CheckCircle2, Check } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useToast } from '../../context/ToastContext';
 
@@ -8,6 +8,9 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
     const { toast } = useToast();
     const [showConfetti, setShowConfetti] = useState(false);
     const [prSetIndex, setPrSetIndex] = useState(null);
+
+    // Track which sets the user has actually touched/modified
+    const [touchedSets, setTouchedSets] = useState(new Set());
 
     // Initialize 3 sets by default, pre-filling from history if available
     const [sets, setSets] = useState(() => {
@@ -65,6 +68,9 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
         newSets[index] = { ...newSets[index], [field]: value };
         setSets(newSets);
 
+        // Mark this set as touched by the user
+        setTouchedSets(prev => new Set(prev).add(index));
+
         // Check for PR on weight change
         if (field === 'weight' && value) {
             const isPR = checkForPR(value);
@@ -79,6 +85,11 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                 }, 3000);
             }
         }
+    };
+
+    // Confirm a set without changing values
+    const confirmSet = (index) => {
+        setTouchedSets(prev => new Set(prev).add(index));
     };
 
     // Helper to format last session text
@@ -128,35 +139,57 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                     </div>
 
                     <div className="space-y-2">
-                        {sets.map((set, index) => (
-                            <div key={index} className="flex gap-2 items-center">
-                                <span className="text-xs font-mono text-zinc-500 w-8 shrink-0">#{index + 1}</span>
+                        {sets.map((set, index) => {
+                            const isComplete = set.weight && set.reps && touchedSets.has(index);
+                            const hasValues = set.weight && set.reps;
+                            const canConfirm = hasValues && !touchedSets.has(index);
 
-                                <div className="relative w-1/2">
+                            return (
+                                <div key={index} className={`flex gap-2 items-center transition-opacity ${isComplete ? 'opacity-100' : 'opacity-70'}`}>
+                                    <span className="text-xs font-mono text-zinc-500 w-8 shrink-0">#{index + 1}</span>
+
+                                    <div className="relative w-1/2">
+                                        <input
+                                            type="number"
+                                            placeholder="kg"
+                                            value={set.weight}
+                                            onChange={(e) => updateSet(index, 'weight', e.target.value)}
+                                            className={`w-full h-9 rounded-md border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-zinc-800'} bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow`}
+                                        />
+                                        {prSetIndex === index && set.weight && (
+                                            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg animate-bounce flex items-center gap-1">
+                                                <Trophy className="h-3 w-3" />
+                                                PR!
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <input
                                         type="number"
-                                        placeholder="kg"
-                                        value={set.weight}
-                                        onChange={(e) => updateSet(index, 'weight', e.target.value)}
-                                        className={`w-full h-9 rounded-md border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-zinc-800'} bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500`}
+                                        placeholder="reps"
+                                        value={set.reps}
+                                        onChange={(e) => updateSet(index, 'reps', e.target.value)}
+                                        className="w-1/2 h-9 rounded-md border border-zinc-800 bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow"
                                     />
-                                    {prSetIndex === index && set.weight && (
-                                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg animate-bounce flex items-center gap-1">
-                                            <Trophy className="h-3 w-3" />
-                                            PR!
-                                        </div>
+
+                                    {/* Confirm button or checkmark */}
+                                    {canConfirm ? (
+                                        <button
+                                            onClick={() => confirmSet(index)}
+                                            className="p-2 hover:bg-zinc-800 rounded transition-all border border-zinc-700 hover:border-green-500/50 group"
+                                            title="Confirm set with these values"
+                                            type="button"
+                                        >
+                                            <Check className="w-5 h-5 text-zinc-500 group-hover:text-green-500 transition-colors" />
+                                        </button>
+                                    ) : isComplete ? (
+                                        <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 animate-fade-in" />
+                                    ) : (
+                                        <div className="w-9 h-9" /> // Spacer
                                     )}
                                 </div>
-
-                                <input
-                                    type="number"
-                                    placeholder="reps"
-                                    value={set.reps}
-                                    onChange={(e) => updateSet(index, 'reps', e.target.value)}
-                                    className="w-1/2 h-9 rounded-md border border-zinc-800 bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
-                                />
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </CardContent>
             </Card>

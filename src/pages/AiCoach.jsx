@@ -10,6 +10,8 @@ import { useWeight } from '../hooks/useWeight';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { useProfile } from '../hooks/useProfile';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { SAMPLE_DAILY_REPORT, SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
+import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
 
 export function AiCoach() {
     const { user } = useAuth();
@@ -71,10 +73,16 @@ export function AiCoach() {
             // Find previous report of SAME type for context
             const previousReport = allReports.find(r => (r.report_type || 'weekly') === activeTab);
 
-            // Pass activeTab as reportType
+            // Get latest weight for fresh accounts
+            const latestWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : null;
+
+            // Pass activeTab as reportType with complete profile data
             const reportText = await generateHealthReport(weightHistory, workoutLogs, previousReport, activeTab, {
                 displayName: profile?.display_name,
-                workoutDays: profile?.workout_days
+                workoutDays: profile?.workout_days,
+                height: profile?.height,
+                currentWeight: latestWeight || profile?.current_weight,
+                targetWeight: profile?.target_weight
             });
 
             // Save to DB
@@ -235,6 +243,36 @@ export function AiCoach() {
                             </CardHeader>
                             <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:text-blue-100 prose-a:text-blue-400 prose-strong:text-white prose-li:text-zinc-300">
                                 <ReactMarkdown>{selectedReport.report_text}</ReactMarkdown>
+                            </CardContent>
+                        </Card>
+                    ) : historyList.length === 0 ? (
+                        // Show sample report for new users
+                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-slate-950">
+                            <CardHeader className="flex-none border-b border-zinc-800/50 bg-blue-500/5 py-4">
+                                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                                    {/* Mobile Back Button */}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-zinc-400"
+                                        onClick={() => setShowHistoryMobile(true)}
+                                    >
+                                        <ArrowLeft className="w-5 h-5" />
+                                    </Button>
+
+                                    <FileText className="h-5 w-5 text-blue-400 hidden md:block" />
+                                    Sample {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report
+                                    <span className="ml-auto px-2.5 py-1 text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-md">
+                                        Preview
+                                    </span>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:text-blue-100 prose-a:text-blue-400 prose-strong:text-white prose-li:text-zinc-300">
+                                <ReactMarkdown>
+                                    {activeTab === 'daily' ? SAMPLE_DAILY_REPORT :
+                                        activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT :
+                                            SAMPLE_MONTHLY_REPORT}
+                                </ReactMarkdown>
                             </CardContent>
                         </Card>
                     ) : (

@@ -2,12 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Share2, Plus } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ExerciseCard } from './ExerciseCard';
+import { RestTimer } from './RestTimer';
+import { WorkoutDurationTimer } from './WorkoutDurationTimer';
+import { ShareModal } from './ShareModal';
 import { useToast } from '../../context/ToastContext';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../hooks/useAuth';
 
 export function ActiveSessionView({ category, initialExercises, lastWorkout, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
     const [activeExercises, setActiveExercises] = useState([]);
     const [loggedData, setLoggedData] = useState({});
+    const [showRestTimer, setShowRestTimer] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareUrl, setShareUrl] = useState('');
+    const [workoutSummary, setWorkoutSummary] = useState('');
     const { toast } = useToast();
+    const { user } = useAuth();
 
     // Initialize State
     useEffect(() => {
@@ -53,29 +63,62 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
     };
 
     const handleShare = async () => {
-        let summary = `🔥 ${category} Workout on SmartFit!\n\n`;
+        // Build workout summary
+        let summary = `🔥 ${category} Workout\n\n`;
         activeExercises.forEach(name => {
             if (loggedData[name]) {
                 const sets = loggedData[name];
                 const maxWeight = Math.max(...sets.map(s => Number(s.weight) || 0));
-                summary += `💪 ${name}: ${sets.length} sets(Best: ${maxWeight}) \n`;
+                summary += `💪 ${name}: ${sets.length} sets (Best: ${maxWeight}kg)\n`;
             }
         });
 
         try {
-            if (navigator.share) {
-                await navigator.share({ title: 'Workout', text: summary });
-            } else {
+            // Try to save to database for shareable link
+            const shareId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+            const { data, error } = await supabase
+                .from('shared_workouts')
+                .insert({
+                    share_id: shareId,
+                    workout_type: category,
+                    exercises: loggedData,
+                    shared_by_name: user?.user_metadata?.full_name || user?.email || 'SmartFit User',
+                    user_id: user?.id
+                })
+                .select()
+                .single();
+
+            if (error) {
+                // Fallback: Just copy to clipboard if database not set up
+                console.log('Database not ready, copying to clipboard');
                 await navigator.clipboard.writeText(summary);
-                toast.success("Copied to clipboard");
+                toast.success("📋 Workout copied to clipboard!");
+                return;
             }
-        } catch (e) { console.error(e); }
+
+            // Success: Show share modal with link
+            const url = `${window.location.origin}/share/${shareId}`;
+            setShareUrl(url);
+            setWorkoutSummary(summary);
+            setShowShareModal(true);
+
+        } catch (e) {
+            console.error(e);
+            // Final fallback - copy to clipboard
+            try {
+                await navigator.clipboard.writeText(summary);
+                toast.success("📋 Workout copied to clipboard!");
+            } catch (clipErr) {
+                toast.error('Failed to share workout');
+            }
+        }
     };
 
     return (
         <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
             {/* Header (Fixed) */}
-            <div className="flex-none mb-4 space-y-2 border-b border-zinc-800/50 py-4">
+            <div className="flex-none mb-4 space-y-3 border-b border-zinc-800/50 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8">
@@ -92,6 +135,11 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
                     <Button variant="secondary" size="sm" onClick={handleShare} className="h-8">
                         <Share2 className="w-3.5 h-3.5 mr-1" /> Share
                     </Button>
+                </div>
+
+                {/* Workout Duration Timer */}
+                <div className="flex justify-center">
+                    <WorkoutDurationTimer />
                 </div>
             </div>
 
@@ -128,7 +176,14 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
             </div>
 
             {/* Footer Action (Fixed) */}
-            <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900 mt-auto">
+            <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900 mt-auto space-y-2">
+                <Button
+                    onClick={() => setShowRestTimer(!showRestTimer)}
+                    variant="outline"
+                    className="w-full"
+                >
+                    {showRestTimer ? 'Hide Rest Timer' : 'Start Rest Timer'}
+                </Button>
                 <Button
                     onClick={handleFinish}
                     className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 text-base font-semibold"
@@ -136,6 +191,17 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
                     <Save className="w-4 h-4 mr-2" /> Finish Workout
                 </Button>
             </div>
+
+            {/* Rest Timer */}
+            {showRestTimer && <RestTimer onClose={() => setShowRestTimer(false)} />}
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                shareUrl={shareUrl}
+                workoutSummary={workoutSummary}
+            />
         </div>
     );
 }
