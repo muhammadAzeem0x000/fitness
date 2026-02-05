@@ -16,17 +16,29 @@ export function Header() {
     const location = useLocation();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-    const NavLink = ({ to, icon: Icon, label }) => {
+    const NavLink = ({ to, icon: Icon, label, description, isPrimary }) => {
         const isActive = location.pathname === to;
         const baseClasses = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-300 disabled:pointer-events-none disabled:opacity-50 h-9 px-3 gap-2";
-        const stateClasses = isActive
-            ? "bg-zinc-800 text-slate-100 hover:bg-zinc-800/80"
-            : "hover:bg-zinc-800 hover:text-slate-100 text-zinc-400";
+
+        let stateClasses;
+        if (isPrimary) {
+            stateClasses = isActive
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-blue-600/90 text-white hover:bg-blue-600";
+        } else {
+            stateClasses = isActive
+                ? "bg-zinc-800 text-slate-100 hover:bg-zinc-800/80"
+                : "hover:bg-zinc-800 hover:text-slate-100 text-zinc-400";
+        }
 
         return (
-            <Link to={to} className={`${baseClasses} ${stateClasses} no-underline`}>
+            <Link
+                to={to}
+                className={`${baseClasses} ${stateClasses} no-underline`}
+                title={description}
+            >
                 <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{label}</span>
+                <span className="text-xs sm:text-sm">{label}</span>
             </Link>
         );
     };
@@ -40,9 +52,25 @@ export function Header() {
                 </Link>
 
                 <nav className="flex items-center gap-1 sm:gap-2">
-                    <NavLink to="/" icon={LayoutDashboard} label="Dashboard" />
-                    <NavLink to="/log" icon={PlusCircle} label="Log Workout" />
-                    <NavLink to="/ai-coach" icon={BrainCircuit} label="AI Coach" />
+                    <NavLink
+                        to="/"
+                        icon={LayoutDashboard}
+                        label="Dashboard"
+                        description="View your progress, stats, and workout history"
+                    />
+                    <NavLink
+                        to="/log"
+                        icon={PlusCircle}
+                        label="Log Workout"
+                        description="Record your workout sets and track progress"
+                        isPrimary={true}
+                    />
+                    <NavLink
+                        to="/ai-coach"
+                        icon={BrainCircuit}
+                        label="AI Coach"
+                        description="Get personalized AI insights and recommendations"
+                    />
                 </nav>
 
                 <div className="flex items-center gap-2 md:gap-4 ml-2">
