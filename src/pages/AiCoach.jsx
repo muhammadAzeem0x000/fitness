@@ -124,7 +124,7 @@ export function AiCoach() {
     const historyList = allReports.filter(r => (r.report_type || 'weekly') === activeTab);
 
     return (
-        <div className="flex flex-col h-full p-4 md:p-6 gap-4 md:gap-6 animate-in fade-in duration-500 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col h-full p-4 md:px-4 gap-4 md:gap-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto w-full">
             {/* Header (Fixed) */}
             <div className="flex-none flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>

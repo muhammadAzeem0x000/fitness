@@ -28,11 +28,11 @@ export function Layout({ children }) {
                 <Header />
             </div>
 
-            <main key={location.pathname} className={`flex-1 ${isFixedLayout ? 'overflow-hidden p-0' : 'overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-6 md:pb-8'}`}>
+            <main key={location.pathname} className={`flex-1 ${isFixedLayout ? 'overflow-hidden p-0' : 'overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-4 md:pb-8'}`}>
                 {isFixedLayout ? (
                     children
                 ) : (
-                    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+                    <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-8">
                         {children}
                     </div>
                 )}
