@@ -54,7 +54,7 @@ export function Dashboard() {
                     </>
                 ) : (
                     <>
-                        <StreakCard workouts={workoutLogs} />
+                        <StreakCard workouts={workoutLogs} workoutDays={profile?.workout_days || []} />
                         <PersonalRecords workouts={workoutLogs} />
                     </>
                 )}

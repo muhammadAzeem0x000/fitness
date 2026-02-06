@@ -2,14 +2,43 @@ import React, { useMemo } from 'react';
 import { Card, CardContent } from '../ui/Card';
 import { Flame, Calendar } from 'lucide-react';
 
-export function StreakCard({ workouts = [] }) {
+export function StreakCard({ workouts = [], workoutDays = [] }) {
     const streak = useMemo(() => {
+        console.log('=== STREAK CALCULATION DEBUG ===');
+        console.log('Total workouts:', workouts.length);
+        console.log('Workout days set:', workoutDays);
+
         if (workouts.length === 0) return { current: 0, longest: 0 };
+
+        // Helper: Get day name from date
+        const getDayName = (date) => {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[date.getDay()];
+        };
+
+        // Helper: Count scheduled workout days between two dates (exclusive of start, inclusive of end)
+        const countScheduledDaysBetween = (startDate, endDate, scheduledDays) => {
+            if (scheduledDays.length === 0) return Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+            let count = 0;
+            const current = new Date(startDate);
+            current.setDate(current.getDate() + 1); // Start from day after startDate
+
+            while (current <= endDate) {
+                if (scheduledDays.includes(getDayName(current))) {
+                    count++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            return count;
+        };
 
         // Sort workouts by date (newest first)
         const sortedWorkouts = [...workouts].sort((a, b) =>
             new Date(b.date) - new Date(a.date)
         );
+
+        console.log('Most recent 5 workouts:', sortedWorkouts.slice(0, 5).map(w => w.date));
 
         let currentStreak = 0;
         let longestStreak = 0;
@@ -17,14 +46,40 @@ export function StreakCard({ workouts = [] }) {
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        console.log('Today:', today.toDateString(), `(${getDayName(today)})`);
 
-        // Check if there's a workout today or yesterday for current streak
+        // Check if there's a workout on the most recent scheduled workout day
         const mostRecentDate = new Date(sortedWorkouts[0].date);
         mostRecentDate.setHours(0, 0, 0, 0);
+        console.log('Most recent workout:', mostRecentDate.toDateString(), `(${getDayName(mostRecentDate)})`);
 
-        const daysDiff = Math.floor((today - mostRecentDate) / (1000 * 60 * 60 * 24));
+        // Find the most recent scheduled workout day (looking back from today)
+        let mostRecentScheduledDay = new Date(today);
+        if (workoutDays.length > 0) {
+            // Go back from today to find the most recent day that's a scheduled workout day
+            while (!workoutDays.includes(getDayName(mostRecentScheduledDay))) {
+                mostRecentScheduledDay.setDate(mostRecentScheduledDay.getDate() - 1);
+                // Prevent infinite loop - stop if we go too far back
+                if (mostRecentScheduledDay < new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)) {
+                    mostRecentScheduledDay = new Date(today);
+                    break;
+                }
+            }
+        } else {
+            // If no workout days set, treat today as the target
+            mostRecentScheduledDay = today;
+        }
 
-        if (daysDiff <= 1) {
+        console.log('Most recent scheduled day:', mostRecentScheduledDay.toDateString(), `(${getDayName(mostRecentScheduledDay)})`);
+
+        // Check if user worked out recently enough for streak to be active
+        // We allow working out on the most recent scheduled day OR the one before it (1-day grace)
+        const missedScheduledDays = countScheduledDaysBetween(mostRecentDate, mostRecentScheduledDay, workoutDays);
+
+        console.log('Missed scheduled days between last workout and most recent scheduled day:', missedScheduledDays);
+        console.log('Streak active?', missedScheduledDays <= 1);
+
+        if (missedScheduledDays <= 1) {
             // Start counting current streak
             currentStreak = 1;
 
@@ -34,15 +89,19 @@ export function StreakCard({ workouts = [] }) {
                 currentDate.setHours(0, 0, 0, 0);
                 prevDate.setHours(0, 0, 0, 0);
 
-                const diff = Math.floor((currentDate - prevDate) / (1000 * 60 * 60 * 24));
+                const missedDays = countScheduledDaysBetween(prevDate, currentDate, workoutDays);
 
-                if (diff <= 1) {
+                if (missedDays <= 1) {
                     currentStreak++;
                 } else {
+                    console.log(`Streak broke between ${prevDate.toDateString()} and ${currentDate.toDateString()}, missed ${missedDays} scheduled days`);
                     break;
                 }
             }
         }
+
+        console.log('Final current streak:', currentStreak);
+        console.log('=== END DEBUG ===');
 
         // Calculate longest streak
         for (let i = 1; i < sortedWorkouts.length; i++) {
@@ -51,9 +110,9 @@ export function StreakCard({ workouts = [] }) {
             currentDate.setHours(0, 0, 0, 0);
             prevDate.setHours(0, 0, 0, 0);
 
-            const diff = Math.floor((currentDate - prevDate) / (1000 * 60 * 60 * 24));
+            const missedDays = countScheduledDaysBetween(prevDate, currentDate, workoutDays);
 
-            if (diff <= 1) {
+            if (missedDays <= 1) {
                 tempStreak++;
             } else {
                 longestStreak = Math.max(longestStreak, tempStreak);
@@ -63,7 +122,7 @@ export function StreakCard({ workouts = [] }) {
         longestStreak = Math.max(longestStreak, tempStreak);
 
         return { current: currentStreak, longest: longestStreak };
-    }, [workouts]);
+    }, [workouts, workoutDays]);
 
     return (
         <Card className="relative overflow-hidden">

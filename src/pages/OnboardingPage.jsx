@@ -78,7 +78,15 @@ const OnboardingPage = () => {
             const weightInKg = convertWeightToDb(data.currentWeight);
             const goalWeightInKg = convertWeightToDb(data.goalWeight);
 
-            // 1. Profile Upsert
+            // Determine workout days based on routine type
+            let workoutDaysForProfile = [];
+            if (routineType === 'default') {
+                workoutDaysForProfile = ['Monday', 'Tuesday', 'Wednesday'];
+            } else if (routineType === 'custom' && selectedDays.length > 0) {
+                workoutDaysForProfile = selectedDays;
+            }
+
+            // 1. Profile Upsert (NOW INCLUDES workout_days)
             const { error: profileError } = await supabase
                 .from('profiles')
                 .upsert({
@@ -86,6 +94,7 @@ const OnboardingPage = () => {
                     height: heightInCm,
                     current_weight: weightInKg,
                     goal_weight: goalWeightInKg,
+                    workout_days: workoutDaysForProfile,
                     updated_at: new Date().toISOString()
                 });
 
