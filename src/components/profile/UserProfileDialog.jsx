@@ -15,6 +15,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const { subscription, isPremium, isTrialing } = useSubscription();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [portalLoading, setPortalLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const { toast } = useToast();
 
@@ -298,20 +299,33 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                             size="sm"
                                             variant="outline"
                                             className="h-8 text-xs gap-1.5"
+                                            disabled={portalLoading}
                                             onClick={async () => {
                                                 try {
-                                                    setLoading(true);
-                                                    const { createPortalSession } = await import('../../lib/stripe');
-                                                    await createPortalSession(subscription?.stripe_customer_id);
+                                                    setPortalLoading(true);
+                                                    const { supabase } = await import('../../lib/supabase');
+
+                                                    // Call edge function to get portal URL
+                                                    const { data, error } = await supabase.functions.invoke('create-portal-session', {
+                                                        body: { customerId: subscription?.stripe_customer_id }
+                                                    });
+
+                                                    if (error) throw error;
+
+                                                    // Open in new tab
+                                                    if (data?.url) {
+                                                        window.open(data.url, '_blank');
+                                                    }
                                                 } catch (err) {
                                                     toast.error("Failed to open subscription portal");
                                                     console.error(err);
                                                 } finally {
-                                                    setLoading(false);
+                                                    setPortalLoading(false);
                                                 }
                                             }}
                                         >
-                                            Manage <ExternalLink className="w-3 h-3" />
+                                            {portalLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ExternalLink className="w-3 h-3" />}
+                                            Manage
                                         </Button>
                                     ) : (
                                         <Button
