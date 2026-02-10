@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Upload, LogOut, User, Check, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, Upload, LogOut, User, Check, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
+import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
@@ -10,6 +12,8 @@ import { useToast } from '../../context/ToastContext';
 export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
+    const { subscription, isPremium, isTrialing } = useSubscription();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const { toast } = useToast();
@@ -260,6 +264,69 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                     </Button>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Subscription Plan Section */}
+                        <div className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-950/30">
+                            <div className="p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <Crown className={`w-5 h-5 ${isPremium ? 'text-amber-400' : 'text-zinc-500'}`} />
+                                        <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Current Plan</h3>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${isPremium
+                                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                        : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                                        }`}>
+                                        {isPremium ? (subscription?.plan_id?.includes('yearly') ? 'Pro Yearly' : 'Pro Monthly') : 'Free'}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div className="text-xs text-zinc-400">
+                                        {isTrialing ? (
+                                            <span className="text-blue-400">Trial ends {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
+                                        ) : isPremium ? (
+                                            <span>Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
+                                        ) : (
+                                            <span>Upgrade to unlock premium features</span>
+                                        )}
+                                    </div>
+
+                                    {isPremium ? (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-8 text-xs gap-1.5"
+                                            onClick={async () => {
+                                                try {
+                                                    setLoading(true);
+                                                    const { createPortalSession } = await import('../../lib/stripe');
+                                                    await createPortalSession(subscription?.stripe_customer_id);
+                                                } catch (err) {
+                                                    toast.error("Failed to open subscription portal");
+                                                    console.error(err);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                        >
+                                            Manage <ExternalLink className="w-3 h-3" />
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            size="sm"
+                                            className="h-8 text-xs bg-blue-600 hover:bg-blue-500 gap-1.5"
+                                            onClick={() => {
+                                                onClose();
+                                                navigate('/pricing');
+                                            }}
+                                        >
+                                            Upgrade <Sparkles className="w-3 h-3" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Workout Days */}

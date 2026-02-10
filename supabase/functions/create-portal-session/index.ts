@@ -38,11 +38,14 @@ serve(async (req) => {
         }
 
         // Get customer ID
-        const { data: subscription } = await supabaseClient
+        const { data: subscriptions } = await supabaseClient
             .from('subscriptions')
             .select('stripe_customer_id')
             .eq('user_id', user.id)
-            .single()
+            .order('created_at', { ascending: false })
+            .limit(1)
+
+        const subscription = subscriptions?.[0]
 
         if (!subscription?.stripe_customer_id) {
             throw new Error('No subscription found')

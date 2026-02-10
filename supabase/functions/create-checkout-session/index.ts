@@ -72,9 +72,10 @@ serve(async (req) => {
             .from('subscriptions')
             .select('stripe_customer_id')
             .eq('user_id', user.id)
-            .single();
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-        let customerId = subscription?.stripe_customer_id;
+        let customerId = subscription?.[0]?.stripe_customer_id;
 
         // Create customer if needed
         if (!customerId) {
