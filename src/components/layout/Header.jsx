@@ -1,19 +1,22 @@
 import React from 'react';
-import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User } from 'lucide-react';
+import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserProfileDialog } from '../profile/UserProfileDialog';
 import { useState } from 'react';
+import { useSubscription } from '../../hooks/useSubscription';
 
 export function Header() {
     const { preferences, toggleWeightUnit } = useUserPreferences();
     const { user } = useAuth();
     const { profile } = useProfile(user?.id);
     const location = useLocation();
+    const navigate = useNavigate();
+    const { isPremium, isLoading: subLoading } = useSubscription();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     const NavLink = ({ to, icon: Icon, label, description, isPrimary }) => {
@@ -72,6 +75,17 @@ export function Header() {
                         description="Get personalized AI insights and recommendations"
                     />
                 </nav>
+
+                {/* Upgrade Button (Free Users Only) */}
+                {!isPremium && !subLoading && (
+                    <button
+                        onClick={() => navigate('/pricing')}
+                        className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all ml-4"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Upgrade to Pro
+                    </button>
+                )}
 
                 <div className="flex items-center gap-2 md:gap-4 ml-2">
                     {/* Unit Toggle */}

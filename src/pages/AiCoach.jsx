@@ -12,6 +12,9 @@ import { useProfile } from '../hooks/useProfile';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SAMPLE_DAILY_REPORT, SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
 import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
+import { useSubscription } from '../hooks/useSubscription';
+import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
+import { useNavigate } from 'react-router-dom';
 
 export function AiCoach() {
     const { user } = useAuth();
@@ -19,6 +22,8 @@ export function AiCoach() {
     const { workoutLogs } = useWorkouts(user?.id);
     const { profile } = useProfile(user?.id);
     const queryClient = useQueryClient();
+    const { isPremium, isLoading: subLoading } = useSubscription();
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false); // Keep for generation state
     const [selectedReport, setSelectedReport] = useState(null);
@@ -70,6 +75,20 @@ export function AiCoach() {
         setLoading(true);
         setError(null);
         try {
+            // Check if user is premium or has quota
+            if (!isPremium) {
+                // Check monthly quota for free users (1 report per month)
+                const monthlyQuota = await checkFeatureUsage(user.id, 'ai_report_total', 1, 30);
+
+                if (!monthlyQuota.allowed) {
+                    const resetDate = monthlyQuota.resetDate.toLocaleDateString();
+                    setError(
+                        `Free tier limit reached (1 AI report/month). Your quota resets on ${resetDate}. Upgrade to Pro for unlimited reports!`
+                    );
+                    setLoading(false);
+                    return;
+                }
+            }
             // Find previous report of SAME type for context
             const previousReport = allReports.find(r => (r.report_type || 'weekly') === activeTab);
 
@@ -101,6 +120,11 @@ export function AiCoach() {
 
             // Invalidate cache
             queryClient.invalidateQueries(['aiReports', user.id]);
+
+            // Increment usage count for free users
+            if (!isPremium) {
+                await incrementFeatureUsage(user.id, 'ai_report_total');
+            }
 
             // Set selection directly (instant feedback)
             setSelectedReport(data);
@@ -166,12 +190,25 @@ export function AiCoach() {
                 <div className={`${showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-1 flex-col h-full min-h-0 gap-4`}>
                     <Button
                         onClick={handleGenerateReport}
-                        disabled={loading}
+                        disabled={loading || subLoading}
                         className="flex-none w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20"
                     >
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
                         {loading ? 'Analyzing...' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
                     </Button>
+
+                    {/* Free tier usage indicator */}
+                    {!isPremium && !subLoading && (
+                        <div className="flex-none text-xs text-zinc-500 text-center px-2 py-2 bg-zinc-900/50 rounded border border-zinc-800">
+                            Free tier: 1 report/month
+                            <button
+                                onClick={() => navigate('/pricing')}
+                                className="ml-2 text-blue-400 hover:text-blue-300 underline"
+                            >
+                                Upgrade for unlimited
+                            </button>
+                        </div>
+                    )}
 
                     <div className="flex-1 min-h-0 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                         <div className="flex-none p-3 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">

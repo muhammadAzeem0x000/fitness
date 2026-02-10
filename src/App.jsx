@@ -6,6 +6,8 @@ const WorkoutLoggerPage = lazy(() => import('./pages/WorkoutLoggerPage').then(mo
 const AiCoach = lazy(() => import('./pages/AiCoach').then(module => ({ default: module.AiCoach })));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const SharedWorkout = lazy(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
+const Pricing = lazy(() => import('./pages/Pricing').then(module => ({ default: module.Pricing })));
+const Success = lazy(() => import('./pages/Success').then(module => ({ default: module.Success })));
 import LandingPage from './pages/LandingPage';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
@@ -119,6 +121,18 @@ const AppContent = () => {
             <Layout>
               <AiCoach />
             </Layout>
+          </RequireAuth>
+        } />
+
+        <Route path="/pricing" element={
+          <RequireAuth>
+            <Pricing />
+          </RequireAuth>
+        } />
+
+        <Route path="/success" element={
+          <RequireAuth>
+            <Success />
           </RequireAuth>
         } />
 

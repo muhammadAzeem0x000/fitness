@@ -16,6 +16,7 @@ import { useWorkouts } from '../hooks/useWorkouts';
 import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
 import { Dumbbell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { PremiumGate } from '../components/premium/PremiumGate';
 
 export function Dashboard() {
     const navigate = useNavigate();
@@ -45,35 +46,39 @@ export function Dashboard() {
         <div className="grid gap-6 animate-in fade-in duration-500">
             <StatsOverview stats={userStats} currentBMI={currentBMI} />
 
-            {/* Streak and PRs Row */}
-            <div className="grid md:grid-cols-2 gap-6">
-                {isLoading ? (
-                    <>
-                        <SkeletonCard />
-                        <SkeletonCard />
-                    </>
-                ) : (
-                    <>
-                        <StreakCard workouts={workoutLogs} workoutDays={profile?.workout_days || []} />
-                        <PersonalRecords workouts={workoutLogs} />
-                    </>
-                )}
-            </div>
+            {/* Streak and PRs Row - PREMIUM */}
+            <PremiumGate feature="streak tracking and personal records">
+                <div className="grid md:grid-cols-2 gap-6">
+                    {isLoading ? (
+                        <>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                        </>
+                    ) : (
+                        <>
+                            <StreakCard workouts={workoutLogs} workoutDays={profile?.workout_days || []} />
+                            <PersonalRecords workouts={workoutLogs} />
+                        </>
+                    )}
+                </div>
+            </PremiumGate>
 
-            {/* Charts Row */}
-            <div className="grid lg:grid-cols-2 gap-6">
-                {isLoading ? (
-                    <>
-                        <SkeletonChart />
-                        <SkeletonChart />
-                    </>
-                ) : (
-                    <>
-                        <WeightChart data={weightHistory} />
-                        <VolumeChart workouts={workoutLogs} />
-                    </>
-                )}
-            </div>
+            {/* Charts Row - PREMIUM */}
+            <PremiumGate feature="advanced progress charts">
+                <div className="grid lg:grid-cols-2 gap-6">
+                    {isLoading ? (
+                        <>
+                            <SkeletonChart />
+                            <SkeletonChart />
+                        </>
+                    ) : (
+                        <>
+                            <WeightChart data={weightHistory} />
+                            <VolumeChart workouts={workoutLogs} />
+                        </>
+                    )}
+                </div>
+            </PremiumGate>
 
             {/* Main Content + Sidebar */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
