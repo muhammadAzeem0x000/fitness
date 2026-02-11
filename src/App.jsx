@@ -1,6 +1,14 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { AnimatePresence } from 'framer-motion';
+import { PageTransition } from './components/ui/PageTransition';
+import { Auth } from './components/auth/Auth';
+import { useAuth } from './hooks/useAuth';
+import { useProfile } from './hooks/useProfile';
+import { UserPreferencesProvider } from './context/UserPreferencesContext';
+import LandingPage from './pages/LandingPage';
+
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const WorkoutLoggerPage = lazy(() => import('./pages/WorkoutLoggerPage').then(module => ({ default: module.WorkoutLoggerPage })));
 const AiCoach = lazy(() => import('./pages/AiCoach').then(module => ({ default: module.AiCoach })));
@@ -8,11 +16,6 @@ const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 const SharedWorkout = lazy(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
 const Pricing = lazy(() => import('./pages/Pricing').then(module => ({ default: module.Pricing })));
 const Success = lazy(() => import('./pages/Success').then(module => ({ default: module.Success })));
-import LandingPage from './pages/LandingPage';
-import { Auth } from './components/auth/Auth';
-import { useAuth } from './hooks/useAuth';
-import { useProfile } from './hooks/useProfile';
-import { UserPreferencesProvider } from './context/UserPreferencesContext';
 
 // Simple Loader Component
 const Loader = () => (
@@ -48,6 +51,23 @@ const PublicRoute = ({ children }) => {
   }
 
   return children;
+};
+
+// Persistent Layout Wrapper for Animations
+const ProtectedLayout = () => {
+  const location = useLocation();
+
+  return (
+    <RequireAuth>
+      <Layout>
+        <AnimatePresence mode="wait">
+          <PageTransition key={location.pathname} className="h-full">
+            <Outlet />
+          </PageTransition>
+        </AnimatePresence>
+      </Layout>
+    </RequireAuth>
+  );
 };
 
 // Onboarding Wrapper logic
@@ -93,46 +113,21 @@ const AppContent = () => {
           </PublicRoute>
         } />
 
-        {/* Protected Routes */}
+        {/* Protected Routes Wrapper - Persistent Layout */}
+        <Route element={<ProtectedLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/log" element={<WorkoutLoggerPage />} />
+          <Route path="/ai-coach" element={<AiCoach />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/success" element={<Success />} />
+        </Route>
+
+        {/* Onboarding - Separate because it might have different layout or no layout */}
         <Route path="/onboarding" element={
           <RequireAuth>
-            <OnboardingPage />
-          </RequireAuth>
-        } />
-
-        <Route path="/dashboard" element={
-          <RequireAuth>
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </RequireAuth>
-        } />
-
-        <Route path="/log" element={
-          <RequireAuth>
-            <Layout>
-              <WorkoutLoggerPage />
-            </Layout>
-          </RequireAuth>
-        } />
-
-        <Route path="/ai-coach" element={
-          <RequireAuth>
-            <Layout>
-              <AiCoach />
-            </Layout>
-          </RequireAuth>
-        } />
-
-        <Route path="/pricing" element={
-          <RequireAuth>
-            <Pricing />
-          </RequireAuth>
-        } />
-
-        <Route path="/success" element={
-          <RequireAuth>
-            <Success />
+            <PageTransition>
+              <OnboardingPage />
+            </PageTransition>
           </RequireAuth>
         } />
 
