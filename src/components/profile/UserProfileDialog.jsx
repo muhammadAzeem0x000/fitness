@@ -12,7 +12,7 @@ import { useToast } from '../../context/ToastContext';
 export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
-    const { subscription, isPremium, isTrialing } = useSubscription();
+    const { subscription, isPremium, isTrialing, isCanceled } = useSubscription();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [portalLoading, setPortalLoading] = useState(false);
@@ -285,7 +285,9 @@ export function UserProfileDialog({ isOpen, onClose }) {
 
                             <div className="flex items-center justify-between">
                                 <div className="text-xs text-zinc-400">
-                                    {isTrialing ? (
+                                    {isCanceled ? (
+                                        <span className="text-red-400">Canceled (Expires {new Date(subscription?.current_period_end).toLocaleDateString()})</span>
+                                    ) : isTrialing ? (
                                         <span className="text-blue-400">Trial ends {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
                                     ) : isPremium ? (
                                         <span>Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
