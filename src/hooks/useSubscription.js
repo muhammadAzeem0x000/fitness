@@ -7,10 +7,10 @@ import { useAuth } from './useAuth';
  * Returns subscription data and premium status
  */
 export function useSubscription() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const queryClient = useQueryClient();
 
-    const { data: subscription, isLoading, error } = useQuery({
+    const { data: subscription, isLoading: queryLoading, error } = useQuery({
         queryKey: ['subscription', user?.id],
         queryFn: async () => {
             if (!user) return null;
@@ -39,7 +39,7 @@ export function useSubscription() {
 
             return data[0];
         },
-        enabled: !!user,
+        enabled: !!user && !authLoading,
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
         refetchOnWindowFocus: false,
     });
@@ -59,7 +59,7 @@ export function useSubscription() {
         isPremium,
         isTrialing,
         isCanceled,
-        isLoading,
+        isLoading: authLoading || queryLoading,
         error,
         refreshSubscription,
     };

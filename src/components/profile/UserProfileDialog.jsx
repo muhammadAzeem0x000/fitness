@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '../../context/ToastContext';
+import { PasswordInput } from '../ui/PasswordInput';
 
 export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
@@ -262,15 +263,13 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                             className="overflow-hidden"
                                         >
                                             <div className="p-3 pt-0 space-y-2">
-                                                <input
-                                                    type="password"
+                                                <PasswordInput
                                                     value={newPassword}
                                                     onChange={(e) => setNewPassword(e.target.value)}
                                                     placeholder="New Password"
                                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
                                                 />
-                                                <input
-                                                    type="password"
+                                                <PasswordInput
                                                     value={confirmPassword}
                                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                                     placeholder="Confirm"

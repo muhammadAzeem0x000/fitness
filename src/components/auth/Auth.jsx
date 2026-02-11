@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, signupSchema } from '../../lib/schemas';
 import { useLocation } from 'react-router-dom';
+import { PasswordInput } from '../ui/PasswordInput';
 
 export function Auth() {
     const location = useLocation();
@@ -147,10 +148,9 @@ export function Auth() {
                                     {loginErrors.email && <p className="text-xs text-red-500 mt-1">{loginErrors.email.message}</p>}
                                 </div>
                                 <div>
-                                    <input
+                                    <PasswordInput
                                         {...registerLogin('password')}
                                         className={`flex h-10 w-full rounded-md border ${loginErrors.password ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                                        type="password"
                                         placeholder="Password"
                                     />
                                     {loginErrors.password && <p className="text-xs text-red-500 mt-1">{loginErrors.password.message}</p>}
@@ -199,19 +199,17 @@ export function Auth() {
                                     {signupErrors.email && <p className="text-xs text-red-500 mt-1">{signupErrors.email.message}</p>}
                                 </div>
                                 <div>
-                                    <input
+                                    <PasswordInput
                                         {...registerSignup('password')}
                                         className={`flex h-10 w-full rounded-md border ${signupErrors.password ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                                        type="password"
                                         placeholder="Password (min 6 chars)"
                                     />
                                     {signupErrors.password && <p className="text-xs text-red-500 mt-1">{signupErrors.password.message}</p>}
                                 </div>
                                 <div>
-                                    <input
+                                    <PasswordInput
                                         {...registerSignup('confirmPassword')}
                                         className={`flex h-10 w-full rounded-md border ${signupErrors.confirmPassword ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                                        type="password"
                                         placeholder="Confirm Password"
                                     />
                                     {signupErrors.confirmPassword && <p className="text-xs text-red-500 mt-1">{signupErrors.confirmPassword.message}</p>}
