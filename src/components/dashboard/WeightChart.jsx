@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useDeferredValue } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, ResponsiveContainer, Brush } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
@@ -32,12 +32,17 @@ export function WeightChart({ data }) {
     const visibleNodes = isMobile ? MOBILE_VISIBLE_NODES : DESKTOP_VISIBLE_NODES;
     const maxIndex = Math.max(0, chartData.length - visibleNodes);
     
-    const [currentIndex, setCurrentIndex] = useState(maxIndex);
+    // Use a continuous float value for the slider for completely smooth thumb movement
+    const [sliderValue, setSliderValue] = useState(maxIndex);
 
     // Keep slider at the rightmost edge when new data comes in
     useEffect(() => {
-        setCurrentIndex(maxIndex);
+        setSliderValue(maxIndex);
     }, [maxIndex]);
+
+    // Defer the value used to slice the chart data so the slider thumb never stutters
+    const deferredSliderValue = useDeferredValue(sliderValue);
+    const currentIndex = Math.round(deferredSliderValue);
 
     // Calculate fixed Y domain across all data so axis doesn't jump
     const yDomain = useMemo(() => {
@@ -124,8 +129,9 @@ export function WeightChart({ data }) {
                                 type="range"
                                 min="0"
                                 max={maxIndex}
-                                value={currentIndex}
-                                onChange={(e) => setCurrentIndex(parseInt(e.target.value))}
+                                step="any"
+                                value={sliderValue}
+                                onChange={(e) => setSliderValue(parseFloat(e.target.value))}
                                 className="w-full h-2 bg-zinc-800 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                                 style={{
                                     accentColor: '#3b82f6',
