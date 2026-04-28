@@ -47,9 +47,9 @@ export function WeightChart({ data }) {
                 </div>
             </CardHeader>
             <CardContent className="pl-0 sm:pl-2">
-                <div className="h-[300px] w-full min-w-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData} margin={{ top: 30, right: 30, left: 30, bottom: 5 }}>
+                <div className="h-[300px] w-full min-w-0 focus:outline-none" style={{ outline: 'none' }}>
+                    <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }}>
+                        <LineChart data={chartData} margin={{ top: 30, right: 30, left: 30, bottom: 5 }} style={{ outline: 'none' }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                             <XAxis
                                 dataKey="date"
@@ -70,7 +70,7 @@ export function WeightChart({ data }) {
                                 padding={{ top: 40, bottom: 10 }}
                             />
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', outline: 'none' }}
                                 itemStyle={{ color: '#e2e8f0' }}
                                 formatter={(value) => [`${value} ${formatWeightLabel()}`, 'Weight']}
                             />
@@ -81,6 +81,7 @@ export function WeightChart({ data }) {
                                 strokeWidth={2}
                                 dot={{ r: 4, fill: '#3b82f6' }}
                                 activeDot={{ r: 6 }}
+                                style={{ outline: 'none' }}
                             >
                                 <LabelList
                                     dataKey="weight"
@@ -98,10 +99,11 @@ export function WeightChart({ data }) {
                                 <Brush 
                                     dataKey="date" 
                                     height={30} 
-                                    stroke="#3f3f46"
-                                    fill="#18181b"
+                                    stroke="#3b82f6"
+                                    fill="#27272a"
                                     tickFormatter={() => ''}
                                     startIndex={startIndex}
+                                    style={{ outline: 'none' }}
                                 />
                             )}
                         </LineChart>

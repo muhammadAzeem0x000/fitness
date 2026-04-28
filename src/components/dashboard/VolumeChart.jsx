@@ -67,9 +67,9 @@ export function VolumeChart({ workouts }) {
                 <BarChart3 className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-                <div className="h-[200px] w-full mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={data} margin={{ top: 40, right: 20, left: 30, bottom: 5 }}>
+                <div className="h-[200px] w-full mt-4 focus:outline-none" style={{ outline: 'none' }}>
+                    <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }}>
+                        <LineChart data={data} margin={{ top: 40, right: 20, left: 30, bottom: 5 }} style={{ outline: 'none' }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                             <XAxis
                                 dataKey="date"
