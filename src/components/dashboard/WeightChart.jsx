@@ -30,9 +30,27 @@ export function WeightChart({ data }) {
     }, []);
 
     const visibleNodes = isMobile ? MOBILE_VISIBLE_NODES : DESKTOP_VISIBLE_NODES;
+    const maxIndex = Math.max(0, chartData.length - visibleNodes);
     
-    // Calculate the start index for the Brush so it always shows the latest 'visibleNodes' by default
-    const startIndex = Math.max(0, chartData.length - visibleNodes);
+    const [currentIndex, setCurrentIndex] = useState(maxIndex);
+
+    // Keep slider at the rightmost edge when new data comes in
+    useEffect(() => {
+        setCurrentIndex(maxIndex);
+    }, [maxIndex]);
+
+    // Calculate fixed Y domain across all data so axis doesn't jump
+    const yDomain = useMemo(() => {
+        if (chartData.length === 0) return ['auto', 'auto'];
+        const weights = chartData.map(d => parseFloat(d.weight)).filter(w => !isNaN(w));
+        if (weights.length === 0) return ['auto', 'auto'];
+        const min = Math.min(...weights);
+        const max = Math.max(...weights);
+        const padding = (max - min) * 0.15 || 5;
+        return [Math.floor(min - padding), Math.ceil(max + padding)];
+    }, [chartData]);
+
+    const visibleData = chartData.slice(currentIndex, currentIndex + visibleNodes);
 
     return (
         <Card className="col-span-full">
@@ -40,74 +58,85 @@ export function WeightChart({ data }) {
                 <div className="flex items-center justify-between">
                     <CardTitle>Weight Progress ({formatWeightLabel()})</CardTitle>
                     {chartData.length > visibleNodes && (
-                        <span className="text-[10px] text-zinc-500">
-                            Use slider below to see older data
+                        <span className="text-[10px] text-zinc-400 bg-zinc-800/50 px-2 py-1 rounded-full border border-zinc-700/50">
+                            Swipe or drag slider for history
                         </span>
                     )}
                 </div>
             </CardHeader>
             <CardContent className="pl-0 sm:pl-2">
-                <div className="h-[300px] w-full min-w-0 focus:outline-none" style={{ outline: 'none' }}>
-                    <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }}>
-                        <LineChart data={chartData} margin={{ top: 30, right: 30, left: 30, bottom: 5 }} style={{ outline: 'none' }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                            <XAxis
-                                dataKey="date"
-                                stroke="#71717a"
-                                fontSize={10}
-                                tick={{ fontSize: 10 }}
-                                tickLine={false}
-                                axisLine={false}
-                                minTickGap={30}
-                            />
-                            <YAxis
-                                stroke="#71717a"
-                                fontSize={10}
-                                tick={{ fontSize: 10 }}
-                                tickLine={false}
-                                axisLine={false}
-                                domain={['auto', 'auto']}
-                                padding={{ top: 40, bottom: 10 }}
-                            />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', outline: 'none' }}
-                                itemStyle={{ color: '#e2e8f0' }}
-                                formatter={(value) => [`${value} ${formatWeightLabel()}`, 'Weight']}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="weight"
-                                stroke="#3b82f6"
-                                strokeWidth={2}
-                                dot={{ r: 4, fill: '#3b82f6' }}
-                                activeDot={{ r: 6 }}
-                                style={{ outline: 'none' }}
-                            >
-                                <LabelList
-                                    dataKey="weight"
-                                    position="top"
-                                    offset={10}
-                                    className="text-[10px] font-medium"
-                                    fill="#ffffff"
+                <div className="flex flex-col gap-4">
+                    <div className="h-[260px] w-full min-w-0 focus:outline-none" style={{ outline: 'none' }}>
+                        <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }}>
+                            <LineChart data={visibleData} margin={{ top: 30, right: 30, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                                <XAxis
+                                    dataKey="date"
+                                    stroke="#71717a"
                                     fontSize={10}
-                                    fontWeight={500}
-                                    formatter={(value) => `${value} ${formatWeightLabel()}`}
+                                    tick={{ fontSize: 10 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    minTickGap={30}
                                 />
-                            </Line>
-                            
-                            {chartData.length > visibleNodes && (
-                                <Brush 
-                                    dataKey="date" 
-                                    height={30} 
+                                <YAxis
+                                    stroke="#71717a"
+                                    fontSize={10}
+                                    tick={{ fontSize: 10 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    domain={yDomain}
+                                    padding={{ top: 40, bottom: 10 }}
+                                />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', outline: 'none' }}
+                                    itemStyle={{ color: '#e2e8f0' }}
+                                    formatter={(value) => [`${value} ${formatWeightLabel()}`, 'Weight']}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="weight"
                                     stroke="#3b82f6"
-                                    fill="#27272a"
-                                    tickFormatter={() => ''}
-                                    startIndex={startIndex}
+                                    strokeWidth={2}
+                                    dot={{ r: 4, fill: '#3b82f6' }}
+                                    activeDot={{ r: 6 }}
                                     style={{ outline: 'none' }}
-                                />
-                            )}
-                        </LineChart>
-                    </ResponsiveContainer>
+                                >
+                                    <LabelList
+                                        dataKey="weight"
+                                        position="top"
+                                        offset={10}
+                                        className="text-[10px] font-medium"
+                                        fill="#ffffff"
+                                        fontSize={10}
+                                        fontWeight={500}
+                                        formatter={(value) => `${value} ${formatWeightLabel()}`}
+                                    />
+                                </Line>
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Custom History Slider */}
+                    {chartData.length > visibleNodes && (
+                        <div className="px-8 pb-2">
+                            <input
+                                type="range"
+                                min="0"
+                                max={maxIndex}
+                                value={currentIndex}
+                                onChange={(e) => setCurrentIndex(parseInt(e.target.value))}
+                                className="w-full h-2 bg-zinc-800 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                style={{
+                                    accentColor: '#3b82f6',
+                                }}
+                            />
+                            <div className="flex justify-between mt-2 text-[10px] text-zinc-500 px-1">
+                                <span>Older</span>
+                                <span>Newer</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </CardContent>
         </Card>
