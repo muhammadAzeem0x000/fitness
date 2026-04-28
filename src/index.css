@@ -16,6 +16,15 @@
   * {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Disable focus outlines on Recharts elements globally */
+  .recharts-wrapper, 
+  .recharts-surface, 
+  .recharts-tooltip-wrapper, 
+  .recharts-responsive-container,
+  .recharts-default-tooltip {
+    outline: none !important;
+  }
 }
 
 @layer components {
