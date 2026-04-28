@@ -87,30 +87,27 @@ export function Header() {
                     </button>
                 )}
 
-                <div className="flex items-center gap-2 md:gap-4 ml-2">
+                <div className="flex items-center gap-3 md:gap-4 ml-2">
                     {/* Unit Toggle */}
-                    <Button
-                        variant="ghost"
-                        size="sm"
+                    <button
                         onClick={toggleWeightUnit}
-                        className="text-zinc-400 hover:text-white text-xs md:text-sm px-2 font-mono"
+                        className="flex items-center justify-center rounded-full bg-zinc-800/60 border border-zinc-700/80 px-3 h-8 text-xs font-medium text-zinc-300 transition-all hover:bg-zinc-700 hover:text-white hover:border-zinc-600 shadow-sm backdrop-blur-sm"
                         title="Toggle Weight Unit"
                     >
-                        {preferences.weightUnit === 'kg' ? 'KG / FT' : 'LBS / CM'}
-                    </Button>
+                        <span className="font-mono tracking-wider">{preferences.weightUnit === 'kg' ? 'KG / FT' : 'LBS / CM'}</span>
+                    </button>
 
                     {/* Profile Trigger */}
                     <button
                         onClick={() => setIsProfileOpen(true)}
-                        className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 hover:ring-offset-slate-900 transition-all"
+                        className="relative w-9 h-9 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-zinc-600 overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 hover:ring-offset-slate-900 shadow-sm transition-all group"
                     >
                         {profile?.avatar_url ? (
-                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                         ) : (
-                            <User className="w-5 h-5 text-zinc-400" />
+                            <User className="w-4 h-4 text-zinc-300 group-hover:text-white transition-colors" />
                         )}
                     </button>
-
                 </div>
             </div>
 
