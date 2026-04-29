@@ -70,12 +70,13 @@ serve(async (req) => {
         // Check for existing customer
         const { data: subscription } = await supabaseAdmin
             .from('subscriptions')
-            .select('stripe_customer_id')
+            .select('stripe_customer_id, stripe_subscription_id, status')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1);
 
         let customerId = subscription?.[0]?.stripe_customer_id;
+        const hasUsedTrial = !!subscription?.[0]?.stripe_subscription_id;
 
         // Create customer if needed
         if (!customerId) {
@@ -95,7 +96,18 @@ serve(async (req) => {
                 });
         }
 
-        console.log('Creating Stripe checkout session');
+        console.log('Creating Stripe checkout session, hasUsedTrial:', hasUsedTrial);
+
+        // Build subscription_data — only give trial to first-time users
+        const subscriptionData: Record<string, unknown> = {
+            metadata: { user_id: user.id },
+        };
+        if (!hasUsedTrial) {
+            subscriptionData.trial_period_days = 7;
+            console.log('🆕 First-time user, adding 7-day trial');
+        } else {
+            console.log('🔄 Returning user, skipping trial — direct payment');
+        }
 
         // Create checkout session
         const session = await stripe.checkout.sessions.create({
@@ -106,10 +118,7 @@ serve(async (req) => {
             success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}/pricing`,
             metadata: { user_id: user.id },
-            subscription_data: {
-                metadata: { user_id: user.id },
-                trial_period_days: 7,
-            },
+            subscription_data: subscriptionData,
         });
 
         console.log('✅ Session created:', session.id);

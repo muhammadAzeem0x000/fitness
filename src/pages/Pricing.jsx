@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Check, Sparkles, Zap, TrendingUp, Lock } from 'lucide-react';
+import { Check, Sparkles, Zap, TrendingUp, Lock, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 import { supabase } from '../lib/supabase';
@@ -10,9 +10,15 @@ import { getStripe } from '../lib/stripe';
 export function Pricing() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { isPremium, isLoading: subLoading } = useSubscription();
+    const { subscription, isPremium, isTrialExpired, isTrialing, isLoading: subLoading } = useSubscription();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Determine if user has already used a trial (expired trial, or any non-inactive/non-free subscription)
+    const hasUsedTrial = isTrialExpired ||
+        subscription?.status === 'canceled' ||
+        subscription?.status === 'past_due' ||
+        (subscription?.stripe_subscription_id && subscription?.status !== 'inactive');
 
     const handleSubscribe = async (priceId) => {
         if (!user) {
@@ -81,6 +87,30 @@ export function Pricing() {
         }
     };
 
+    // Determine CTA labels and states based on subscription status
+    const getProCta = (planInterval) => {
+        if (isPremium && isTrialing) return 'Currently Trialing';
+        if (isPremium) {
+            // Check if this is the current plan
+            const isCurrentPlan = planInterval === 'month'
+                ? !subscription?.plan_id?.includes('yearly')
+                : subscription?.plan_id?.includes('yearly');
+            return isCurrentPlan ? 'Current Plan' : 'Switch Plan';
+        }
+        if (hasUsedTrial) return 'Subscribe Now';
+        return 'Start Free Trial';
+    };
+
+    const isProDisabled = (planInterval) => {
+        if (isPremium) {
+            const isCurrentPlan = planInterval === 'month'
+                ? !subscription?.plan_id?.includes('yearly')
+                : subscription?.plan_id?.includes('yearly');
+            return isCurrentPlan; // Disable only if it's their current plan
+        }
+        return false;
+    };
+
     const plans = [
         {
             name: 'Free',
@@ -119,7 +149,8 @@ export function Pricing() {
                 'Custom routine builder',
                 'Priority support',
             ],
-            cta: isPremium ? 'Current Plan' : 'Start Free Trial',
+            cta: getProCta('month'),
+            disabled: isProDisabled('month'),
             badge: 'Most Popular',
         },
         {
@@ -135,7 +166,8 @@ export function Pricing() {
                 'Annual billing',
                 'Best value option',
             ],
-            cta: isPremium ? 'Switch Plan' : 'Start Free Trial',
+            cta: getProCta('year'),
+            disabled: isProDisabled('year'),
             badge: 'Best Value',
         },
     ];
@@ -156,17 +188,41 @@ export function Pricing() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 {/* Header Section */}
                 <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
-                        <Sparkles className="w-4 h-4" />
-                        7-Day Free Trial • No Credit Card Required Upfront
-                    </div>
+                    {/* Show trial expired banner if applicable */}
+                    {isTrialExpired && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium mb-6">
+                            <AlertTriangle className="w-4 h-4" />
+                            Your free trial has ended — Subscribe to continue using Pro features
+                        </div>
+                    )}
+
+                    {/* Show free trial banner only for users who haven't used a trial yet */}
+                    {!hasUsedTrial && !isPremium && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+                            <Sparkles className="w-4 h-4" />
+                            7-Day Free Trial • No Credit Card Required Upfront
+                        </div>
+                    )}
+
+                    {/* Show active trial banner if currently trialing */}
+                    {isTrialing && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+                            <Sparkles className="w-4 h-4" />
+                            You're on a free trial — Ends {new Date(subscription?.current_period_end).toLocaleDateString()}
+                        </div>
+                    )}
 
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">
                         Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Fitness Plan</span>
                     </h1>
 
                     <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-                        Start free and upgrade anytime to unlock AI-powered coaching and advanced analytics
+                        {isTrialExpired
+                            ? 'Your trial is over — pick a plan to keep unlocking your full potential'
+                            : hasUsedTrial
+                                ? 'Subscribe to unlock AI-powered coaching and advanced analytics'
+                                : 'Start free and upgrade anytime to unlock AI-powered coaching and advanced analytics'
+                        }
                     </p>
                 </div>
 
@@ -235,10 +291,12 @@ export function Pricing() {
                             {/* CTA Button */}
                             <Button
                                 onClick={() => plan.priceId && handleSubscribe(plan.priceId)}
-                                disabled={plan.disabled || (isPremium && index === 0) || loading || subLoading}
-                                className={`w-full ${plan.popular
-                                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400'
-                                    : 'bg-zinc-800 hover:bg-zinc-700'
+                                disabled={plan.disabled || loading || subLoading}
+                                className={`w-full ${plan.disabled
+                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                    : plan.popular
+                                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400'
+                                        : 'bg-zinc-800 hover:bg-zinc-700'
                                     }`}
                                 size="lg"
                             >
