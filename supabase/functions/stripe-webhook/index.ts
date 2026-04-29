@@ -47,17 +47,27 @@ serve(async (req) => {
                     break
                 }
 
-                // Update subscription record
+                // Fetch the actual subscription from Stripe to get real status
+                // (could be 'trialing' for new users or 'active' for returning users)
+                const stripeSubscription = await stripe.subscriptions.retrieve(
+                    session.subscription as string
+                )
+
+                // Update subscription record with real status from Stripe
                 await supabaseAdmin
                     .from('subscriptions')
                     .update({
                         stripe_subscription_id: session.subscription as string,
-                        status: 'trialing', // Will be 'trialing' initially due to trial period
+                        status: stripeSubscription.status,
+                        plan_id: stripeSubscription.items.data[0]?.price.id,
+                        current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
+                        current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+                        cancel_at_period_end: stripeSubscription.cancel_at_period_end,
                         updated_at: new Date().toISOString(),
                     })
                     .eq('user_id', userId)
 
-                console.log(`Checkout completed for user ${userId}`)
+                console.log(`Checkout completed for user ${userId}, status: ${stripeSubscription.status}`)
                 break
             }
 
