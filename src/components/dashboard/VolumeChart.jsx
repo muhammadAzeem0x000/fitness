@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LabelList } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { TrendingUp, BarChart3 } from 'lucide-react';
@@ -6,6 +6,7 @@ import { useUserPreferences } from '../../context/UserPreferencesContext';
 
 export function VolumeChart({ workouts }) {
     const { formatWeightLabel } = useUserPreferences();
+    const chartContainerRef = useRef(null);
     const data = useMemo(() => {
         if (!workouts || workouts.length === 0) return [];
 
@@ -39,6 +40,25 @@ export function VolumeChart({ workouts }) {
         }).slice(-10); // Show last 10 sessions
     }, [workouts]);
 
+    // Remove tabindex="0" that Recharts injects at runtime
+    // This is the root cause of white focus borders on click/tap
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const removeFocusRings = () => {
+            const focusableElements = container.querySelectorAll('[tabindex="0"]');
+            focusableElements.forEach(el => {
+                el.setAttribute('tabindex', '-1');
+            });
+        };
+
+        removeFocusRings();
+        const observer = new MutationObserver(removeFocusRings);
+        observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
+        return () => observer.disconnect();
+    }, [data]);
+
     if (!workouts || workouts.length === 0) return null;
 
     const CustomLabel = (props) => {
@@ -67,8 +87,8 @@ export function VolumeChart({ workouts }) {
                 <BarChart3 className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-                <div className="h-[200px] w-full mt-4 focus:outline-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
-                    <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }} tabIndex={-1}>
+                <div ref={chartContainerRef} className="h-[200px] w-full mt-4" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
+                    <ResponsiveContainer width="100%" height="100%" style={{ outline: 'none' }} tabIndex={-1}>
                         <LineChart data={data} margin={{ top: 40, right: 20, left: 30, bottom: 5 }} style={{ outline: 'none' }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                             <XAxis

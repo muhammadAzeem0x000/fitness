@@ -17,22 +17,28 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Disable focus outlines on Recharts elements globally */
-  .recharts-wrapper, 
-  .recharts-surface, 
-  .recharts-tooltip-wrapper, 
+  /* Disable ALL focus outlines on Recharts elements globally.
+     Recharts injects tabindex="0" on its wrapper at runtime,
+     which triggers browser-native focus rings on click/tap. */
+  .recharts-wrapper,
+  .recharts-wrapper *,
+  .recharts-wrapper [tabindex],
+  .recharts-surface,
+  .recharts-tooltip-wrapper,
   .recharts-responsive-container,
-  .recharts-default-tooltip {
-    outline: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-  }
-  
-  .recharts-surface:focus,
-  .recharts-surface:active,
+  .recharts-default-tooltip,
   .recharts-wrapper:focus,
   .recharts-wrapper:active,
-  .recharts-wrapper * {
+  .recharts-wrapper:focus-within,
+  .recharts-wrapper:focus-visible,
+  .recharts-surface:focus,
+  .recharts-surface:active,
+  .recharts-surface:focus-visible,
+  .recharts-wrapper [tabindex]:focus,
+  .recharts-wrapper [tabindex]:active,
+  .recharts-wrapper [tabindex]:focus-visible {
     outline: none !important;
+    box-shadow: none !important;
     -webkit-tap-highlight-color: transparent !important;
   }
 }

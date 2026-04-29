@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect, useRef, useDeferredValue } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, ResponsiveContainer, Brush } from 'recharts';
+import React, { useMemo, useState, useEffect, useRef, useDeferredValue, useCallback } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 
@@ -10,6 +10,7 @@ const MOBILE_BREAKPOINT = 768;
 export function WeightChart({ data }) {
     const { displayWeight, formatWeightLabel } = useUserPreferences();
     const [isMobile, setIsMobile] = useState(false);
+    const chartContainerRef = useRef(null);
     
     // Convert data for the chart
     const chartData = useMemo(() => {
@@ -28,6 +29,26 @@ export function WeightChart({ data }) {
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    // Remove tabindex="0" that Recharts injects at runtime
+    // This is the root cause of white focus borders on click/tap
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const removeFocusRings = () => {
+            const focusableElements = container.querySelectorAll('[tabindex="0"]');
+            focusableElements.forEach(el => {
+                el.setAttribute('tabindex', '-1');
+            });
+        };
+
+        // Run immediately and also observe DOM changes (Recharts re-renders)
+        removeFocusRings();
+        const observer = new MutationObserver(removeFocusRings);
+        observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
+        return () => observer.disconnect();
+    }, [chartData]);
 
     const visibleNodes = isMobile ? MOBILE_VISIBLE_NODES : DESKTOP_VISIBLE_NODES;
     const maxIndex = Math.max(0, chartData.length - visibleNodes);
@@ -71,7 +92,7 @@ export function WeightChart({ data }) {
             </CardHeader>
             <CardContent className="pl-0 sm:pl-2">
                 <div className="flex flex-col gap-4">
-                    <div className="h-[260px] w-full min-w-0 focus:outline-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
+                    <div ref={chartContainerRef} className="h-[260px] w-full min-w-0" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
                         <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }} tabIndex={-1}>
                             <LineChart data={visibleData} margin={{ top: 30, right: 30, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
