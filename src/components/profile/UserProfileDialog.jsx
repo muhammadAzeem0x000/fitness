@@ -14,7 +14,7 @@ import { PasswordInput } from '../ui/PasswordInput';
 export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
-    const { subscription, isPremium, isTrialing, isCanceled } = useSubscription();
+    const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [portalLoading, setPortalLoading] = useState(false);
@@ -298,18 +298,28 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                             <Crown className={`w-5 h-5 ${isPremium ? 'text-amber-400' : 'text-zinc-500'}`} />
                                             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Current Plan</h3>
                                         </div>
-                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${isPremium
-                                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${isTrialExpired
+                                            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                            : isPremium
+                                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                                : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
                                             }`}>
-                                            {isPremium ? (subscription?.plan_id?.includes('yearly') ? 'Pro Yearly' : 'Pro Monthly') : 'Free'}
+                                            {isTrialExpired ? 'Trial Expired' : isPremium ? (subscription?.plan_id?.includes('yearly') ? 'Pro Yearly' : 'Pro Monthly') : 'Free'}
                                         </span>
                                     </div>
+
+                                    {isTrialExpired && (
+                                        <div className="mb-2 p-2.5 rounded-lg bg-red-500/10 border border-red-500/20">
+                                            <p className="text-xs text-red-400 font-medium">Your free trial has ended. Subscribe now to keep using Pro features.</p>
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center justify-between">
                                         <div className="text-xs text-zinc-400">
                                             {isCanceled ? (
                                                 <span className="text-red-400">Canceled (Expires {new Date(subscription?.current_period_end).toLocaleDateString()})</span>
+                                            ) : isTrialExpired ? (
+                                                <span className="text-red-400">Expired on {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
                                             ) : isTrialing ? (
                                                 <span className="text-blue-400">Trial ends {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
                                             ) : isPremium ? (
@@ -319,7 +329,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                             )}
                                         </div>
 
-                                        {isPremium ? (
+                                        {isPremium && !isTrialExpired ? (
                                             <Button
                                                 size="sm"
                                                 variant="outline"
@@ -355,13 +365,13 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                         ) : (
                                             <Button
                                                 size="sm"
-                                                className="h-8 text-xs bg-blue-600 hover:bg-blue-500 gap-1.5"
+                                                className={`h-8 text-xs gap-1.5 ${isTrialExpired ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}
                                                 onClick={() => {
                                                     onClose();
                                                     navigate('/pricing');
                                                 }}
                                             >
-                                                Upgrade <Sparkles className="w-3 h-3" />
+                                                {isTrialExpired ? 'Subscribe Now' : 'Upgrade'} <Sparkles className="w-3 h-3" />
                                             </Button>
                                         )}
                                     </div>

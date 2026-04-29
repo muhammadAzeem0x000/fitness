@@ -90,7 +90,15 @@ export async function getSubscription(userId) {
  */
 export async function isPremiumUser(userId) {
     const subscription = await getSubscription(userId);
-    return subscription?.status === 'active' || subscription?.status === 'trialing';
+    if (subscription?.status === 'active') return true;
+    if (subscription?.status === 'trialing') {
+        // Check if trial has actually expired
+        if (subscription.current_period_end) {
+            return new Date(subscription.current_period_end) > new Date();
+        }
+        return true; // No end date stored yet, assume still valid
+    }
+    return false;
 }
 
 /**

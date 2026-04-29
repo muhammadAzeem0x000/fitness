@@ -40,13 +40,28 @@ export function useSubscription() {
             return data[0];
         },
         enabled: !!user && !authLoading,
-        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 1, // Cache for 1 minute (reduced for faster trial expiry detection)
+        refetchOnWindowFocus: true, // Re-check when user returns to the app
+        refetchInterval: 1000 * 60 * 2, // Also poll every 2 minutes to catch trial expiry
     });
 
-    // Compute premium status
-    const isPremium = subscription?.status === 'active' || subscription?.status === 'trialing';
-    const isTrialing = subscription?.status === 'trialing';
+    // Check if the trial period has actually expired based on current_period_end
+    const isTrialExpired = (() => {
+        if (subscription?.status !== 'trialing') return false;
+        if (!subscription?.current_period_end) return false;
+        const periodEnd = new Date(subscription.current_period_end);
+        return periodEnd < new Date();
+    })();
+
+    // Compute premium status — a trialing subscription is only premium if
+    // the trial period hasn't expired yet
+    const isPremium = (() => {
+        if (subscription?.status === 'active') return true;
+        if (subscription?.status === 'trialing' && !isTrialExpired) return true;
+        return false;
+    })();
+
+    const isTrialing = subscription?.status === 'trialing' && !isTrialExpired;
     const isCanceled = subscription?.cancel_at_period_end === true;
 
     // Helper to invalidate cache (call after subscription changes)
@@ -58,6 +73,7 @@ export function useSubscription() {
         subscription,
         isPremium,
         isTrialing,
+        isTrialExpired,
         isCanceled,
         isLoading: authLoading || queryLoading,
         error,
