@@ -67,8 +67,8 @@ export function VolumeChart({ workouts }) {
                 <BarChart3 className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-                <div className="h-[200px] w-full mt-4 focus:outline-none" style={{ outline: 'none' }}>
-                    <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }}>
+                <div className="h-[200px] w-full mt-4 focus:outline-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
+                    <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }} tabIndex={-1}>
                         <LineChart data={data} margin={{ top: 40, right: 20, left: 30, bottom: 5 }} style={{ outline: 'none' }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                             <XAxis
@@ -88,11 +88,13 @@ export function VolumeChart({ workouts }) {
                                 padding={{ top: 60, bottom: 0 }}
                             />
                             <Tooltip
+                                cursor={{ stroke: '#27272a', strokeWidth: 1, strokeDasharray: '3 3' }}
                                 contentStyle={{
                                     backgroundColor: '#09090b',
                                     border: '1px solid #27272a',
                                     borderRadius: '8px',
-                                    fontSize: '12px'
+                                    fontSize: '12px',
+                                    outline: 'none'
                                 }}
                                 formatter={(value) => [value.toLocaleString(), 'Volume']}
                                 labelStyle={{ color: '#a1a1aa' }}

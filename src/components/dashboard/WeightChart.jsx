@@ -71,8 +71,8 @@ export function WeightChart({ data }) {
             </CardHeader>
             <CardContent className="pl-0 sm:pl-2">
                 <div className="flex flex-col gap-4">
-                    <div className="h-[260px] w-full min-w-0 focus:outline-none" style={{ outline: 'none' }}>
-                        <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }}>
+                    <div className="h-[260px] w-full min-w-0 focus:outline-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
+                        <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }} tabIndex={-1}>
                             <LineChart data={visibleData} margin={{ top: 30, right: 30, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                                 <XAxis
@@ -94,6 +94,7 @@ export function WeightChart({ data }) {
                                     padding={{ top: 40, bottom: 10 }}
                                 />
                                 <Tooltip
+                                    cursor={{ stroke: '#27272a', strokeWidth: 1, strokeDasharray: '3 3' }}
                                     contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', outline: 'none' }}
                                     itemStyle={{ color: '#e2e8f0' }}
                                     formatter={(value) => [`${value} ${formatWeightLabel()}`, 'Weight']}

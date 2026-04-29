@@ -24,6 +24,16 @@
   .recharts-responsive-container,
   .recharts-default-tooltip {
     outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  .recharts-surface:focus,
+  .recharts-surface:active,
+  .recharts-wrapper:focus,
+  .recharts-wrapper:active,
+  .recharts-wrapper * {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 }
 
