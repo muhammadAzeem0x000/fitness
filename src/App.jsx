@@ -9,13 +9,35 @@ import { useProfile } from './hooks/useProfile';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
 
-const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
-const WorkoutLoggerPage = lazy(() => import('./pages/WorkoutLoggerPage').then(module => ({ default: module.WorkoutLoggerPage })));
-const AiCoach = lazy(() => import('./pages/AiCoach').then(module => ({ default: module.AiCoach })));
-const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
-const SharedWorkout = lazy(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
-const Pricing = lazy(() => import('./pages/Pricing').then(module => ({ default: module.Pricing })));
-const Success = lazy(() => import('./pages/Success').then(module => ({ default: module.Success })));
+// Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
+function lazyWithRetry(importFn) {
+  return lazy(() =>
+    importFn().catch((error) => {
+      // Only auto-reload once to avoid infinite loops
+      const hasReloaded = sessionStorage.getItem('chunk_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('chunk_reload', 'true');
+        window.location.reload();
+        return new Promise(() => {}); // never resolves — page is reloading
+      }
+      sessionStorage.removeItem('chunk_reload');
+      throw error; // let error boundary handle it
+    })
+  );
+}
+
+// Clear the reload flag on successful page loads
+if (sessionStorage.getItem('chunk_reload')) {
+  sessionStorage.removeItem('chunk_reload');
+}
+
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const WorkoutLoggerPage = lazyWithRetry(() => import('./pages/WorkoutLoggerPage').then(module => ({ default: module.WorkoutLoggerPage })));
+const AiCoach = lazyWithRetry(() => import('./pages/AiCoach').then(module => ({ default: module.AiCoach })));
+const OnboardingPage = lazyWithRetry(() => import('./pages/OnboardingPage'));
+const SharedWorkout = lazyWithRetry(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
+const Pricing = lazyWithRetry(() => import('./pages/Pricing').then(module => ({ default: module.Pricing })));
+const Success = lazyWithRetry(() => import('./pages/Success').then(module => ({ default: module.Success })));
 
 // Simple Loader Component
 const Loader = () => (
