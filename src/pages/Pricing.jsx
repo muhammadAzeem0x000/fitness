@@ -88,6 +88,52 @@ export function Pricing() {
         }
     };
 
+    // For premium users wanting to switch plans, open the Stripe Portal instead
+    const handleManagePlan = async () => {
+        if (!subscription?.stripe_customer_id) {
+            setError('No subscription found. Please contact support.');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { data, error } = await supabase.functions.invoke('create-portal-session', {
+                body: { customerId: subscription.stripe_customer_id }
+            });
+
+            if (error) throw error;
+
+            if (data?.url) {
+                window.location.href = data.url;
+            }
+        } catch (err) {
+            console.error('💥 Portal error:', err);
+            setError(err.message || 'Failed to open subscription management');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Route to the right action based on subscription state
+    const handlePlanAction = (plan) => {
+        if (!plan.priceId) {
+            if (!plan.disabled) {
+                setError('Configuration error: missing price ID. Please contact support.');
+            }
+            return;
+        }
+
+        if (isPremium && !isProDisabled(plan.interval)) {
+            // Premium user clicking "Switch Plan" — go to portal
+            handleManagePlan();
+        } else {
+            // New/returning user — go to checkout
+            handleSubscribe(plan.priceId);
+        }
+    };
+
     // Actual price IDs for comparison
     const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
     const yearlyPriceId = import.meta.env.VITE_STRIPE_PRICE_YEARLY;
@@ -295,13 +341,11 @@ export function Pricing() {
 
                             {/* CTA Button */}
                             <Button
-                                onClick={() => plan.priceId && handleSubscribe(plan.priceId)}
+                                onClick={() => handlePlanAction(plan)}
                                 disabled={plan.disabled || loading || subLoading}
                                 className={`w-full ${plan.disabled
                                     ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                    : plan.popular
-                                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400'
-                                        : 'bg-zinc-800 hover:bg-zinc-700'
+                                    : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white'
                                     }`}
                                 size="lg"
                             >
