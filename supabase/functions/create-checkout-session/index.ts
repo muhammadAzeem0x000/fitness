@@ -134,14 +134,25 @@ serve(async (req) => {
             console.log('🔄 Returning user, skipping trial — direct payment');
         }
 
+        // Determine origin safely
+        let origin = req.headers.get('origin');
+        if (!origin || origin === 'null') {
+            const referer = req.headers.get('referer');
+            if (referer) {
+                origin = new URL(referer).origin;
+            } else {
+                origin = 'https://fitness-gilt-nine.vercel.app'; // Fallback to production URL
+            }
+        }
+
         // Create checkout session
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             mode: 'subscription',
             payment_method_types: ['card'],
             line_items: [{ price: priceId, quantity: 1 }],
-            success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.get('origin')}/pricing`,
+            success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/pricing`,
             metadata: { user_id: user.id },
             subscription_data: subscriptionData,
         });
