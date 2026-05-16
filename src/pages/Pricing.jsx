@@ -18,7 +18,8 @@ export function Pricing() {
     const hasUsedTrial = isTrialExpired ||
         subscription?.status === 'canceled' ||
         subscription?.status === 'past_due' ||
-        (subscription?.stripe_subscription_id && subscription?.status !== 'inactive');
+        subscription?.status === 'active' ||
+        !!subscription?.stripe_subscription_id;
 
     const handleSubscribe = async (priceId) => {
         if (!user) {

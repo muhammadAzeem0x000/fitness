@@ -67,16 +67,23 @@ serve(async (req) => {
             throw new Error('Price ID is required');
         }
 
-        // Check for existing customer
-        const { data: subscription } = await supabaseAdmin
+        // Check for existing customer — fetch ALL subscription records to detect prior usage
+        const { data: subscriptions } = await supabaseAdmin
             .from('subscriptions')
-            .select('stripe_customer_id, stripe_subscription_id, status')
+            .select('stripe_customer_id, stripe_subscription_id, status, current_period_end')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
-            .limit(1);
+            .limit(10);
 
-        let customerId = subscription?.[0]?.stripe_customer_id;
-        const hasUsedTrial = !!subscription?.[0]?.stripe_subscription_id;
+        let customerId = subscriptions?.[0]?.stripe_customer_id;
+
+        // A user has "used their trial" if ANY subscription row shows prior checkout activity:
+        // 1. They have any row with a stripe_subscription_id (went through checkout before)
+        // 2. Their status is/was trialing, active, canceled, or past_due
+        const dbHasUsedTrial = subscriptions?.some(sub =>
+            sub.stripe_subscription_id ||
+            ['trialing', 'active', 'canceled', 'past_due'].includes(sub.status)
+        ) ?? false;
 
         // Create customer if needed
         if (!customerId) {
@@ -96,13 +103,31 @@ serve(async (req) => {
                 });
         }
 
-        console.log('Creating Stripe checkout session, hasUsedTrial:', hasUsedTrial);
+        // SAFETY NET: Also check Stripe directly for any past subscriptions on this customer
+        // This catches cases where the DB state is out of sync (e.g. broken webhook)
+        let stripeHasPastSubs = false;
+        if (customerId) {
+            try {
+                const pastSubs = await stripe.subscriptions.list({
+                    customer: customerId,
+                    limit: 1,
+                    status: 'all',
+                });
+                stripeHasPastSubs = (pastSubs.data.length > 0);
+                console.log('🔍 Stripe past subscriptions check:', stripeHasPastSubs, 'count:', pastSubs.data.length);
+            } catch (e) {
+                console.error('⚠️ Failed to check Stripe past subs:', e.message);
+            }
+        }
+
+        const shouldSkipTrial = dbHasUsedTrial || stripeHasPastSubs;
+        console.log('Creating Stripe checkout session, dbHasUsedTrial:', dbHasUsedTrial, 'stripeHasPastSubs:', stripeHasPastSubs, 'shouldSkipTrial:', shouldSkipTrial);
 
         // Build subscription_data — only give trial to first-time users
         const subscriptionData: Record<string, unknown> = {
             metadata: { user_id: user.id },
         };
-        if (!hasUsedTrial) {
+        if (!shouldSkipTrial) {
             subscriptionData.trial_period_days = 7;
             console.log('🆕 First-time user, adding 7-day trial');
         } else {

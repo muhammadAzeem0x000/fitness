@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { CheckCircle, Sparkles } from 'lucide-react';
+import { CheckCircle, Sparkles, CreditCard } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { supabase } from '../lib/supabase';
 import Confetti from 'react-confetti';
@@ -12,6 +12,7 @@ export function Success() {
     const sessionId = searchParams.get('session_id');
     const { refreshSubscription } = useSubscription();
     const [windowSize, setWindowSize] = React.useState({ width: 0, height: 0 });
+    const [subStatus, setSubStatus] = useState(null); // 'trialing' | 'active' | null
 
     // Set window dimensions on client side
     useEffect(() => {
@@ -52,6 +53,11 @@ export function Success() {
                     console.error('❌ verify-session failed:', data);
                 }
 
+                // Track the actual subscription status
+                if (data?.status) {
+                    setSubStatus(data.status);
+                }
+
                 // Refresh subscription cache
                 refreshSubscription();
             } catch (err) {
@@ -63,6 +69,8 @@ export function Success() {
 
         verifyCheckout();
     }, [sessionId]);
+
+    const isTrial = subStatus === 'trialing';
 
     return (
         <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
@@ -87,20 +95,39 @@ export function Success() {
 
                 {/* Description */}
                 <p className="text-xl text-zinc-400 mb-8 max-w-lg mx-auto animate-in slide-in-from-bottom-8 duration-700">
-                    Your subscription is now active. Enjoy unlimited AI coaching, advanced analytics, and all premium features!
+                    {isTrial
+                        ? 'Your free trial is now active. Enjoy unlimited AI coaching, advanced analytics, and all premium features!'
+                        : 'Your subscription is now active. Enjoy unlimited AI coaching, advanced analytics, and all premium features!'
+                    }
                 </p>
 
-                {/* Benefits */}
+                {/* Benefits — dynamic based on trial vs paid */}
                 <div className="bg-slate-900 border border-zinc-800 rounded-xl p-6 mb-8 max-w-md mx-auto animate-in slide-in-from-bottom-12 duration-700">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Sparkles className="w-5 h-5 text-blue-400" />
-                        <h3 className="font-semibold">Your 7-Day Free Trial Started</h3>
-                    </div>
-                    <ul className="text-sm text-zinc-400 space-y-2 text-left">
-                        <li>✅ Full access to all Pro features</li>
-                        <li>✅ Cancel anytime during trial</li>
-                        <li>✅ First charge on {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</li>
-                    </ul>
+                    {isTrial ? (
+                        <>
+                            <div className="flex items-center gap-3 mb-4">
+                                <Sparkles className="w-5 h-5 text-blue-400" />
+                                <h3 className="font-semibold">Your 7-Day Free Trial Started</h3>
+                            </div>
+                            <ul className="text-sm text-zinc-400 space-y-2 text-left">
+                                <li>✅ Full access to all Pro features</li>
+                                <li>✅ Cancel anytime during trial</li>
+                                <li>✅ First charge on {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}</li>
+                            </ul>
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-3 mb-4">
+                                <CreditCard className="w-5 h-5 text-green-400" />
+                                <h3 className="font-semibold">Subscription Activated</h3>
+                            </div>
+                            <ul className="text-sm text-zinc-400 space-y-2 text-left">
+                                <li>✅ Full access to all Pro features</li>
+                                <li>✅ Cancel or change plan anytime</li>
+                                <li>✅ Manage billing in your profile settings</li>
+                            </ul>
+                        </>
+                    )}
                 </div>
 
                 {/* CTA Buttons */}
@@ -131,3 +158,4 @@ export function Success() {
         </div>
     );
 }
+
