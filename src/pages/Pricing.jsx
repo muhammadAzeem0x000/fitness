@@ -88,14 +88,18 @@ export function Pricing() {
         }
     };
 
+    // Actual price IDs for comparison
+    const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
+    const yearlyPriceId = import.meta.env.VITE_STRIPE_PRICE_YEARLY;
+
     // Determine CTA labels and states based on subscription status
     const getProCta = (planInterval) => {
         if (isPremium && isTrialing) return 'Currently Trialing';
         if (isPremium) {
-            // Check if this is the current plan
+            // Check if this is the current plan by comparing actual price IDs
             const isCurrentPlan = planInterval === 'month'
-                ? !subscription?.plan_id?.includes('yearly')
-                : subscription?.plan_id?.includes('yearly');
+                ? subscription?.plan_id === monthlyPriceId
+                : subscription?.plan_id === yearlyPriceId;
             return isCurrentPlan ? 'Current Plan' : 'Switch Plan';
         }
         if (hasUsedTrial) return 'Subscribe Now';
@@ -105,8 +109,8 @@ export function Pricing() {
     const isProDisabled = (planInterval) => {
         if (isPremium) {
             const isCurrentPlan = planInterval === 'month'
-                ? !subscription?.plan_id?.includes('yearly')
-                : subscription?.plan_id?.includes('yearly');
+                ? subscription?.plan_id === monthlyPriceId
+                : subscription?.plan_id === yearlyPriceId;
             return isCurrentPlan; // Disable only if it's their current plan
         }
         return false;
