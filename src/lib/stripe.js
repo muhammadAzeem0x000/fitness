@@ -126,7 +126,7 @@ export const PRICING_PLANS = {
         name: 'Pro Monthly',
         price: 9.99,
         interval: 'month',
-        priceId: 'price_XXXXX', // TODO: Replace with actual Stripe price ID
+        priceId: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_1SyZu2ESf91DrGyEmicC8ALM',
         features: [
             'Unlimited AI Coach reports',
             'Advanced progress charts',
@@ -143,7 +143,7 @@ export const PRICING_PLANS = {
         name: 'Pro Yearly',
         price: 89.99,
         interval: 'year',
-        priceId: 'price_YYYYY', // TODO: Replace with actual Stripe price ID
+        priceId: import.meta.env.VITE_STRIPE_PRICE_YEARLY || 'price_1SyZv4ESf91DrGyE8jhwxFZK',
         features: [
             'Everything in Pro Monthly',
             'Save 25% ($30/year)',

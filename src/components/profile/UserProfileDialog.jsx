@@ -304,7 +304,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                                 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                                                 : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
                                             }`}>
-                                            {isTrialExpired ? 'Trial Expired' : isPremium ? (subscription?.plan_id === import.meta.env.VITE_STRIPE_PRICE_YEARLY ? 'Pro Yearly' : 'Pro Monthly') : 'Free'}
+                                            {isTrialExpired ? 'Trial Expired' : isPremium ? (subscription?.plan_id === (import.meta.env.VITE_STRIPE_PRICE_YEARLY || 'price_1SyZv4ESf91DrGyE8jhwxFZK') ? 'Pro Yearly' : 'Pro Monthly') : 'Free'}
                                         </span>
                                     </div>
 

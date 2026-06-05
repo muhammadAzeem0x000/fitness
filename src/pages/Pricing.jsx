@@ -7,6 +7,19 @@ import { useSubscription } from '../hooks/useSubscription';
 import { supabase } from '../lib/supabase';
 import { getStripe } from '../lib/stripe';
 
+// Hardcoded fallback price IDs — used when VITE_STRIPE_PRICE_* env vars
+// are not available (e.g., production builds on Vercel where env vars
+// weren't configured in the hosting dashboard).
+const FALLBACK_PRICE_MONTHLY = 'price_1SyZu2ESf91DrGyEmicC8ALM';
+const FALLBACK_PRICE_YEARLY = 'price_1SyZv4ESf91DrGyE8jhwxFZK';
+
+function getStripePriceId(envKey, fallback) {
+    const envValue = import.meta.env[envKey];
+    if (envValue) return envValue;
+    console.warn(`⚠️ Environment variable ${envKey} is not set, using fallback price ID: ${fallback}`);
+    return fallback;
+}
+
 export function Pricing() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -134,9 +147,9 @@ export function Pricing() {
         }
     };
 
-    // Actual price IDs for comparison
-    const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
-    const yearlyPriceId = import.meta.env.VITE_STRIPE_PRICE_YEARLY;
+    // Actual price IDs for comparison — use env vars with hardcoded fallbacks
+    const monthlyPriceId = getStripePriceId('VITE_STRIPE_PRICE_MONTHLY', FALLBACK_PRICE_MONTHLY);
+    const yearlyPriceId = getStripePriceId('VITE_STRIPE_PRICE_YEARLY', FALLBACK_PRICE_YEARLY);
 
     // Determine CTA labels and states based on subscription status
     const getProCta = (planInterval) => {
@@ -186,7 +199,7 @@ export function Pricing() {
         {
             name: 'Pro Monthly',
             price: 9.99,
-            priceId: import.meta.env.VITE_STRIPE_PRICE_MONTHLY,
+            priceId: monthlyPriceId,
             description: 'Full access to SmartFit',
             interval: 'month',
             popular: true,
@@ -207,7 +220,7 @@ export function Pricing() {
         {
             name: 'Pro Yearly',
             price: 89.99,
-            priceId: import.meta.env.VITE_STRIPE_PRICE_YEARLY,
+            priceId: yearlyPriceId,
             description: 'Best value - Save 25%',
             interval: 'year',
             savings: '$30',
