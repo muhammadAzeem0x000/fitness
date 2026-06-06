@@ -119,3 +119,5 @@ export function PremiumBadge({ className = "" }) {
         </span>
     );
 }
+
+/**Pricing issues fixed and commiting for deployment */
