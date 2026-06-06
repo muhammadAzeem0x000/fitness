@@ -7,6 +7,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ErrorBoundary } from 'react-error-boundary'
 import { GlobalErrorFallback } from './components/ui/ErrorFallback'
+import { injectSpeedInsights } from '@vercel/speed-insights'
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights()
 
 const queryClient = new QueryClient({
   defaultOptions: {
