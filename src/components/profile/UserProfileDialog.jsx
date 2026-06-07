@@ -15,6 +15,13 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
     const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
+    
+    const hasUsedTrial = isTrialExpired ||
+        subscription?.status === 'canceled' ||
+        subscription?.status === 'past_due' ||
+        subscription?.status === 'active' ||
+        !!subscription?.stripe_subscription_id;
+
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [portalLoading, setPortalLoading] = useState(false);
@@ -324,8 +331,10 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                                 <span className="text-blue-400">Trial ends {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
                                             ) : isPremium ? (
                                                 <span>Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                                            ) : (
+                                            ) : hasUsedTrial ? (
                                                 <span>Upgrade to unlock premium features</span>
+                                            ) : (
+                                                <span>Start your 14-day free trial</span>
                                             )}
                                         </div>
 
@@ -371,7 +380,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                                     navigate('/pricing');
                                                 }}
                                             >
-                                                {isTrialExpired ? 'Subscribe Now' : 'Upgrade'} <Sparkles className="w-3 h-3" />
+                                                {isTrialExpired ? 'Subscribe Now' : hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'} <Sparkles className="w-3 h-3" />
                                             </Button>
                                         )}
                                     </div>
