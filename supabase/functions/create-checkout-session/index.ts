@@ -128,8 +128,8 @@ serve(async (req) => {
             metadata: { user_id: user.id },
         };
         if (!shouldSkipTrial) {
-            subscriptionData.trial_period_days = 7;
-            console.log('🆕 First-time user, adding 7-day trial');
+            subscriptionData.trial_period_days = 14;
+            console.log('🆕 First-time user, adding 14-day trial');
         } else {
             console.log('🔄 Returning user, skipping trial — direct payment');
         }

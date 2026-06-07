@@ -10,8 +10,8 @@ import { getStripe } from '../lib/stripe';
 // Hardcoded fallback price IDs — used when VITE_STRIPE_PRICE_* env vars
 // are not available (e.g., production builds on Vercel where env vars
 // weren't configured in the hosting dashboard).
-const FALLBACK_PRICE_MONTHLY = 'price_1SyZu2ESf91DrGyEmicC8ALM';
-const FALLBACK_PRICE_YEARLY = 'price_1SyZv4ESf91DrGyE8jhwxFZK';
+const FALLBACK_PRICE_MONTHLY = 'price_1TfEmAESf91DrGyECyyO6c9d';
+const FALLBACK_PRICE_YEARLY = 'price_1TfEnwESf91DrGyE4XWhZzVs';
 
 function getStripePriceId(envKey, fallback) {
     const envValue = import.meta.env[envKey];
@@ -198,7 +198,7 @@ export function Pricing() {
         },
         {
             name: 'Pro Monthly',
-            price: 9.99,
+            price: 4.99,
             priceId: monthlyPriceId,
             description: 'Full access to SmartFit',
             interval: 'month',
@@ -219,14 +219,14 @@ export function Pricing() {
         },
         {
             name: 'Pro Yearly',
-            price: 89.99,
+            price: 49.99,
             priceId: yearlyPriceId,
-            description: 'Best value - Save 25%',
+            description: 'Best value - Save $10',
             interval: 'year',
-            savings: '$30',
+            savings: '$10',
             features: [
                 'Everything in Pro Monthly',
-                'Save $30 per year (25% off)',
+                'Save $10 per year (~16% off)',
                 'Annual billing',
                 'Best value option',
             ],
@@ -264,7 +264,7 @@ export function Pricing() {
                     {!hasUsedTrial && !isPremium && (
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
                             <Sparkles className="w-4 h-4" />
-                            7-Day Free Trial • No Credit Card Required Upfront
+                            14-Day Free Trial • No Credit Card Required Upfront
                         </div>
                     )}
 

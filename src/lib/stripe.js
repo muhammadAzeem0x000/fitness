@@ -124,9 +124,9 @@ export const PRICING_PLANS = {
     },
     pro_monthly: {
         name: 'Pro Monthly',
-        price: 9.99,
+        price: 4.99,
         interval: 'month',
-        priceId: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_1SyZu2ESf91DrGyEmicC8ALM',
+        priceId: import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_1TfEmAESf91DrGyECyyO6c9d',
         features: [
             'Unlimited AI Coach reports',
             'Advanced progress charts',
@@ -141,12 +141,12 @@ export const PRICING_PLANS = {
     },
     pro_yearly: {
         name: 'Pro Yearly',
-        price: 89.99,
+        price: 49.99,
         interval: 'year',
-        priceId: import.meta.env.VITE_STRIPE_PRICE_YEARLY || 'price_1SyZv4ESf91DrGyE8jhwxFZK',
+        priceId: import.meta.env.VITE_STRIPE_PRICE_YEARLY || 'price_1TfEnwESf91DrGyE4XWhZzVs',
         features: [
             'Everything in Pro Monthly',
-            'Save 25% ($30/year)',
+            'Save $10/year (~16% off)',
             'Annual billing',
         ],
         badge: 'Best Value',
