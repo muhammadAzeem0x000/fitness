@@ -78,13 +78,17 @@ export function Header() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-slate-900/95 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-slate-900/80">
-            <div className="container flex h-14 items-center px-3 md:px-6 justify-between">
-                <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
-                    <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-                    <span className="hidden sm:inline">SmartFit</span>
-                </Link>
+            <div className="container flex h-14 items-center px-3 md:px-6">
+                {/* Left: Logo */}
+                <div className="flex-1 flex justify-start">
+                    <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
+                        <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+                        <span className="hidden sm:inline">SmartFit</span>
+                    </Link>
+                </div>
 
-                <nav className="hidden md:flex items-center gap-1 sm:gap-2">
+                {/* Middle: Navigation */}
+                <nav className="hidden md:flex flex-none items-center gap-1 sm:gap-2">
                     <NavLink
                         to="/"
                         icon={LayoutDashboard}
@@ -106,18 +110,19 @@ export function Header() {
                     />
                 </nav>
 
-                {/* Upgrade Button (Free Users Only) */}
-                {!isPremium && !subLoading && (
-                    <button
-                        onClick={() => navigate('/pricing')}
-                        className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all ml-4"
-                    >
-                        <Sparkles className="w-4 h-4" />
-                        {hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
-                    </button>
-                )}
+                {/* Right: Actions */}
+                <div className="flex-1 flex items-center justify-end gap-2 md:gap-4">
+                    {/* Upgrade Button (Free Users Only) */}
+                    {!isPremium && !subLoading && (
+                        <button
+                            onClick={() => navigate('/pricing')}
+                            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            {hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
+                        </button>
+                    )}
 
-                <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-2">
                     {/* Unit Toggle */}
                     <button
                         onClick={toggleWeightUnit}

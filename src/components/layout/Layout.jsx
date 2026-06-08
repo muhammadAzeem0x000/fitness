@@ -1,9 +1,10 @@
 import { Header } from './Header';
 import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function Layout({ children }) {
     const location = useLocation();
+    const mainRef = useRef(null);
 
     useEffect(() => {
         const path = location.pathname;
@@ -18,6 +19,11 @@ export function Layout({ children }) {
         }
 
         document.title = title;
+
+        // Reset scroll position on route change to prevent jitter
+        if (mainRef.current) {
+            mainRef.current.scrollTo(0, 0);
+        }
     }, [location.pathname]);
 
     const isFixedLayout = ['/ai-coach', '/log'].includes(location.pathname);
@@ -28,7 +34,7 @@ export function Layout({ children }) {
                 <Header />
             </div>
 
-            <main className={`flex-1 ${isFixedLayout ? 'overflow-hidden p-0' : 'overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-4 md:pb-8'}`}>
+            <main ref={mainRef} className={`flex-1 ${isFixedLayout ? 'overflow-hidden p-0' : 'overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-4 md:pb-8'}`}>
                 {isFixedLayout ? (
                     children
                 ) : (

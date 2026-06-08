@@ -1,7 +1,6 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from './components/ui/PageTransition';
 import { Auth } from './components/auth/Auth';
 import { useAuth } from './hooks/useAuth';
@@ -82,11 +81,9 @@ const ProtectedLayout = () => {
   return (
     <RequireAuth>
       <Layout>
-        <AnimatePresence mode="wait">
-          <PageTransition key={location.pathname} className="h-full">
-            <Outlet />
-          </PageTransition>
-        </AnimatePresence>
+        <PageTransition key={location.pathname} className="h-full">
+          <Outlet />
+        </PageTransition>
       </Layout>
     </RequireAuth>
   );
