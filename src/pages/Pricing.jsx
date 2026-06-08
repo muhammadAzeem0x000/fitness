@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Check, Sparkles, Zap, TrendingUp, Lock, AlertTriangle } from 'lucide-react';
+import { Check, Sparkles, Zap, TrendingUp, Lock, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useSubscription } from '../hooks/useSubscription';
 import { supabase } from '../lib/supabase';
@@ -24,7 +24,7 @@ export function Pricing() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { subscription, isPremium, isTrialExpired, isTrialing, isLoading: subLoading } = useSubscription();
-    const [loading, setLoading] = useState(false);
+    const [loadingPlanId, setLoadingPlanId] = useState(null);
     const [error, setError] = useState(null);
 
     // Determine if user has already used a trial (expired trial, or any non-inactive/non-free subscription)
@@ -34,13 +34,13 @@ export function Pricing() {
         subscription?.status === 'active' ||
         !!subscription?.stripe_subscription_id;
 
-    const handleSubscribe = async (priceId) => {
+    const handleSubscribe = async (priceId, planName) => {
         if (!user) {
             navigate('/auth');
             return;
         }
 
-        setLoading(true);
+        setLoadingPlanId(planName);
         setError(null);
 
         try {
@@ -97,18 +97,18 @@ export function Pricing() {
             console.error('💥 Checkout error:', err);
             setError(err.message || 'Failed to start checkout');
         } finally {
-            setLoading(false);
+            setLoadingPlanId(null);
         }
     };
 
     // For premium users wanting to switch plans, open the Stripe Portal instead
-    const handleManagePlan = async () => {
+    const handleManagePlan = async (planName) => {
         if (!subscription?.stripe_customer_id) {
             setError('No subscription found. Please contact support.');
             return;
         }
 
-        setLoading(true);
+        setLoadingPlanId(planName);
         setError(null);
 
         try {
@@ -125,7 +125,7 @@ export function Pricing() {
             console.error('💥 Portal error:', err);
             setError(err.message || 'Failed to open subscription management');
         } finally {
-            setLoading(false);
+            setLoadingPlanId(null);
         }
     };
 
@@ -140,10 +140,10 @@ export function Pricing() {
 
         if (isPremium && !isProDisabled(plan.interval)) {
             // Premium user clicking "Switch Plan" — go to portal
-            handleManagePlan();
+            handleManagePlan(plan.name);
         } else {
             // New/returning user — go to checkout
-            handleSubscribe(plan.priceId);
+            handleSubscribe(plan.priceId, plan.name);
         }
     };
 
@@ -355,14 +355,21 @@ export function Pricing() {
                             {/* CTA Button */}
                             <Button
                                 onClick={() => handlePlanAction(plan)}
-                                disabled={plan.disabled || loading || subLoading}
+                                disabled={plan.disabled || !!loadingPlanId || subLoading}
                                 className={`w-full ${plan.disabled
                                     ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                                     : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white'
                                     }`}
                                 size="lg"
                             >
-                                {loading ? 'Loading...' : plan.cta}
+                                {loadingPlanId === plan.name ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Redirecting to Stripe...
+                                    </span>
+                                ) : (
+                                    plan.cta
+                                )}
                             </Button>
                         </div>
                     ))}
