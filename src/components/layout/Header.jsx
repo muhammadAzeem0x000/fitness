@@ -81,7 +81,7 @@ export function Header() {
             <div className="container flex h-14 items-center px-3 md:px-6">
                 {/* Left: Logo */}
                 <div className="flex-1 flex justify-start">
-                    <Link to="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
+                    <Link to="/dashboard" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
                         <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
                         <span className="hidden sm:inline">SmartFit</span>
                     </Link>
@@ -90,7 +90,7 @@ export function Header() {
                 {/* Middle: Navigation */}
                 <nav className="hidden md:flex flex-none items-center gap-1 sm:gap-2">
                     <NavLink
-                        to="/"
+                        to="/dashboard"
                         icon={LayoutDashboard}
                         label="Dashboard"
                         description="View your progress, stats, and workout history"
@@ -158,7 +158,7 @@ export function Header() {
             {isMobileMenuOpen && (
                 <div className="md:hidden absolute top-14 left-0 w-full border-b border-zinc-800 bg-slate-900/95 backdrop-blur-md px-4 py-4 space-y-2 shadow-xl animate-in slide-in-from-top-2">
                     <MobileNavLink
-                        to="/"
+                        to="/dashboard"
                         icon={LayoutDashboard}
                         label="Dashboard"
                     />
