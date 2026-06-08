@@ -20,8 +20,14 @@ export function PremiumGate({
     fallback,
     showPreview = false
 }) {
-    const { isPremium, isLoading } = useSubscription();
+    const { isPremium, isLoading, subscription, isTrialExpired } = useSubscription();
     const navigate = useNavigate();
+
+    const hasUsedTrial = isTrialExpired ||
+        subscription?.status === 'canceled' ||
+        subscription?.status === 'past_due' ||
+        subscription?.status === 'active' ||
+        !!subscription?.stripe_subscription_id;
 
     // Show loading state
     if (isLoading) {
@@ -88,19 +94,18 @@ export function PremiumGate({
                     </ul>
                 </div>
 
-                {/* CTA Button */}
                 <Button
                     size="lg"
                     className="gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5"
                     onClick={() => navigate('/pricing')}
                 >
                     <Sparkles className="w-5 h-5" />
-                    Upgrade to Pro - $9.99/mo
+                    {hasUsedTrial ? 'Upgrade to Pro - $4.99/mo' : 'Start 14-Day Free Trial'}
                 </Button>
 
                 {/* Subtext */}
                 <p className="text-xs text-zinc-600 mt-4">
-                    7-day free trial • Cancel anytime
+                    {hasUsedTrial ? '$4.99/mo • Cancel anytime' : '14-day free trial • Cancel anytime'}
                 </p>
             </div>
         </div>

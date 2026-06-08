@@ -16,9 +16,15 @@ export function Header() {
     const { profile } = useProfile(user?.id);
     const location = useLocation();
     const navigate = useNavigate();
-    const { isPremium, isLoading: subLoading } = useSubscription();
+    const { isPremium, isLoading: subLoading, subscription, isTrialExpired } = useSubscription();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const hasUsedTrial = isTrialExpired ||
+        subscription?.status === 'canceled' ||
+        subscription?.status === 'past_due' ||
+        subscription?.status === 'active' ||
+        !!subscription?.stripe_subscription_id;
 
     const NavLink = ({ to, icon: Icon, label, description, isPrimary }) => {
         const isActive = location.pathname === to;
@@ -107,7 +113,7 @@ export function Header() {
                         className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all ml-4"
                     >
                         <Sparkles className="w-4 h-4" />
-                        Upgrade to Pro
+                        {hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
                     </button>
                 )}
 
@@ -170,7 +176,7 @@ export function Header() {
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium text-sm shadow-lg"
                             >
                                 <Sparkles className="w-4 h-4" />
-                                Upgrade to Pro
+                                {hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'}
                             </button>
                         </div>
                     )}
