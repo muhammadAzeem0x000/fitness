@@ -22,7 +22,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const [showPicker, setShowPicker] = useState(false);
 
     // Data Fetching (no category filter)
-    const { exercises, routines, workoutLogs, isLoading } = useWorkouts(user?.id);
+    const { exercises, routines, workoutLogs, isLoading, addRoutine } = useWorkouts(user?.id);
     const { toast } = useToast();
 
     // Seeding Check
@@ -33,15 +33,34 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         checkSeed();
     }, []);
 
-    const handleSave = async (data) => {
-        // Enriched data with Routine Name if available
+    const handleSave = async (data, options = {}) => {
+        const { saveAsTemplate, newTemplateName } = options;
+
+        // 1. If saving as a template, insert into routines
+        if (saveAsTemplate && newTemplateName) {
+            try {
+                // Extract exercise names from data.exercises
+                const templateExercises = Object.keys(data.exercises).map(name => ({ name }));
+                await addRoutine({ name: newTemplateName, exercises: templateExercises });
+                toast.success(`Template "${newTemplateName}" saved!`);
+            } catch (err) {
+                console.error("Failed to save template", err);
+                toast.error("Failed to save template.");
+            }
+        }
+
+        // 2. Save the workout log itself
         const finalData = {
             ...data,
+            type: saveAsTemplate ? newTemplateName : data.type,
             routineId: selectedRoutine?.id,
-            routineName: selectedRoutine?.name
+            routineName: saveAsTemplate ? newTemplateName : selectedRoutine?.name
         };
         await onSaveLog(finalData);
-        toast.success("Workout Saved! Great job.");
+        
+        if (!saveAsTemplate) {
+            toast.success("Workout Saved! Great job.");
+        }
 
         // Reset Flow
         setIsLogging(false);

@@ -104,12 +104,31 @@ export function useWorkouts(userId, type = null) {
         }
     });
 
+    // Mutation: Add Routine
+    const addRoutineMutation = useMutation({
+        mutationFn: async (routineData) => {
+            const { name, exercises } = routineData;
+            const { error } = await supabase
+                .from('routines')
+                .insert({
+                    user_id: userId,
+                    name,
+                    exercises
+                });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['routines', userId] });
+        }
+    });
+
     return {
         workoutLogs,
         routines,
         exercises,
         lastWorkoutByType,
         isLoading: loadingLogs || loadingRoutines || loadingExercises || loadingLast,
-        addWorkoutLog: addWorkoutLogMutation.mutateAsync
+        addWorkoutLog: addWorkoutLogMutation.mutateAsync,
+        addRoutine: addRoutineMutation.mutateAsync
     };
 }

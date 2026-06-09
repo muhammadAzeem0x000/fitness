@@ -15,7 +15,7 @@ export function SplitSelector({ routines = [], selectedRoutine, onSelect }) {
     return (
         <Card className="mb-6 bg-zinc-900/50 border-zinc-800">
             <CardHeader>
-                <CardTitle className="text-white">Select Workout Day</CardTitle>
+                <CardTitle className="text-white">Select Template</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -32,11 +32,9 @@ export function SplitSelector({ routines = [], selectedRoutine, onSelect }) {
                             `}
                         >
                             <span className="font-semibold text-sm">{routine.name}</span>
-                            {routine.schedule_days && routine.schedule_days.length > 0 && (
-                                <span className={`text-xs mt-1 ${selectedRoutine?.id === routine.id ? 'text-red-100' : 'text-zinc-500'}`}>
-                                    {routine.schedule_days.join(', ')}
-                                </span>
-                            )}
+                            <span className={`text-xs mt-1 ${selectedRoutine?.id === routine.id ? 'text-blue-100' : 'text-zinc-500'}`}>
+                                {routine.exercises?.length || 0} exercises
+                            </span>
                         </button>
                     ))}
                 </div>

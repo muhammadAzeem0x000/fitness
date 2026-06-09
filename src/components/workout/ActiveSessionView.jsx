@@ -16,6 +16,12 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     const [showShareModal, setShowShareModal] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
     const [workoutSummary, setWorkoutSummary] = useState('');
+    
+    // Save Template Feature States
+    const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+    const [newTemplateName, setNewTemplateName] = useState('');
+    const [finalDataToSave, setFinalDataToSave] = useState(null);
+    
     const { toast } = useToast();
     const { user } = useAuth();
 
@@ -52,10 +58,30 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
             return;
         }
 
-        onSave({
+        const dataToSave = {
             type: routineName, // Save the routine name instead of a specific muscle group
             exercises: finalData,
             timestamp: new Date().toISOString()
+        };
+
+        if (routineName === 'Custom Workout') {
+            setFinalDataToSave(dataToSave);
+            setShowSaveTemplateModal(true);
+            return;
+        }
+
+        onSave(dataToSave, { saveAsTemplate: false });
+    };
+
+    const confirmFinish = (saveAsTemplate) => {
+        if (saveAsTemplate && !newTemplateName.trim()) {
+            toast.error("Please enter a template name");
+            return;
+        }
+        setShowSaveTemplateModal(false);
+        onSave(finalDataToSave, { 
+            saveAsTemplate, 
+            newTemplateName: newTemplateName.trim() 
         });
     };
 
@@ -194,6 +220,47 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                 shareUrl={shareUrl}
                 workoutSummary={workoutSummary}
             />
+
+            {/* Save Template Modal */}
+            {showSaveTemplateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl w-full max-w-md animate-in zoom-in-95 duration-200">
+                        <h3 className="text-xl font-bold text-white mb-2">Save as Template?</h3>
+                        <p className="text-zinc-400 text-sm mb-4">
+                            You've built a custom workout. Do you want to save these exercises as a reusable Template for next time?
+                        </p>
+                        
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-zinc-300 mb-2">Template Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., Back & Biceps"
+                                value={newTemplateName}
+                                onChange={(e) => setNewTemplateName(e.target.value)}
+                                className="w-full h-12 bg-zinc-950 border border-zinc-800 rounded-xl px-4 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <Button
+                                onClick={() => confirmFinish(true)}
+                                disabled={!newTemplateName.trim()}
+                                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                            >
+                                Save Template & Log
+                            </Button>
+                            <Button
+                                onClick={() => confirmFinish(false)}
+                                variant="outline"
+                                className="w-full h-12"
+                            >
+                                Just Log Session
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
