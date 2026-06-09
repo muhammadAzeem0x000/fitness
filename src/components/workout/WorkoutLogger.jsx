@@ -8,7 +8,7 @@ import { seedExercises, DEFAULT_EXERCISES } from '../../lib/seeding';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 
 export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const { user } = useAuth();
@@ -112,12 +112,18 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                 <p className="text-zinc-400">Start a blank session or pick a saved template.</p>
             </div>
 
-            <Button
+            <button
                 onClick={handleStartEmpty}
-                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-lg shadow-lg"
+                className="w-full p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 transition-all text-left flex items-center justify-between group"
             >
-                Start Empty Workout
-            </Button>
+                <div>
+                    <h3 className="text-white font-medium text-lg">Start Empty Workout</h3>
+                    <p className="text-sm text-blue-200/70">Build your session from scratch</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Plus className="w-5 h-5 text-white" />
+                </div>
+            </button>
 
             <div className="pt-4 border-t border-zinc-800">
                 <h3 className="text-lg font-semibold text-white mb-4">Your Templates</h3>
