@@ -9,7 +9,7 @@ import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 
-export function ActiveSessionView({ category, initialExercises, lastWorkout, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
+export function ActiveSessionView({ routineName, initialExercises, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
     const [activeExercises, setActiveExercises] = useState([]);
     const [loggedData, setLoggedData] = useState({});
     const [showRestTimer, setShowRestTimer] = useState(false);
@@ -23,11 +23,8 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
     useEffect(() => {
         if (initialExercises && initialExercises.length > 0) {
             setActiveExercises(initialExercises);
-        } else if (lastWorkout && lastWorkout.exercises) {
-            // Fallback to last workout if no explicit selection (though flow dictates selection)
-            setActiveExercises(Object.keys(lastWorkout.exercises));
         }
-    }, [initialExercises, lastWorkout]);
+    }, [initialExercises]);
 
     const handleUpdateExercise = (name, sets) => {
         setLoggedData(prev => ({
@@ -56,7 +53,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
         }
 
         onSave({
-            type: category, // The Muscle Group Name
+            type: routineName, // Save the routine name instead of a specific muscle group
             exercises: finalData,
             timestamp: new Date().toISOString()
         });
@@ -64,7 +61,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
 
     const handleShare = async () => {
         // Build workout summary
-        let summary = `🔥 ${category} Workout\n\n`;
+        let summary = `🔥 ${routineName} Workout\n\n`;
         activeExercises.forEach(name => {
             if (loggedData[name]) {
                 const sets = loggedData[name];
@@ -81,7 +78,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
                 .from('shared_workouts')
                 .insert({
                     share_id: shareId,
-                    workout_type: category,
+                    workout_type: routineName,
                     exercises: loggedData,
                     shared_by_name: user?.user_metadata?.full_name || user?.email || 'SmartFit User',
                     user_id: user?.id
@@ -125,10 +122,7 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
                             <ArrowLeft className="w-4 h-4" />
                         </Button>
                         <div>
-                            <h2 className="text-xl font-bold text-white">{category}</h2>
-                            <p className="text-zinc-500 text-xs">
-                                {lastWorkout ? `Last: ${new Date(lastWorkout.date).toLocaleDateString()} ` : 'First time logging this!'}
-                            </p>
+                            <h2 className="text-xl font-bold text-white">{routineName}</h2>
                         </div>
                     </div>
                     {/* Share Button only here, Finish moved to footer */}
@@ -153,12 +147,10 @@ export function ActiveSessionView({ category, initialExercises, lastWorkout, onB
                     )}
 
                     {activeExercises.map(name => {
-                        const lastStats = lastWorkout?.exercises?.[name] || null;
                         return (
                             <ExerciseCard
                                 key={name}
                                 exercise={name}
-                                lastSession={lastStats}
                                 onUpdateSets={handleUpdateExercise}
                                 defaultReps={defaultReps}
                                 exerciseHistory={exerciseHistory}

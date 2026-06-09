@@ -12,14 +12,28 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
     // Track which sets the user has actually touched/modified
     const [touchedSets, setTouchedSets] = useState(new Set());
 
+    // Find the most recent session for this specific exercise
+    const getDerivedLastSession = () => {
+        if (lastSession) return lastSession;
+        if (!exerciseHistory || exerciseHistory.length === 0) return null;
+        for (const log of exerciseHistory) {
+            if (log.exercises && log.exercises[exercise]) {
+                return log.exercises[exercise];
+            }
+        }
+        return null;
+    };
+
+    const actualLastSession = getDerivedLastSession();
+
     // Initialize 3 sets by default, pre-filling from history if available
     const [sets, setSets] = useState(() => {
         const initialSets = [];
         for (let i = 0; i < 3; i++) {
-            if (lastSession && lastSession[i]) {
+            if (actualLastSession && actualLastSession[i]) {
                 initialSets.push({
-                    weight: lastSession[i].weight || '',
-                    reps: lastSession[i].reps || defaultReps
+                    weight: actualLastSession[i].weight || '',
+                    reps: actualLastSession[i].reps || defaultReps
                 });
             } else {
                 initialSets.push({ weight: '', reps: defaultReps });
@@ -94,8 +108,8 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
 
     // Helper to format last session text
     const getLastBestSet = () => {
-        if (!lastSession || !Array.isArray(lastSession)) return "New Exercise";
-        const bestSet = lastSession.reduce((max, set) => {
+        if (!actualLastSession || !Array.isArray(actualLastSession)) return "New Exercise";
+        const bestSet = actualLastSession.reduce((max, set) => {
             const w = parseFloat(set.weight) || 0;
             const currentMax = parseFloat(max.weight) || 0;
             return w > currentMax ? set : max;
@@ -123,7 +137,7 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                     <div className="flex justify-between items-start mb-3">
                         <h4 className="text-lg font-semibold text-slate-200">{exercise}</h4>
                         <div className="flex flex-col gap-1 items-end">
-                            {lastSession && (
+                            {actualLastSession && (
                                 <div className="flex items-center gap-1 text-xs text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded border border-yellow-500/20" title="Last Session Best">
                                     <History className="h-3 w-3" />
                                     <span>Last: {getLastBestSet()}</span>

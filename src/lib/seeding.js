@@ -12,7 +12,7 @@ export const DEFAULT_EXERCISES = {
         "Chin-Ups", "Rack Pulls", "Meadows Row", "Renegade Row", "Back Extensions", "Good Mornings"
     ],
     Shoulders: [
-        "Barbell Upright Rows", "Barbell Curl Upright Rows", "Lateral Raises", "Front Raises", "Face Pulls", "Machine Reverse Flyes", "Machine Shoulders Press", "Shrugs", "Overhead Press (OHP)", "Seated Dumbbell Press",
+        "Barbell Upright Rows", "Barbell Curl Upright Rows", "Lateral Raises", "Front Raises", "Machine Reverse Flyes", "Machine Shoulders Press", "Shrugs", "Overhead Press (OHP)", "Seated Dumbbell Press",
         "Arnold Press", "Cable Lateral Raises",
         "Push Press", "Behind The Neck Press", "Egyptian Lateral Raises", "Lu Raises", "Military Press"
     ],

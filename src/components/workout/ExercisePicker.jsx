@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Search, Plus, Check } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-export function ExercisePicker({ category, availableExercises, onComplete, onBack, initialSelection = [] }) {
+export function ExercisePicker({ availableExercises, onComplete, onBack, initialSelection = [] }) {
     const [selected, setSelected] = useState(initialSelection);
     const [search, setSearch] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
     const [customInputs, setCustomInputs] = useState([]); // List of custom added strings
 
     // 15 Most Frequent (In our case, just the first 15 seeded)
@@ -13,13 +14,37 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
     // Sort logic: if we had frequency data, we'd sort here. 
     // For now, assume availableExercises is the full list.
 
+    const categoryIcons = {
+        Chest: '👕',      // Torso/Shirt
+        Back: '🎒',       // Backpack
+        Shoulders: '🏋️',  // Weightlifter
+        Arms: '💪',
+        Legs: '🦵',
+        Cardio: '🏃',
+        Core: '🔥',
+        Default: '🎯'
+    };
+
+    // Extract unique categories for filter tabs
+    const categories = useMemo(() => {
+        const cats = new Set(availableExercises.map(e => e.category));
+        return ['All', ...Array.from(cats).filter(Boolean).sort()];
+    }, [availableExercises]);
+
     const filtered = useMemo(() => {
         let list = availableExercises;
+        
+        // Filter by category
+        if (activeCategory !== 'All') {
+            list = list.filter(ex => ex.category === activeCategory);
+        }
+
+        // Filter by search
         if (search) {
             list = list.filter(ex => ex.name.toLowerCase().includes(search.toLowerCase()));
         }
         return list;
-    }, [availableExercises, search]);
+    }, [availableExercises, search, activeCategory]);
 
     const handleToggle = (name) => {
         setSelected(prev => {
@@ -29,9 +54,34 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
     };
 
     const handleAddCustom = () => {
-        if (!search) return;
-        setCustomInputs(prev => [...prev, search]);
-        setSelected(prev => [...prev, search]);
+        if (!search.trim()) return;
+        
+        const searchLower = search.trim().toLowerCase();
+        
+        // 1. Check if it already exists in the database list
+        const existingEx = availableExercises.find(ex => ex.name.toLowerCase() === searchLower);
+        if (existingEx) {
+            if (!selected.includes(existingEx.name)) {
+                setSelected(prev => [...prev, existingEx.name]);
+            }
+            setSearch('');
+            return;
+        }
+
+        // 2. Check if it's already a custom input
+        const existingCustom = customInputs.find(c => c.toLowerCase() === searchLower);
+        if (existingCustom) {
+            if (!selected.includes(existingCustom)) {
+                setSelected(prev => [...prev, existingCustom]);
+            }
+            setSearch('');
+            return;
+        }
+
+        // 3. Add as new custom input
+        const newCustom = search.trim();
+        setCustomInputs(prev => [...prev, newCustom]);
+        setSelected(prev => [...prev, newCustom]);
         setSearch('');
     };
 
@@ -47,7 +97,7 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
             <div className="flex-none space-y-4 py-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl md:text-2xl font-bold text-white">Select {category} Exercises</h2>
+                        <h2 className="text-xl md:text-2xl font-bold text-white">Select Exercises</h2>
                         <p className="text-zinc-400 text-xs md:text-sm">Choose exercises or add your own.</p>
                     </div>
                     <Button variant="ghost" onClick={onBack}>Back</Button>
@@ -76,20 +126,46 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
                         </Button>
                     )}
                 </div>
+
+                {/* Category Filters */}
+                <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                    {categories.map(cat => {
+                        const icon = categoryIcons[cat] || (cat === 'All' ? '🔍' : categoryIcons.Default);
+                        return (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                                    activeCategory === cat
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                                }`}
+                            >
+                                <span aria-hidden="true">{icon}</span>
+                                <span>{cat}</span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* List Section (Scrollable) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 pr-2 pb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {customInputs.map((custom, idx) => (
+                    {/* Render Custom Inputs ONLY if they match the active category filter (Custom goes to 'All' or 'Core/Default' if we wanted, but let's show them in All or if no categories are filtered) */}
+                    {(activeCategory === 'All') && customInputs.map((custom, idx) => (
                         <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-white shrink-0">
-                            <span>{custom} (Custom)</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl" aria-hidden="true">{categoryIcons.Default}</span>
+                                <span className="font-medium">{custom} <span className="text-xs text-blue-300 opacity-70 ml-1">(Custom)</span></span>
+                            </div>
                             <Check className="w-5 h-5 text-blue-400" />
                         </div>
                     ))}
 
                     {filtered.map(ex => {
                         const isSelected = selected.includes(ex.name);
+                        const icon = categoryIcons[ex.category] || categoryIcons.Default;
                         return (
                             <button
                                 key={ex.id}
@@ -99,7 +175,10 @@ export function ExercisePicker({ category, availableExercises, onComplete, onBac
                                     : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                                     }`}
                             >
-                                <span className="font-medium">{ex.name}</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xl" aria-hidden="true">{icon}</span>
+                                    <span className="font-medium">{ex.name}</span>
+                                </div>
                                 {isSelected && <Check className="w-5 h-5 text-white" />}
                             </button>
                         );

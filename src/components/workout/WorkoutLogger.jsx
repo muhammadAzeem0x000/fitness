@@ -13,16 +13,16 @@ import { ArrowLeft } from 'lucide-react';
 export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const { user } = useAuth();
 
-    // Step 1: Routine
+    // Step 1: Routine (Template)
     const [selectedRoutine, setSelectedRoutine] = useState(null);
-    // Step 2: Category
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    // Step 3: Picker
-    const [selectedExercises, setSelectedExercises] = useState([]);
     const [isLogging, setIsLogging] = useState(false);
+    
+    // Step 2: Session Exercises
+    const [selectedExercises, setSelectedExercises] = useState([]);
+    const [showPicker, setShowPicker] = useState(false);
 
-    // Data Fetching
-    const { exercises, routines, lastWorkoutByType, workoutLogs, isLoading } = useWorkouts(user?.id, selectedCategory);
+    // Data Fetching (no category filter)
+    const { exercises, routines, workoutLogs, isLoading } = useWorkouts(user?.id);
     const { toast } = useToast();
 
     // Seeding Check
@@ -46,86 +46,87 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         // Reset Flow
         setIsLogging(false);
         setSelectedExercises([]);
-        setSelectedCategory(null);
         setSelectedRoutine(null);
+        setShowPicker(false);
     };
 
-    // --- STEP 4: LOGGING ---
-    if (isLogging && selectedCategory) {
+    const handleStartEmpty = () => {
+        setSelectedRoutine({ id: 'custom', name: 'Custom Workout' });
+        setSelectedExercises([]);
+        setIsLogging(true);
+    };
+
+    const handleSelectRoutine = (routine) => {
+        setSelectedRoutine(routine);
+        // Extract just the exercise names from the routine's exercises JSON
+        const exerciseNames = (routine.exercises || []).map(ex => typeof ex === 'string' ? ex : ex.name);
+        setSelectedExercises(exerciseNames);
+        setIsLogging(true);
+    };
+
+    // --- EXERCISE PICKER MODAL ---
+    if (showPicker) {
+        // Fallback: If DB is empty or failed to seed, use static defaults
+        let availableExercises = exercises;
+        if (!availableExercises || availableExercises.length === 0) {
+            availableExercises = Object.entries(DEFAULT_EXERCISES).flatMap(([category, names]) =>
+                names.map(name => ({ id: name, name, category }))
+            );
+        }
+
+        return (
+            <ExercisePicker
+                availableExercises={availableExercises}
+                initialSelection={selectedExercises}
+                onComplete={(exercises) => {
+                    setSelectedExercises(exercises);
+                    setShowPicker(false);
+                }}
+                onBack={() => setShowPicker(false)}
+            />
+        );
+    }
+
+    // --- ACTIVE LOGGING SESSION ---
+    if (isLogging && selectedRoutine) {
         return (
             <ActiveSessionView
-                category={selectedCategory}
+                routineName={selectedRoutine.name}
                 initialExercises={selectedExercises}
-                lastWorkout={lastWorkoutByType}
                 onBack={() => setIsLogging(false)}
                 onSave={handleSave}
-                onAddMore={() => setIsLogging(false)} // Go back to picker to add more
+                onAddMore={() => setShowPicker(true)}
                 defaultReps={defaultReps}
                 exerciseHistory={workoutLogs}
             />
         );
     }
 
-    // --- STEP 3: PICK EXERCISES ---
-    if (selectedCategory) {
-        // Filter exercises by category
-        let categoryExercises = exercises.filter(ex => ex.category === selectedCategory);
 
-        // Fallback: If DB is empty or failed to seed, usage static defaults
-        if (categoryExercises.length === 0 && DEFAULT_EXERCISES[selectedCategory]) {
-            categoryExercises = DEFAULT_EXERCISES[selectedCategory].map(name => ({
-                id: name, // Usage name as ID for static items
-                name,
-                category: selectedCategory
-            }));
-        }
 
-        return (
-            <ExercisePicker
-                category={selectedCategory}
-                availableExercises={categoryExercises}
-                initialSelection={selectedExercises}
-                onComplete={(exercises) => {
-                    setSelectedExercises(exercises);
-                    setIsLogging(true);
-                }}
-                onBack={() => setSelectedCategory(null)}
-            />
-        );
-    }
-
-    // --- STEP 2: SELECT MUSCLE GROUP ---
-    if (selectedRoutine) {
-        return (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 pt-6 px-3 md:px-4">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedRoutine(null)}>
-                        <ArrowLeft className="w-5 h-5" />
-                    </Button>
-                    <div>
-                        <h2 className="text-2xl font-bold text-white">Target Muscle Group</h2>
-                        <p className="text-zinc-400">What are you training for {selectedRoutine.name}?</p>
-                    </div>
-                </div>
-
-                <MuscleGroupGrid onSelect={setSelectedCategory} />
-            </div>
-        );
-    }
-
-    // --- STEP 1: SELECT ROUTINE (DAY) ---
+    // --- STEP 1: SELECT ROUTINE OR EMPTY WORKOUT ---
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 pt-6 px-3 md:px-4">
+        <div className="space-y-6 animate-in fade-in duration-500 pt-6 px-3 md:px-4 pb-20">
             <div>
                 <h2 className="text-3xl font-bold tracking-tight text-white mb-2">Log Workout</h2>
-                <p className="text-zinc-400">Select your current split day to begin.</p>
+                <p className="text-zinc-400">Start a blank session or pick a saved template.</p>
             </div>
 
-            <SplitSelector
-                routines={routines}
-                selectedRoutine={selectedRoutine}
-                onSelect={setSelectedRoutine}
-            />
+            <Button
+                onClick={handleStartEmpty}
+                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-lg shadow-lg"
+            >
+                Start Empty Workout
+            </Button>
+
+            <div className="pt-4 border-t border-zinc-800">
+                <h3 className="text-lg font-semibold text-white mb-4">Your Templates</h3>
+                <SplitSelector
+                    routines={routines}
+                    selectedRoutine={selectedRoutine}
+                    onSelect={handleSelectRoutine}
+                />
+            </div>
         </div>
     );
 }

@@ -46,17 +46,21 @@ const OnboardingPage = () => {
         resolver: zodResolver(step1Schema)
     });
 
-    // Step 2 State (Routine) - kept separate as it's not standard inputs
-    const [routineType, setRoutineType] = useLocalStorage('onboarding_routine_type', 'default');
+    // Step 2 State (Routine Split)
+    const [splitType, setSplitType] = useLocalStorage('onboarding_split_type', 'ppl');
+    
+    // Step 3 State (Preferred Days)
     const [selectedDays, setSelectedDays] = useLocalStorage('onboarding_custom_days', []);
 
     const [loading, setLoading] = useState(false);
     const [submitError, setSubmitError] = useState(null);
 
-    const handleNextStep = async () => {
-        const isValid = await trigger();
-        if (isValid) {
-            setStep(2);
+    const handleNextStep = async (currentStep) => {
+        if (currentStep === 1) {
+            const isValid = await trigger();
+            if (isValid) setStep(2);
+        } else if (currentStep === 2) {
+            setStep(3);
         }
     };
 
@@ -78,15 +82,7 @@ const OnboardingPage = () => {
             const weightInKg = convertWeightToDb(data.currentWeight);
             const goalWeightInKg = convertWeightToDb(data.goalWeight);
 
-            // Determine workout days based on routine type
-            let workoutDaysForProfile = [];
-            if (routineType === 'default') {
-                workoutDaysForProfile = ['Monday', 'Tuesday', 'Wednesday'];
-            } else if (routineType === 'custom' && selectedDays.length > 0) {
-                workoutDaysForProfile = selectedDays;
-            }
-
-            // 1. Profile Upsert (NOW INCLUDES workout_days)
+            // 1. Profile Upsert (with independent workout_days)
             const { error: profileError } = await supabase
                 .from('profiles')
                 .upsert({
@@ -94,7 +90,7 @@ const OnboardingPage = () => {
                     height: heightInCm,
                     current_weight: weightInKg,
                     goal_weight: goalWeightInKg,
-                    workout_days: workoutDaysForProfile,
+                    workout_days: selectedDays,
                     updated_at: new Date().toISOString()
                 });
 
@@ -117,22 +113,27 @@ const OnboardingPage = () => {
                 }
             }
 
-            // 3. Routines
-            if (routineType === 'default') {
-                const defaultRoutines = [
-                    { user_id: user.id, name: 'Push Day', schedule_days: ['Monday'], exercises: [] },
-                    { user_id: user.id, name: 'Pull Day', schedule_days: ['Tuesday'], exercises: [] },
-                    { user_id: user.id, name: 'Legs Day', schedule_days: ['Wednesday'], exercises: [] },
+            // 3. Routines (Templates)
+            let templates = [];
+            if (splitType === 'ppl') {
+                templates = [
+                    { user_id: user.id, name: 'Push', schedule_days: [], exercises: [{ name: 'Bench Press', category: 'Chest', sets: 3, reps: 10 }, { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 }, { name: 'Tricep Extension', category: 'Arms', sets: 3, reps: 12 }] },
+                    { user_id: user.id, name: 'Pull', schedule_days: [], exercises: [{ name: 'Pull-up', category: 'Back', sets: 3, reps: 8 }, { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }, { name: 'Bicep Curl', category: 'Arms', sets: 3, reps: 12 }] },
+                    { user_id: user.id, name: 'Legs', schedule_days: [], exercises: [{ name: 'Squat', category: 'Legs', sets: 3, reps: 8 }, { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, { name: 'Calf Raise', category: 'Legs', sets: 3, reps: 15 }] },
                 ];
-                await supabase.from('routines').insert(defaultRoutines);
-            } else if (routineType === 'custom' && selectedDays.length > 0) {
-                const customRoutines = selectedDays.map(day => ({
-                    user_id: user.id,
-                    name: `Workout (${day})`,
-                    schedule_days: [day],
-                    exercises: []
-                }));
-                await supabase.from('routines').insert(customRoutines);
+            } else if (splitType === 'upper_lower') {
+                templates = [
+                    { user_id: user.id, name: 'Upper Body', schedule_days: [], exercises: [{ name: 'Bench Press', category: 'Chest', sets: 3, reps: 10 }, { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }, { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 }] },
+                    { user_id: user.id, name: 'Lower Body', schedule_days: [], exercises: [{ name: 'Squat', category: 'Legs', sets: 3, reps: 8 }, { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, { name: 'Leg Press', category: 'Legs', sets: 3, reps: 12 }] },
+                ];
+            } else if (splitType === 'full_body') {
+                templates = [
+                    { user_id: user.id, name: 'Full Body A', schedule_days: [], exercises: [{ name: 'Squat', category: 'Legs', sets: 3, reps: 8 }, { name: 'Bench Press', category: 'Chest', sets: 3, reps: 10 }, { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }] },
+                ];
+            }
+
+            if (templates.length > 0) {
+                await supabase.from('routines').insert(templates);
             }
 
             // 4. Verification & Clean up
@@ -141,7 +142,7 @@ const OnboardingPage = () => {
             if (verifyProfile) {
                 localStorage.removeItem('onboarding_step');
                 localStorage.removeItem('onboarding_form');
-                localStorage.removeItem('onboarding_routine_type');
+                localStorage.removeItem('onboarding_split_type');
                 localStorage.removeItem('onboarding_custom_days');
                 // Force reload
                 window.location.href = '/';
@@ -170,10 +171,14 @@ const OnboardingPage = () => {
                 {/* Progress Steps */}
                 <div className="flex items-center justify-center gap-4 mb-8">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-blue-500 text-white' : 'bg-zinc-800 text-zinc-500'}`}>1</div>
-                    <div className={`w-16 h-1 rounded bg-zinc-800`}>
+                    <div className={`w-12 h-1 rounded bg-zinc-800`}>
                         <div className={`h-full bg-blue-500 transition-all duration-300 ${step >= 2 ? 'w-full' : 'w-0'}`} />
                     </div>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-blue-500 text-white' : 'bg-zinc-800 text-zinc-500'}`}>2</div>
+                    <div className={`w-12 h-1 rounded bg-zinc-800`}>
+                        <div className={`h-full bg-blue-500 transition-all duration-300 ${step >= 3 ? 'w-full' : 'w-0'}`} />
+                    </div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 3 ? 'bg-blue-500 text-white' : 'bg-zinc-800 text-zinc-500'}`}>3</div>
                 </div>
 
                 <Card className="bg-zinc-900/50 border-zinc-800 p-6 md:p-8 backdrop-blur-xl">
@@ -282,7 +287,7 @@ const OnboardingPage = () => {
                             </div>
 
                             <Button
-                                onClick={handleNextStep}
+                                onClick={() => handleNextStep(1)}
                                 type="button"
                                 className="w-full mt-4"
                             >
@@ -294,82 +299,120 @@ const OnboardingPage = () => {
                     {step === 2 && (
                         <div className="space-y-6">
                             <div className="text-center mb-6">
-                                <h2 className="text-xl font-semibold text-white mb-1">Setup Routine</h2>
-                                <p className="text-sm text-zinc-400">Choose how you want to train.</p>
+                                <h2 className="text-xl font-semibold text-white mb-1">Choose Workout Split</h2>
+                                <p className="text-sm text-zinc-400">Select templates to start your journey.</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <button
-                                    onClick={() => setRoutineType('default')}
+                                    onClick={() => setSplitType('ppl')}
                                     type="button"
-                                    className={`p-4 rounded-xl border text-left transition-all ${routineType === 'default' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
+                                    className={`p-4 rounded-xl border text-left transition-all ${splitType === 'ppl' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <Dumbbell className={`w-5 h-5 ${routineType === 'default' ? 'text-blue-500' : 'text-zinc-400'}`} />
-                                        {routineType === 'default' && <Check className="w-4 h-4 text-blue-500" />}
+                                        <Dumbbell className={`w-5 h-5 ${splitType === 'ppl' ? 'text-blue-500' : 'text-zinc-400'}`} />
+                                        {splitType === 'ppl' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
-                                    <h3 className="text-white font-medium mb-1">Expert Default (PPL)</h3>
-                                    <p className="text-xs text-zinc-400">Proven Push-Pull-Legs split suitable for most goals.</p>
+                                    <h3 className="text-white font-medium mb-1">Push / Pull / Legs</h3>
+                                    <p className="text-xs text-zinc-400">3 specialized workouts. Great for building mass and strength.</p>
                                 </button>
 
                                 <button
-                                    onClick={() => setRoutineType('custom')}
+                                    onClick={() => setSplitType('upper_lower')}
                                     type="button"
-                                    className={`p-4 rounded-xl border text-left transition-all ${routineType === 'custom' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
+                                    className={`p-4 rounded-xl border text-left transition-all ${splitType === 'upper_lower' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <Calendar className={`w-5 h-5 ${routineType === 'custom' ? 'text-blue-500' : 'text-zinc-400'}`} />
-                                        {routineType === 'custom' && <Check className="w-4 h-4 text-blue-500" />}
+                                        <Target className={`w-5 h-5 ${splitType === 'upper_lower' ? 'text-blue-500' : 'text-zinc-400'}`} />
+                                        {splitType === 'upper_lower' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
-                                    <h3 className="text-white font-medium mb-1">Customize My Week</h3>
-                                    <p className="text-xs text-zinc-400">Build your own split from scratch.</p>
+                                    <h3 className="text-white font-medium mb-1">Upper / Lower</h3>
+                                    <p className="text-xs text-zinc-400">2 balanced workouts. Perfect for consistent 4-day weeks.</p>
+                                </button>
+
+                                <button
+                                    onClick={() => setSplitType('full_body')}
+                                    type="button"
+                                    className={`p-4 rounded-xl border text-left transition-all ${splitType === 'full_body' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <Dumbbell className={`w-5 h-5 ${splitType === 'full_body' ? 'text-blue-500' : 'text-zinc-400'}`} />
+                                        {splitType === 'full_body' && <Check className="w-4 h-4 text-blue-500" />}
+                                    </div>
+                                    <h3 className="text-white font-medium mb-1">Full Body</h3>
+                                    <p className="text-xs text-zinc-400">1 comprehensive workout. Efficient for 2-3 days a week.</p>
+                                </button>
+
+                                <button
+                                    onClick={() => setSplitType('blank')}
+                                    type="button"
+                                    className={`p-4 rounded-xl border text-left transition-all ${splitType === 'blank' ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800'}`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <Calendar className={`w-5 h-5 ${splitType === 'blank' ? 'text-blue-500' : 'text-zinc-400'}`} />
+                                        {splitType === 'blank' && <Check className="w-4 h-4 text-blue-500" />}
+                                    </div>
+                                    <h3 className="text-white font-medium mb-1">Blank Canvas</h3>
+                                    <p className="text-xs text-zinc-400">Start from scratch and build your own templates later.</p>
                                 </button>
                             </div>
-
-                            {routineType === 'custom' && (
-                                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                                    <h4 className="text-sm font-medium text-zinc-300">Select Training Days</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                                            <button
-                                                key={day}
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedDays(prev =>
-                                                        prev.includes(day)
-                                                            ? prev.filter(d => d !== day)
-                                                            : [...prev, day]
-                                                    );
-                                                }}
-                                                className={`p-2 text-xs rounded-lg border transition-all ${selectedDays.includes(day)
-                                                    ? 'bg-blue-500 border-blue-500 text-white'
-                                                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'
-                                                    }`}
-                                            >
-                                                {day}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p className="text-xs text-zinc-500">Select the days you plan to workout.</p>
-                                </div>
-                            )}
 
                             <div className="flex gap-3 mt-8">
                                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                                     Back
                                 </Button>
+                                <Button onClick={() => handleNextStep(2)} className="flex-1 gap-2">
+                                    Next Step <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 3 && (
+                        <div className="space-y-6">
+                            <div className="text-center mb-6">
+                                <h2 className="text-xl font-semibold text-white mb-1">Target Training Days</h2>
+                                <p className="text-sm text-zinc-400">Select the days you plan to workout. We'll use this to track your streaks.</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                                    <button
+                                        key={day}
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedDays(prev =>
+                                                prev.includes(day)
+                                                    ? prev.filter(d => d !== day)
+                                                    : [...prev, day]
+                                            );
+                                        }}
+                                        className={`p-3 text-sm font-medium rounded-lg border transition-all ${selectedDays.includes(day)
+                                            ? 'bg-blue-500 border-blue-500 text-white shadow-lg'
+                                            : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800'
+                                            }`}
+                                    >
+                                        {day}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3 mt-8">
+                                <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                                    Back
+                                </Button>
                                 <Button
                                     onClick={handleSubmit(onSubmit)}
-                                    className="flex-1 gap-2"
-                                    disabled={loading || (routineType === 'custom' && selectedDays.length === 0)}
+                                    className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                                    disabled={loading}
                                 >
                                     {loading ? (
                                         <>
                                             <Loader2 className="w-4 h-4 animate-spin" />
-                                            Setting up...
+                                            Saving...
                                         </>
                                     ) : (
-                                        "Complete Setup"
+                                        "Finish Setup"
                                     )}
                                 </Button>
                             </div>
