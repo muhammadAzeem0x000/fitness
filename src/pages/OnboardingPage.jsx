@@ -120,42 +120,71 @@ const OnboardingPage = () => {
                     { 
                         user_id: user.id, name: 'Push', schedule_days: [], exercises: [
                             { name: 'Barbell Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
-                            { name: 'Overhead Press (OHP)', category: 'Shoulders', sets: 3, reps: 10 }, 
-                            { name: 'Incline Dumbbell Press', category: 'Chest', sets: 3, reps: 12 },
+                            { name: 'Seated Dumbbell Press', category: 'Shoulders', sets: 3, reps: 10 }, 
+                            { name: 'Incline Dumbbell Press', category: 'Chest', sets: 3, reps: 10 },
                             { name: 'Lateral Raises', category: 'Shoulders', sets: 3, reps: 15 },
                             { name: 'Tricep Pushdowns', category: 'Arms', sets: 3, reps: 12 },
-                            { name: 'Skull Crushers', category: 'Arms', sets: 3, reps: 12 }
+                            { name: 'Overhead Tricep Extension', category: 'Arms', sets: 3, reps: 12 }
                         ] 
                     },
                     { 
                         user_id: user.id, name: 'Pull', schedule_days: [], exercises: [
-                            { name: 'Barbell Rows', category: 'Back', sets: 3, reps: 10 }, 
-                            { name: 'Pull-Ups', category: 'Back', sets: 3, reps: 8 }, 
-                            { name: 'Lat Pulldowns', category: 'Back', sets: 3, reps: 12 },
+                            { name: 'Lat Pulldowns', category: 'Back', sets: 3, reps: 10 }, 
+                            { name: 'Seated Cable Rows', category: 'Back', sets: 3, reps: 10 }, 
                             { name: 'Face Pulls', category: 'Shoulders', sets: 3, reps: 15 },
+                            { name: 'Dumbbell Shrugs', category: 'Back', sets: 3, reps: 15 },
                             { name: 'Barbell Curls', category: 'Arms', sets: 3, reps: 12 },
                             { name: 'Hammer Curls', category: 'Arms', sets: 3, reps: 12 }
                         ] 
                     },
                     { 
                         user_id: user.id, name: 'Legs', schedule_days: [], exercises: [
-                            { name: 'Barbell Squat', category: 'Legs', sets: 3, reps: 8 }, 
-                            { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, 
-                            { name: 'Leg Press', category: 'Legs', sets: 3, reps: 12 },
+                            { name: 'Barbell Squat', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Leg Press', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 },
                             { name: 'Leg Extensions', category: 'Legs', sets: 3, reps: 15 },
                             { name: 'Lying Leg Curls', category: 'Legs', sets: 3, reps: 15 },
-                            { name: 'Calf Raises', category: 'Legs', sets: 4, reps: 15 }
+                            { name: 'Standing Calf Raises', category: 'Legs', sets: 4, reps: 15 }
                         ] 
                     },
                 ];
             } else if (splitType === 'upper_lower') {
                 templates = [
-                    { user_id: user.id, name: 'Upper Body', schedule_days: [], exercises: [{ name: 'Bench Press', category: 'Chest', sets: 3, reps: 10 }, { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }, { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 }] },
-                    { user_id: user.id, name: 'Lower Body', schedule_days: [], exercises: [{ name: 'Squat', category: 'Legs', sets: 3, reps: 8 }, { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, { name: 'Leg Press', category: 'Legs', sets: 3, reps: 12 }] },
+                    { 
+                        user_id: user.id, name: 'Upper Body', schedule_days: [], exercises: [
+                            { name: 'Barbell Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
+                            { name: 'Barbell Rows', category: 'Back', sets: 3, reps: 10 }, 
+                            { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 },
+                            { name: 'Lat Pulldowns', category: 'Back', sets: 3, reps: 10 },
+                            { name: 'Cable Crossovers', category: 'Chest', sets: 3, reps: 12 },
+                            { name: 'Bicep Curls', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Tricep Pushdowns', category: 'Arms', sets: 3, reps: 12 }
+                        ] 
+                    },
+                    { 
+                        user_id: user.id, name: 'Lower Body', schedule_days: [], exercises: [
+                            { name: 'Barbell Squats', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Romanian Deadlifts', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Walking Lunges', category: 'Legs', sets: 3, reps: 12 },
+                            { name: 'Leg Extensions', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Seated Leg Curls', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Seated Calf Raises', category: 'Legs', sets: 4, reps: 15 }
+                        ] 
+                    },
                 ];
             } else if (splitType === 'full_body') {
                 templates = [
-                    { user_id: user.id, name: 'Full Body A', schedule_days: [], exercises: [{ name: 'Squat', category: 'Legs', sets: 3, reps: 8 }, { name: 'Bench Press', category: 'Chest', sets: 3, reps: 10 }, { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }] },
+                    { 
+                        user_id: user.id, name: 'Full Body', schedule_days: [], exercises: [
+                            { name: 'Barbell Squats', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Flat Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
+                            { name: 'Barbell Rows', category: 'Back', sets: 3, reps: 10 },
+                            { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 },
+                            { name: 'Romanian Deadlifts', category: 'Legs', sets: 3, reps: 10 },
+                            { name: 'Dumbbell Bicep Curls', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Tricep Rope Pushdowns', category: 'Arms', sets: 3, reps: 12 }
+                        ] 
+                    },
                 ];
             }
 
@@ -341,7 +370,8 @@ const OnboardingPage = () => {
                                         {splitType === 'ppl' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
                                     <h3 className="text-white font-medium mb-1">Push / Pull / Legs</h3>
-                                    <p className="text-xs text-zinc-400">3 specialized workouts. Great for building mass and strength.</p>
+                                    <p className="text-xs text-zinc-300 font-semibold mb-2">3 to 6 Days / Week</p>
+                                    <p className="text-xs text-zinc-400 leading-relaxed">Best for dedicated beginners and intermediates. Groups muscles by movement type. Requires a highly consistent schedule to hit all muscles effectively.</p>
                                 </button>
 
                                 <button
@@ -354,7 +384,8 @@ const OnboardingPage = () => {
                                         {splitType === 'upper_lower' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
                                     <h3 className="text-white font-medium mb-1">Upper / Lower</h3>
-                                    <p className="text-xs text-zinc-400">2 balanced workouts. Perfect for consistent 4-day weeks.</p>
+                                    <p className="text-xs text-zinc-300 font-semibold mb-2">4 Days / Week</p>
+                                    <p className="text-xs text-zinc-400 leading-relaxed">The golden standard for balanced growth. Perfect for busy schedules (e.g. Mon/Tue & Thu/Fri). Hits muscles twice a week for optimal recovery.</p>
                                 </button>
 
                                 <button
@@ -367,7 +398,8 @@ const OnboardingPage = () => {
                                         {splitType === 'full_body' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
                                     <h3 className="text-white font-medium mb-1">Full Body</h3>
-                                    <p className="text-xs text-zinc-400">1 comprehensive workout. Efficient for 2-3 days a week.</p>
+                                    <p className="text-xs text-zinc-300 font-semibold mb-2">2 to 3 Days / Week</p>
+                                    <p className="text-xs text-zinc-400 leading-relaxed">Best for absolute beginners or very busy people. Hits every major muscle in one session. <span className="text-red-400 font-medium">Requires 48 hours rest between workouts. Do not do daily.</span></p>
                                 </button>
 
                                 <button
@@ -380,7 +412,8 @@ const OnboardingPage = () => {
                                         {splitType === 'blank' && <Check className="w-4 h-4 text-blue-500" />}
                                     </div>
                                     <h3 className="text-white font-medium mb-1">Blank Canvas</h3>
-                                    <p className="text-xs text-zinc-400">Start from scratch and build your own templates later.</p>
+                                    <p className="text-xs text-zinc-300 font-semibold mb-2">Custom Schedule</p>
+                                    <p className="text-xs text-zinc-400 leading-relaxed">Start from scratch and build your own custom templates later. Best for fitness experts who know exactly what they want.</p>
                                 </button>
                             </div>
 
