@@ -70,6 +70,7 @@ export function WorkoutHistoryList({ workouts }) {
                                             <div className="flex items-center gap-2 text-xs text-zinc-500 group-hover:text-zinc-400">
                                                 <Calendar className="w-3 h-3" />
                                                 {new Date(workout.date).toLocaleDateString(undefined, {
+                                                    weekday: 'short',
                                                     month: 'short',
                                                     day: 'numeric'
                                                 })}
