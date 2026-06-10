@@ -34,6 +34,8 @@ const OnboardingPage = () => {
         register,
         handleSubmit,
         trigger,
+        getValues,
+        setValue,
         formState: { errors }
     } = useForm({
         defaultValues: {
@@ -62,6 +64,46 @@ const OnboardingPage = () => {
         } else if (currentStep === 2) {
             setStep(3);
         }
+    };
+
+    const handleUnitToggle = () => {
+        const values = getValues();
+        
+        // Converting Weight
+        if (weightUnit === 'kg') {
+            // Currently KG -> converting to LBS
+            const cWeight = parseFloat(values.currentWeight);
+            if (!isNaN(cWeight)) setValue('currentWeight', (cWeight * 2.20462).toFixed(1));
+            
+            const gWeight = parseFloat(values.goalWeight);
+            if (!isNaN(gWeight)) setValue('goalWeight', (gWeight * 2.20462).toFixed(1));
+
+            // Height CM -> FT/IN
+            const hCm = parseFloat(values.height);
+            if (!isNaN(hCm)) {
+                const totalInches = hCm / 2.54;
+                setValue('heightFt', Math.floor(totalInches / 12).toString());
+                setValue('heightIn', Math.round(totalInches % 12).toString());
+            }
+        } else {
+            // Currently LBS -> converting to KG
+            const cWeight = parseFloat(values.currentWeight);
+            if (!isNaN(cWeight)) setValue('currentWeight', (cWeight / 2.20462).toFixed(1));
+            
+            const gWeight = parseFloat(values.goalWeight);
+            if (!isNaN(gWeight)) setValue('goalWeight', (gWeight / 2.20462).toFixed(1));
+
+            // Height FT/IN -> CM
+            const hFt = parseFloat(values.heightFt) || 0;
+            const hIn = parseFloat(values.heightIn) || 0;
+            if (hFt > 0 || hIn > 0) {
+                const cm = ((hFt * 12) + hIn) * 2.54;
+                setValue('height', Math.round(cm).toString());
+            }
+        }
+        
+        // This toggles both weight and height units in the UserPreferencesContext
+        toggleWeightUnit();
     };
 
     const onSubmit = async (data) => {
@@ -252,7 +294,7 @@ const OnboardingPage = () => {
                                     <p className="text-sm text-zinc-400">Help the AI customize your plan.</p>
                                 </div>
                                 <button
-                                    onClick={toggleWeightUnit}
+                                    onClick={handleUnitToggle}
                                     type="button"
                                     className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
                                 >
@@ -342,13 +384,15 @@ const OnboardingPage = () => {
                                 {errors.goalWeight && <p className="text-xs text-red-500">{errors.goalWeight.message}</p>}
                             </div>
 
-                            <Button
-                                onClick={() => handleNextStep(1)}
-                                type="button"
-                                className="w-full mt-4"
-                            >
-                                Next Step <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
+                            <div className="pt-6 mt-8 border-t border-zinc-800/50">
+                                <Button
+                                    onClick={() => handleNextStep(1)}
+                                    type="button"
+                                    className="w-full h-12 text-base font-semibold"
+                                >
+                                    Next Step <ArrowRight className="w-5 h-5 ml-2" />
+                                </Button>
+                            </div>
                         </form>
                     )}
 
@@ -417,12 +461,12 @@ const OnboardingPage = () => {
                                 </button>
                             </div>
 
-                            <div className="flex gap-3 mt-8">
-                                <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                            <div className="pt-6 mt-8 border-t border-zinc-800/50 flex gap-3">
+                                <Button variant="outline" onClick={() => setStep(1)} className="flex-1 h-12 text-base font-semibold">
                                     Back
                                 </Button>
-                                <Button onClick={() => handleNextStep(2)} className="flex-1 gap-2">
-                                    Next Step <ArrowRight className="w-4 h-4 ml-2" />
+                                <Button onClick={() => handleNextStep(2)} className="flex-1 gap-2 h-12 text-base font-semibold">
+                                    Next Step <ArrowRight className="w-5 h-5 ml-2" />
                                 </Button>
                             </div>
                         </div>
@@ -457,18 +501,18 @@ const OnboardingPage = () => {
                                 ))}
                             </div>
 
-                            <div className="flex gap-3 mt-8">
-                                <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                            <div className="pt-6 mt-8 border-t border-zinc-800/50 flex gap-3">
+                                <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-12 text-base font-semibold">
                                     Back
                                 </Button>
                                 <Button
                                     onClick={handleSubmit(onSubmit)}
-                                    className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                                    className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 h-12 text-base font-semibold"
                                     disabled={loading}
                                 >
                                     {loading ? (
                                         <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
                                             Saving...
                                         </>
                                     ) : (
