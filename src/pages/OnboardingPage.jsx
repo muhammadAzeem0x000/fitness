@@ -117,9 +117,36 @@ const OnboardingPage = () => {
             let templates = [];
             if (splitType === 'ppl') {
                 templates = [
-                    { user_id: user.id, name: 'Push', schedule_days: [], exercises: [{ name: 'Bench Press', category: 'Chest', sets: 3, reps: 10 }, { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 }, { name: 'Tricep Extension', category: 'Arms', sets: 3, reps: 12 }] },
-                    { user_id: user.id, name: 'Pull', schedule_days: [], exercises: [{ name: 'Pull-up', category: 'Back', sets: 3, reps: 8 }, { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }, { name: 'Bicep Curl', category: 'Arms', sets: 3, reps: 12 }] },
-                    { user_id: user.id, name: 'Legs', schedule_days: [], exercises: [{ name: 'Squat', category: 'Legs', sets: 3, reps: 8 }, { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, { name: 'Calf Raise', category: 'Legs', sets: 3, reps: 15 }] },
+                    { 
+                        user_id: user.id, name: 'Push', schedule_days: [], exercises: [
+                            { name: 'Barbell Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
+                            { name: 'Overhead Press (OHP)', category: 'Shoulders', sets: 3, reps: 10 }, 
+                            { name: 'Incline Dumbbell Press', category: 'Chest', sets: 3, reps: 12 },
+                            { name: 'Lateral Raises', category: 'Shoulders', sets: 3, reps: 15 },
+                            { name: 'Tricep Pushdowns', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Skull Crushers', category: 'Arms', sets: 3, reps: 12 }
+                        ] 
+                    },
+                    { 
+                        user_id: user.id, name: 'Pull', schedule_days: [], exercises: [
+                            { name: 'Barbell Rows', category: 'Back', sets: 3, reps: 10 }, 
+                            { name: 'Pull-Ups', category: 'Back', sets: 3, reps: 8 }, 
+                            { name: 'Lat Pulldowns', category: 'Back', sets: 3, reps: 12 },
+                            { name: 'Face Pulls', category: 'Shoulders', sets: 3, reps: 15 },
+                            { name: 'Barbell Curls', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Hammer Curls', category: 'Arms', sets: 3, reps: 12 }
+                        ] 
+                    },
+                    { 
+                        user_id: user.id, name: 'Legs', schedule_days: [], exercises: [
+                            { name: 'Barbell Squat', category: 'Legs', sets: 3, reps: 8 }, 
+                            { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Leg Press', category: 'Legs', sets: 3, reps: 12 },
+                            { name: 'Leg Extensions', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Lying Leg Curls', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Calf Raises', category: 'Legs', sets: 4, reps: 15 }
+                        ] 
+                    },
                 ];
             } else if (splitType === 'upper_lower') {
                 templates = [
