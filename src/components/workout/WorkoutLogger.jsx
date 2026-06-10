@@ -112,7 +112,11 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
             <ActiveSessionView
                 routineName={selectedRoutine.name}
                 initialExercises={selectedExercises}
-                onBack={() => setIsLogging(false)}
+                onBack={() => {
+                    setIsLogging(false);
+                    setSelectedRoutine(null);
+                    setSelectedExercises([]);
+                }}
                 onSave={handleSave}
                 onAddMore={() => setShowPicker(true)}
                 defaultReps={defaultReps}
