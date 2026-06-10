@@ -42,35 +42,40 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
         return initialSets;
     });
 
-    // Calculate historical max weight for this exercise
-    const getHistoricalMaxWeight = () => {
-        if (!exerciseHistory || exerciseHistory.length === 0) return 0;
+    // Calculate historical max weight and reps for this exercise
+    const getHistoricalMaxes = () => {
+        if (!exerciseHistory || exerciseHistory.length === 0) return { maxWeight: 0, maxRepsAtMaxWeight: 0 };
 
         let maxWeight = 0;
+        let maxRepsAtMaxWeight = 0;
+
         exerciseHistory.forEach(log => {
             const exerciseData = log.exercises?.[exercise];
             if (exerciseData && Array.isArray(exerciseData)) {
                 exerciseData.forEach(set => {
                     const weight = parseFloat(set.weight) || 0;
+                    const reps = parseInt(set.reps) || 0;
                     if (weight > maxWeight) {
                         maxWeight = weight;
+                        maxRepsAtMaxWeight = reps;
+                    } else if (weight === maxWeight && reps > maxRepsAtMaxWeight) {
+                        maxRepsAtMaxWeight = reps;
                     }
                 });
             }
         });
 
-        return maxWeight;
+        return { maxWeight, maxRepsAtMaxWeight };
     };
 
-    // Check if current weight is a new PR
-    const checkForPR = (currentWeight) => {
-        if (!currentWeight) return false;
-        const weight = parseFloat(currentWeight);
-        if (isNaN(weight) || weight <= 0) return false;
+    const { maxWeight: historicalMax, maxRepsAtMaxWeight: historicalMaxReps } = getHistoricalMaxes();
+    const [sessionMaxWeight, setSessionMaxWeight] = useState(historicalMax);
+    const [sessionMaxReps, setSessionMaxReps] = useState(historicalMaxReps);
 
-        const historicalMax = getHistoricalMaxWeight();
-        return weight > historicalMax;
-    };
+    useEffect(() => {
+        setSessionMaxWeight(historicalMax);
+        setSessionMaxReps(historicalMaxReps);
+    }, [historicalMax, historicalMaxReps]);
 
     // Lift state up whenever local state changes
     useEffect(() => {
@@ -84,20 +89,38 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
 
         // Mark this set as touched by the user
         setTouchedSets(prev => new Set(prev).add(index));
+    };
 
-        // Check for PR on weight change
-        if (field === 'weight' && value) {
-            const isPR = checkForPR(value);
-            if (isPR) {
-                setPrSetIndex(index);
-                setShowConfetti(true);
-                toast.success(`🏆 New 1RM Record set for ${exercise}!`);
+    const handleBlur = (index) => {
+        const set = sets[index];
+        const weight = parseFloat(set.weight) || 0;
+        const reps = parseInt(set.reps) || 0;
+        
+        if (weight <= 0) return;
 
-                // Stop confetti after 3 seconds
-                setTimeout(() => {
-                    setShowConfetti(false);
-                }, 3000);
-            }
+        let isPR = false;
+        let prMessage = '';
+
+        if (weight > sessionMaxWeight) {
+            isPR = true;
+            prMessage = `🏆 New Weight PR set for ${exercise}!`;
+            setSessionMaxWeight(weight);
+            setSessionMaxReps(reps);
+        } else if (weight === sessionMaxWeight && reps > sessionMaxReps) {
+            isPR = true;
+            prMessage = `🏆 New Reps PR set for ${exercise}!`;
+            setSessionMaxReps(reps);
+        }
+
+        if (isPR) {
+            setPrSetIndex(index);
+            setShowConfetti(true);
+            toast.success(prMessage);
+
+            // Stop confetti after 3 seconds
+            setTimeout(() => {
+                setShowConfetti(false);
+            }, 3000);
         }
     };
 
@@ -118,8 +141,6 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
         if (bestSet.weight === 0) return "No data";
         return `${bestSet.weight}kg x ${bestSet.reps}`;
     };
-
-    const historicalMax = getHistoricalMaxWeight();
 
     return (
         <>
@@ -168,6 +189,7 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                                             placeholder="kg"
                                             value={set.weight}
                                             onChange={(e) => updateSet(index, 'weight', e.target.value)}
+                                            onBlur={() => handleBlur(index)}
                                             className={`w-full h-9 rounded-md border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-zinc-800'} bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow`}
                                         />
                                         {prSetIndex === index && set.weight && (
@@ -183,6 +205,7 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                                         placeholder="reps"
                                         value={set.reps}
                                         onChange={(e) => updateSet(index, 'reps', e.target.value)}
+                                        onBlur={() => handleBlur(index)}
                                         className="w-1/2 h-9 rounded-md border border-zinc-800 bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow"
                                     />
 
