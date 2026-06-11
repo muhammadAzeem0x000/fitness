@@ -60,22 +60,33 @@ export function StatsOverview({ stats, currentBMI }) {
             icon: Activity,
             color: bmiData.color,
             customRender: (
-                <div className="mt-2 space-y-1">
-                    <div className="flex justify-between text-xs">
+                <div className="mt-2 flex flex-col">
+                    <div className="flex justify-between text-xs mb-3">
                         <span className={`font-medium ${bmiData.color}`}>{bmiData.category}</span>
                     </div>
-                    <div className="relative w-full h-1.5 rounded-full overflow-hidden flex bg-zinc-800">
-                        <div className="w-1/4 bg-blue-500/80"></div>
-                        <div className="w-1/4 bg-emerald-500/80"></div>
-                        <div className="w-1/4 bg-yellow-500/80"></div>
-                        <div className="w-1/4 bg-red-500/80"></div>
-                        
+                    
+                    {/* Progress Bar Container with Marker */}
+                    <div className="relative w-full pb-1">
                         {currentBMI && currentBMI !== '0.0' && (
                             <div 
-                                className="absolute top-0 bottom-0 w-[3px] bg-white rounded-full shadow-[0_0_4px_rgba(0,0,0,0.5)] transition-all duration-500"
-                                style={{ left: `calc(${bmiData.percent}% - 1.5px)` }}
+                                className="absolute -top-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white drop-shadow-md transition-all duration-500 z-10"
+                                style={{ left: `calc(${bmiData.percent}% - 6px)` }}
                             />
                         )}
+                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-zinc-800">
+                            <div className="w-1/4 bg-blue-500/80"></div>
+                            <div className="w-1/4 bg-emerald-500/80"></div>
+                            <div className="w-1/4 bg-yellow-500/80"></div>
+                            <div className="w-1/4 bg-red-500/80"></div>
+                        </div>
+                    </div>
+                    
+                    {/* Scale Labels */}
+                    <div className="flex w-full justify-between text-[10px] font-medium text-zinc-500 mt-1">
+                        <span className="w-1/4 text-center">Under</span>
+                        <span className="w-1/4 text-center">Normal</span>
+                        <span className="w-1/4 text-center">Over</span>
+                        <span className="w-1/4 text-center">Obese</span>
                     </div>
                 </div>
             )
