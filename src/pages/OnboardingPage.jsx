@@ -133,6 +133,7 @@ const OnboardingPage = () => {
                     current_weight: weightInKg,
                     goal_weight: goalWeightInKg,
                     workout_days: selectedDays,
+                    needs_onboarding: false,
                     updated_at: new Date().toISOString()
                 });
 

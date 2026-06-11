@@ -105,9 +105,11 @@ const AppContent = () => {
 
     if (user && !profileLoading) {
       const isOnboarding = location.pathname === '/onboarding';
-      if (!profile && !isOnboarding) {
+      const needsOnboarding = !profile || profile.needs_onboarding;
+      
+      if (needsOnboarding && !isOnboarding) {
         navigate('/onboarding');
-      } else if (profile && isOnboarding) {
+      } else if (!needsOnboarding && isOnboarding) {
         navigate('/dashboard');
       }
     }
