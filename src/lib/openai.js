@@ -1,15 +1,16 @@
 import OpenAI from 'openai';
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+const apiKey = import.meta.env.VITE_GROQ_API_KEY;
 
 const openai = new OpenAI({
     apiKey: apiKey,
+    baseURL: 'https://api.groq.com/openai/v1',
     dangerouslyAllowBrowser: true
 });
 
 export async function generateHealthReport(weightHistory, workoutLogs, previousReport, reportType = 'weekly', userProfile = {}) {
     if (!apiKey) {
-        throw new Error("Missing OpenAI API Key");
+        throw new Error("Missing Groq API Key");
     }
 
     const { displayName, workoutDays } = userProfile;
@@ -167,13 +168,13 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     try {
         const completion = await openai.chat.completions.create({
             messages: [{ role: "system", content: systemPrompt }],
-            model: "gpt-3.5-turbo",
+            model: "llama3-70b-8192",
         });
 
         return completion.choices[0].message.content;
     } catch (error) {
-        console.error("OpenAI API Detailed Error:", error);
-        const message = error?.error?.message || error.message || "Unknown OpenAI Error";
-        throw new Error(`OpenAI Failed: ${message}`);
+        console.error("Groq API Detailed Error:", error);
+        const message = error?.error?.message || error.message || "Unknown Groq Error";
+        throw new Error(`Groq Failed: ${message}`);
     }
 }
