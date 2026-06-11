@@ -168,7 +168,7 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     try {
         const completion = await openai.chat.completions.create({
             messages: [{ role: "system", content: systemPrompt }],
-            model: "llama3-70b-8192",
+            model: "llama-3.3-70b-versatile",
         });
 
         return completion.choices[0].message.content;
