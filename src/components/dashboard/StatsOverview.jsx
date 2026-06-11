@@ -39,14 +39,61 @@ export function StatsOverview({ stats, currentBMI }) {
         return { category, color, percent };
     };
 
+    const getWeightProgressData = (start, current, goal) => {
+        if (!start || !current || !goal || start === goal) return null;
+        
+        let percent = 0;
+        let isGaining = goal > start;
+        
+        if (isGaining) {
+            if (current <= start) percent = 0;
+            else if (current >= goal) percent = 100;
+            else percent = ((current - start) / (goal - start)) * 100;
+        } else {
+            if (current >= start) percent = 0;
+            else if (current <= goal) percent = 100;
+            else percent = ((start - current) / (start - goal)) * 100;
+        }
+        
+        const diffToGoal = Math.abs(goal - current);
+        const text = percent >= 100 ? 'Goal Reached!' : `${displayWeight(diffToGoal)} ${formatWeightLabel()} to go`;
+        const color = percent >= 100 ? 'text-emerald-400' : 'text-blue-400';
+        const barColor = percent >= 100 ? 'bg-emerald-500' : 'bg-blue-500';
+        
+        return { percent, text, color, barColor };
+    };
+
     const bmiData = getBMIData(currentBMI);
+    const weightData = getWeightProgressData(stats.startWeight, stats.currentWeight, stats.goalWeight);
 
     const statItems = [
         {
             title: 'Current Weight',
             value: `${displayWeight(stats.currentWeight)} ${formatWeightLabel()}`,
             icon: Scale,
-            color: 'text-blue-400'
+            color: weightData ? weightData.color : 'text-blue-400',
+            customRender: weightData ? (
+                <div className="mt-2 flex flex-col">
+                    <div className="flex justify-between text-xs mb-3">
+                        <span className={`font-medium ${weightData.color}`}>{weightData.text}</span>
+                    </div>
+                    
+                    <div className="relative w-full pb-1">
+                        <div 
+                            className="absolute -top-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white drop-shadow-md transition-all duration-500 z-10"
+                            style={{ left: `calc(${weightData.percent}% - 6px)` }}
+                        />
+                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-zinc-800">
+                            <div className={`h-full ${weightData.barColor} transition-all duration-500`} style={{ width: `${weightData.percent}%` }}></div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex w-full justify-between text-[10px] font-medium text-zinc-500 mt-1">
+                        <span>{displayWeight(stats.startWeight)} {formatWeightLabel()}</span>
+                        <span>{displayWeight(stats.goalWeight)} {formatWeightLabel()}</span>
+                    </div>
+                </div>
+            ) : null
         },
         {
             title: 'Height',
