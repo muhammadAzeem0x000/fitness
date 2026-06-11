@@ -90,7 +90,7 @@ export function StatsOverview({ stats, currentBMI }) {
                     
                     <div className="flex w-full justify-between text-[10px] font-medium text-zinc-500 mt-1">
                         <span>{displayWeight(stats.startWeight)} {formatWeightLabel()}</span>
-                        <span>{displayWeight(stats.goalWeight)} {formatWeightLabel()}</span>
+                        <span>Goal: {displayWeight(stats.goalWeight)} {formatWeightLabel()}</span>
                     </div>
                 </div>
             ) : null

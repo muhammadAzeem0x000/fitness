@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '../../context/ToastContext';
 import { PasswordInput } from '../ui/PasswordInput';
+import { useUserPreferences } from '../../context/UserPreferencesContext';
 
 export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
@@ -22,6 +23,8 @@ export function UserProfileDialog({ isOpen, onClose }) {
         subscription?.status === 'active' ||
         !!subscription?.stripe_subscription_id;
 
+    const { convertWeightToDb, displayWeight, formatWeightLabel } = useUserPreferences();
+
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [portalLoading, setPortalLoading] = useState(false);
@@ -31,6 +34,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
     // Form State
     const [displayName, setDisplayName] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
+    const [goalWeightInput, setGoalWeightInput] = useState('');
     const [workoutDays, setWorkoutDays] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
@@ -46,6 +50,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
         if (isOpen && profile) {
             setDisplayName(profile.display_name || '');
             setAvatarUrl(profile.avatar_url || '');
+            setGoalWeightInput(profile.goal_weight ? displayWeight(profile.goal_weight) : '');
             setWorkoutDays(profile.workout_days || []);
             setIsDirty(false);
             // Reset password fields
@@ -61,9 +66,12 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const handleSave = async () => {
         setLoading(true);
         try {
+            const newGoalWeight = convertWeightToDb(goalWeightInput);
+            
             await updateProfile({
                 display_name: displayName,
                 avatar_url: avatarUrl,
+                goal_weight: newGoalWeight,
                 workout_days: workoutDays
             });
             toast.success("Profile updated successfully!");
@@ -234,18 +242,34 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                     <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
                                 </div>
 
-                                {/* Name Input */}
-                                <div className="flex-1">
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
-                                        Display Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={displayName}
-                                        onChange={(e) => { setDisplayName(e.target.value); setIsDirty(true); }}
-                                        placeholder="Your Name"
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
-                                    />
+                                {/* Inputs Column */}
+                                <div className="flex-1 flex flex-col gap-3">
+                                    <div>
+                                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                                            Display Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={displayName}
+                                            onChange={(e) => { setDisplayName(e.target.value); setIsDirty(true); }}
+                                            placeholder="Your Name"
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                                            Goal Weight ({formatWeightLabel()})
+                                        </label>
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            value={goalWeightInput}
+                                            onChange={(e) => { setGoalWeightInput(e.target.value); setIsDirty(true); }}
+                                            placeholder="e.g. 180"
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
