@@ -33,11 +33,11 @@ export function Header() {
         let stateClasses;
         if (isPrimary) {
             stateClasses = isActive
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-blue-600/90 text-white hover:bg-blue-600";
+                ? "bg-blue-500/20 text-blue-400 font-semibold"
+                : "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 font-semibold";
         } else {
             stateClasses = isActive
-                ? "bg-zinc-800 text-slate-100 hover:bg-zinc-800/80"
+                ? "bg-zinc-800 text-slate-100"
                 : "hover:bg-zinc-800 hover:text-slate-100 text-zinc-400";
         }
 
@@ -60,8 +60,8 @@ export function Header() {
         let stateClasses;
         if (isPrimary) {
             stateClasses = isActive
-                ? "bg-blue-600 text-white"
-                : "bg-blue-600/90 text-white hover:bg-blue-600";
+                ? "bg-blue-500/20 text-blue-400 font-semibold"
+                : "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 font-semibold";
         } else {
             stateClasses = isActive
                 ? "bg-zinc-800 text-slate-100"
