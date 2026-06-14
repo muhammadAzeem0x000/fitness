@@ -1,13 +1,35 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LabelList } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { TrendingUp, BarChart3 } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
+
+// Custom Premium Tooltip
+const CustomTooltip = ({ active, payload, label, formatWeightLabel }) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        return (
+            <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-3 rounded-xl shadow-2xl z-50 relative">
+                <p className="text-zinc-400 text-xs mb-1 font-medium">{data.fullDate}</p>
+                <div className="flex items-center justify-between gap-4">
+                    <span className="text-white font-semibold flex items-baseline gap-1">
+                        {payload[0].value.toLocaleString()} <span className="text-xs text-zinc-500">{formatWeightLabel()}</span>
+                    </span>
+                    <span className="text-[10px] font-medium bg-zinc-800 px-2 py-0.5 rounded-md text-zinc-300">
+                        {data.type}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
 
 export function VolumeChart({ workouts }) {
     const { formatWeightLabel } = useUserPreferences();
     const chartContainerRef = useRef(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(null);
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -15,18 +37,13 @@ export function VolumeChart({ workouts }) {
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
     const data = useMemo(() => {
         if (!workouts || workouts.length === 0) return [];
-
-        // Sort by date ascending
         const sorted = [...workouts].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        // Group by Date or just map each session? 
-        // Let's map each session to total volume.
         return sorted.map(workout => {
             let totalVolume = 0;
-
-            // Handle new structure where exercises is an object { "Bench Press": [ {weight, reps} ] }
             if (workout.exercises && typeof workout.exercises === 'object') {
                 Object.values(workout.exercises).forEach(sets => {
                     if (Array.isArray(sets)) {
@@ -42,105 +59,74 @@ export function VolumeChart({ workouts }) {
             return {
                 date: new Date(workout.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
                 volume: totalVolume,
-                fullDate: new Date(workout.date).toLocaleDateString(),
-                type: workout.type
+                fullDate: new Date(workout.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }),
+                type: workout.type || 'Workout'
             };
-        }).slice(-10); // Show last 10 sessions
+        }).slice(-10);
     }, [workouts]);
 
-    // Remove tabindex="0" that Recharts injects at runtime
-    // This is the root cause of white focus borders on click/tap
-    useEffect(() => {
-        const container = chartContainerRef.current;
-        if (!container) return;
-
-        const removeFocusRings = () => {
-            const focusableElements = container.querySelectorAll('[tabindex="0"]');
-            focusableElements.forEach(el => {
-                el.setAttribute('tabindex', '-1');
-            });
-        };
-
-        removeFocusRings();
-        const observer = new MutationObserver(removeFocusRings);
-        observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
-        return () => observer.disconnect();
-    }, [data]);
-
     if (!workouts || workouts.length === 0) return null;
-
-    const CustomLabel = (props) => {
-        const { x, y, value, index } = props;
-        const entry = data[index];
-        const formattedValue = value > 999 ? `${(value / 1000).toFixed(1)}k` : value;
-        const unit = formatWeightLabel(); // e.g. "kg" or "lbs"
-        return (
-            <g>
-                <text x={x} y={y - 20} fill="#ffffff" textAnchor="middle" fontSize={10} fontWeight="500">
-                    {formattedValue} <tspan fontSize={8} fill="#94a3b8">{unit}</tspan>
-                </text>
-                <text x={x} y={y - 8} fill="#cbd5e1" textAnchor="middle" fontSize={9}>
-                    {entry?.type || ''}
-                </text>
-            </g>
-        );
-    };
 
     return (
         <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between pb-2 flex-shrink-0">
-                <CardTitle className="text-sm font-medium text-zinc-400">
-                    Volume Load (Last 10 Sessions)
+                <CardTitle className="text-sm font-medium text-white flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-blue-400" />
+                    Volume Load
                 </CardTitle>
-                <BarChart3 className="h-4 w-4 text-blue-500" />
+                <span className="text-[10px] text-zinc-500 font-medium bg-zinc-800/50 px-2 py-1 rounded-md">Last 10 Sessions</span>
             </CardHeader>
-            <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2 flex-1">
-                <div ref={chartContainerRef} className="h-[260px] w-full mt-4" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
-                    <ResponsiveContainer width="100%" height="100%" style={{ outline: 'none' }} tabIndex={-1}>
-                        <LineChart data={data} margin={isMobile ? { top: 40, right: 10, left: 0, bottom: 5 } : { top: 40, right: 20, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
+            <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2 flex-1 relative">
+                <div ref={chartContainerRef} className="h-[260px] w-full mt-2 pointer-events-auto" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart 
+                            data={data} 
+                            margin={isMobile ? { top: 10, right: 10, left: -5, bottom: 0 } : { top: 10, right: 20, left: 10, bottom: 0 }}
+                            onMouseMove={(state) => {
+                                if (state.isTooltipActive) setActiveIndex(state.activeTooltipIndex);
+                                else setActiveIndex(null);
+                            }}
+                            onMouseLeave={() => setActiveIndex(null)}
+                        >
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                             <XAxis
                                 dataKey="date"
-                                stroke="#71717a"
-                                fontSize={isMobile ? 10 : 12}
+                                stroke="#52525b"
+                                fontSize={isMobile ? 9 : 10}
                                 tickLine={false}
                                 axisLine={false}
-                                minTickGap={isMobile ? 15 : 30}
+                                minTickGap={10}
+                                dy={10}
                             />
                             <YAxis
-                                stroke="#71717a"
-                                fontSize={isMobile ? 10 : 12}
+                                stroke="#52525b"
+                                fontSize={isMobile ? 9 : 10}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `${(value / 1000).toFixed(1)}k`}
-                                width={isMobile ? 38 : 55}
-                                padding={{ top: 60, bottom: 0 }}
+                                tickFormatter={(value) => value > 999 ? `${(value / 1000).toFixed(1)}k` : value}
+                                width={isMobile ? 35 : 45}
+                                dx={-5}
                             />
                             <Tooltip
-                                cursor={{ stroke: '#27272a', strokeWidth: 1, strokeDasharray: '3 3' }}
-                                contentStyle={{
-                                    backgroundColor: '#09090b',
-                                    border: '1px solid #27272a',
-                                    borderRadius: '10px',
-                                    fontSize: '12px',
-                                    outline: 'none',
-                                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-                                    padding: '8px 12px',
-                                }}
-                                formatter={(value) => [value.toLocaleString(), 'Volume']}
-                                labelStyle={{ color: '#71717a', fontSize: '11px' }}
+                                cursor={{ fill: '#27272a', opacity: 0.4 }}
+                                content={<CustomTooltip formatWeightLabel={formatWeightLabel} />}
+                                isAnimationActive={false}
                             />
-                            <Line
-                                type="monotone"
-                                dataKey="volume"
-                                stroke="#3b82f6"
-                                strokeWidth={2}
-                                dot={{ fill: '#3b82f6', strokeWidth: 0, r: 4 }}
-                                activeDot={{ r: 6, fill: '#60a5fa', strokeWidth: 0 }}
+                            <Bar 
+                                dataKey="volume" 
+                                radius={[6, 6, 0, 0]} 
+                                barSize={isMobile ? 16 : 24}
+                                animationDuration={500}
                             >
-                                <LabelList content={<CustomLabel />} />
-                            </Line>
-                        </LineChart>
+                                {data.map((entry, index) => (
+                                    <Cell 
+                                        key={`cell-${index}`} 
+                                        fill={index === activeIndex ? '#60a5fa' : '#3b82f6'} 
+                                        style={{ outline: 'none', transition: 'fill 0.2s ease' }}
+                                    />
+                                ))}
+                            </Bar>
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
             </CardContent>
