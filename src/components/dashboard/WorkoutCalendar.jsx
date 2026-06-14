@@ -97,7 +97,7 @@ export function WorkoutCalendar({ workouts = [] }) {
     }
 
     return (
-        <Card className="border-zinc-800 bg-zinc-900/50">
+        <Card className="border-zinc-800 bg-zinc-900/50 h-full flex flex-col">
             <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-white flex items-center gap-2 text-base">
@@ -122,8 +122,9 @@ export function WorkoutCalendar({ workouts = [] }) {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
-                {/* Month stats */}
+            <CardContent className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col justify-center">
+                    {/* Month stats */}
                 <div className="flex items-center gap-4 mb-4 text-xs text-zinc-400">
                     <span className="bg-zinc-800 px-2.5 py-1 rounded-md">
                         <span className="text-white font-semibold">{monthWorkouts.length}</span> workouts
@@ -134,7 +135,8 @@ export function WorkoutCalendar({ workouts = [] }) {
                 </div>
 
                 {/* Day headers */}
-                <div className="grid grid-cols-7 gap-1 mb-1">
+                <div className="max-w-[280px] mx-auto w-full">
+                    <div className="grid grid-cols-7 gap-1 mb-1">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
                         <div key={d} className="text-[10px] text-zinc-600 text-center font-medium py-1">
                             {d}
@@ -184,6 +186,7 @@ export function WorkoutCalendar({ workouts = [] }) {
                         );
                     })}
                 </div>
+                </div>
 
                 {/* Selected day detail */}
                 {selectedDay && workoutMap[selectedDay] && (
@@ -205,8 +208,9 @@ export function WorkoutCalendar({ workouts = [] }) {
                     </div>
                 )}
 
+                </div>
                 {/* Legend */}
-                <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-zinc-800">
+                <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-zinc-800 justify-center">
                     {[
                         { label: 'Push/Chest', color: 'bg-red-500' },
                         { label: 'Pull/Back', color: 'bg-blue-500' },

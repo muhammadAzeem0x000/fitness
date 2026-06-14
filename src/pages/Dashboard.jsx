@@ -79,23 +79,25 @@ export function Dashboard() {
                 <div className="grid lg:grid-cols-2 gap-6">
                     {isLoading ? (
                         <>
+                            <div className="col-span-full">
+                                <SkeletonChart />
+                            </div>
                             <SkeletonChart />
                             <SkeletonChart />
                         </>
                     ) : (
                         <>
                             <WeightChart data={weightHistory} />
-                            <VolumeChart workouts={workoutLogs} />
+                            {hasWorkouts && (
+                                <>
+                                    <VolumeChart workouts={workoutLogs} />
+                                    <WorkoutCalendar workouts={workoutLogs} />
+                                </>
+                            )}
                         </>
                     )}
                 </div>
 
-                {/* Workout Calendar - below charts, same premium gate */}
-                {!isLoading && hasWorkouts && (
-                    <div className="mt-6 max-w-2xl mx-auto w-full">
-                        <WorkoutCalendar workouts={workoutLogs} />
-                    </div>
-                )}
             </PremiumGate>
 
             {/* Main Content + Sidebar */}

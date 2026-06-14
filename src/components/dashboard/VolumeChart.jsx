@@ -87,15 +87,15 @@ export function VolumeChart({ workouts }) {
     };
 
     return (
-        <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full flex flex-col">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 flex-shrink-0">
                 <CardTitle className="text-sm font-medium text-zinc-400">
                     Volume Load (Last 10 Sessions)
                 </CardTitle>
                 <BarChart3 className="h-4 w-4 text-blue-500" />
             </CardHeader>
-            <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2">
-                <div ref={chartContainerRef} className="h-[200px] w-full mt-4" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
+            <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2 flex-1">
+                <div ref={chartContainerRef} className="h-[260px] w-full mt-4" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
                     <ResponsiveContainer width="100%" height="100%" style={{ outline: 'none' }} tabIndex={-1}>
                         <LineChart data={data} margin={isMobile ? { top: 40, right: 10, left: 0, bottom: 5 } : { top: 40, right: 20, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
