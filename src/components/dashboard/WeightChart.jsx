@@ -94,7 +94,7 @@ export function WeightChart({ data }) {
                 <div className="flex flex-col gap-2">
                     <div ref={chartContainerRef} className="h-[260px] w-full min-w-0 pointer-events-auto" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={visibleData} margin={isMobile ? { top: 20, right: 15, left: -10, bottom: 0 } : { top: 20, right: 30, left: 10, bottom: 0 }}>
+                            <AreaChart data={visibleData} accessibilityLayer={false} margin={isMobile ? { top: 20, right: 15, left: -10, bottom: 0 } : { top: 20, right: 30, left: 10, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />

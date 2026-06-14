@@ -81,6 +81,7 @@ export function VolumeChart({ workouts }) {
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart 
                             data={data} 
+                            accessibilityLayer={false}
                             margin={isMobile ? { top: 10, right: 10, left: -5, bottom: 0 } : { top: 10, right: 20, left: 10, bottom: 0 }}
                             onMouseMove={(state) => {
                                 if (state.isTooltipActive) setActiveIndex(state.activeTooltipIndex);
