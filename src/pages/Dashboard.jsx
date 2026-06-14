@@ -92,7 +92,7 @@ export function Dashboard() {
 
                 {/* Workout Calendar - below charts, same premium gate */}
                 {!isLoading && hasWorkouts && (
-                    <div className="mt-6">
+                    <div className="mt-6 max-w-2xl mx-auto w-full">
                         <WorkoutCalendar workouts={workoutLogs} />
                     </div>
                 )}

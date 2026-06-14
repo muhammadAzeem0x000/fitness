@@ -136,7 +136,7 @@ export function VolumeChart({ workouts }) {
                                 stroke="#3b82f6"
                                 strokeWidth={2}
                                 dot={{ fill: '#3b82f6', strokeWidth: 0, r: 4 }}
-                                activeDot={{ r: 6, fill: '#60a5fa' }}
+                                activeDot={{ r: 6, fill: '#60a5fa', strokeWidth: 0 }}
                             >
                                 <LabelList content={<CustomLabel />} />
                             </Line>

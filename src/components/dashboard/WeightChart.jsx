@@ -134,8 +134,8 @@ export function WeightChart({ data }) {
                                     dataKey="weight"
                                     stroke="#3b82f6"
                                     strokeWidth={2}
-                                    dot={{ r: 4, fill: '#3b82f6' }}
-                                    activeDot={{ r: 6 }}
+                                    dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
+                                    activeDot={{ r: 6, fill: '#3b82f6', strokeWidth: 0 }}
                                     style={{ outline: 'none' }}
                                 >
                                     <LabelList
