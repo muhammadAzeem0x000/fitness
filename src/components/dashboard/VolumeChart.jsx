@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LabelList } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { TrendingUp, BarChart3 } from 'lucide-react';
@@ -7,6 +7,14 @@ import { useUserPreferences } from '../../context/UserPreferencesContext';
 export function VolumeChart({ workouts }) {
     const { formatWeightLabel } = useUserPreferences();
     const chartContainerRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
     const data = useMemo(() => {
         if (!workouts || workouts.length === 0) return [];
 
@@ -86,25 +94,26 @@ export function VolumeChart({ workouts }) {
                 </CardTitle>
                 <BarChart3 className="h-4 w-4 text-blue-500" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2">
                 <div ref={chartContainerRef} className="h-[200px] w-full mt-4" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
                     <ResponsiveContainer width="100%" height="100%" style={{ outline: 'none' }} tabIndex={-1}>
-                        <LineChart data={data} margin={{ top: 40, right: 20, left: 30, bottom: 5 }} style={{ outline: 'none' }}>
+                        <LineChart data={data} margin={isMobile ? { top: 40, right: 10, left: 0, bottom: 5 } : { top: 40, right: 20, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                             <XAxis
                                 dataKey="date"
                                 stroke="#71717a"
-                                fontSize={12}
+                                fontSize={isMobile ? 10 : 12}
                                 tickLine={false}
                                 axisLine={false}
+                                minTickGap={isMobile ? 15 : 30}
                             />
                             <YAxis
                                 stroke="#71717a"
-                                fontSize={12}
+                                fontSize={isMobile ? 10 : 12}
                                 tickLine={false}
                                 axisLine={false}
                                 tickFormatter={(value) => `${(value / 1000).toFixed(1)}k`}
-                                width={60}
+                                width={isMobile ? 38 : 55}
                                 padding={{ top: 60, bottom: 0 }}
                             />
                             <Tooltip
@@ -112,12 +121,14 @@ export function VolumeChart({ workouts }) {
                                 contentStyle={{
                                     backgroundColor: '#09090b',
                                     border: '1px solid #27272a',
-                                    borderRadius: '8px',
+                                    borderRadius: '10px',
                                     fontSize: '12px',
-                                    outline: 'none'
+                                    outline: 'none',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                                    padding: '8px 12px',
                                 }}
                                 formatter={(value) => [value.toLocaleString(), 'Volume']}
-                                labelStyle={{ color: '#a1a1aa' }}
+                                labelStyle={{ color: '#71717a', fontSize: '11px' }}
                             />
                             <Line
                                 type="monotone"

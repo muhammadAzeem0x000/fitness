@@ -40,6 +40,25 @@
     outline: none !important;
     box-shadow: none !important;
     -webkit-tap-highlight-color: transparent !important;
+    border-color: transparent !important;
+  }
+
+  /* Kill white focus borders on SVG elements inside charts */
+  .recharts-wrapper svg,
+  .recharts-wrapper svg *,
+  .recharts-wrapper svg:focus,
+  .recharts-wrapper svg:active,
+  .recharts-wrapper svg:focus-visible,
+  .recharts-wrapper svg *:focus,
+  .recharts-wrapper svg *:active {
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Suppress mobile tap highlight on all interactive elements */
+  button, a, input, select, textarea, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

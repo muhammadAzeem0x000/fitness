@@ -90,11 +90,11 @@ export function WeightChart({ data }) {
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="pl-0 sm:pl-2">
+            <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2">
                 <div className="flex flex-col gap-4">
                     <div ref={chartContainerRef} className="h-[260px] w-full min-w-0" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }} tabIndex={-1}>
                         <ResponsiveContainer width="100%" height="100%" className="focus:outline-none" style={{ outline: 'none' }} tabIndex={-1}>
-                            <LineChart data={visibleData} margin={{ top: 30, right: 30, left: 20, bottom: 5 }} style={{ outline: 'none' }}>
+                            <LineChart data={visibleData} margin={isMobile ? { top: 30, right: 15, left: -5, bottom: 5 } : { top: 30, right: 30, left: 10, bottom: 5 }} style={{ outline: 'none' }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                                 <XAxis
                                     dataKey="date"
@@ -112,12 +112,21 @@ export function WeightChart({ data }) {
                                     tickLine={false}
                                     axisLine={false}
                                     domain={yDomain}
+                                    width={isMobile ? 30 : 45}
                                     padding={{ top: 40, bottom: 10 }}
                                 />
                                 <Tooltip
                                     cursor={{ stroke: '#27272a', strokeWidth: 1, strokeDasharray: '3 3' }}
-                                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', outline: 'none' }}
-                                    itemStyle={{ color: '#e2e8f0' }}
+                                    contentStyle={{
+                                        backgroundColor: '#09090b',
+                                        border: '1px solid #27272a',
+                                        borderRadius: '10px',
+                                        outline: 'none',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                                        padding: '8px 12px',
+                                    }}
+                                    itemStyle={{ color: '#94a3b8', fontSize: '12px' }}
+                                    labelStyle={{ color: '#71717a', fontSize: '11px', marginBottom: '2px' }}
                                     formatter={(value) => [`${value} ${formatWeightLabel()}`, 'Weight']}
                                 />
                                 <Line

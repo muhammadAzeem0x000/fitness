@@ -89,6 +89,13 @@ export function Dashboard() {
                         </>
                     )}
                 </div>
+
+                {/* Workout Calendar - below charts, same premium gate */}
+                {!isLoading && hasWorkouts && (
+                    <div className="mt-6">
+                        <WorkoutCalendar workouts={workoutLogs} />
+                    </div>
+                )}
             </PremiumGate>
 
             {/* Main Content + Sidebar */}
@@ -137,11 +144,6 @@ export function Dashboard() {
 
                     {/* Quick Height Entry */}
                     <HeightUpdater updateHeight={updateHeight} />
-
-                    {/* Workout Calendar */}
-                    {hasWorkouts && (
-                        <WorkoutCalendar workouts={workoutLogs} />
-                    )}
                 </div>
             </div>
         </div>
