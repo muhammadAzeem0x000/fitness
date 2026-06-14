@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { MuscleGroupGrid } from './MuscleGroupGrid';
 import { ActiveSessionView } from './ActiveSessionView';
 import { ExercisePicker } from './ExercisePicker';
+import { AiWorkoutGenerator } from './AiWorkoutGenerator';
 import { SplitSelector } from './SplitSelector'; // Restored
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { seedExercises, DEFAULT_EXERCISES } from '../../lib/seeding';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles } from 'lucide-react';
 
 export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const { user } = useAuth();
@@ -19,6 +20,9 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     
     // Step 2: Session Exercises
     const [selectedExercises, setSelectedExercises] = useState([]);
+    
+    // AI Workout Generator
+    const [showAiGenerator, setShowAiGenerator] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
 
     // Data Fetching (no category filter)
@@ -69,6 +73,14 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         setShowPicker(false);
     };
 
+    // Handle AI-generated workout plan
+    const handleAiWorkoutStart = (aiResult) => {
+        setShowAiGenerator(false);
+        setSelectedRoutine({ id: 'ai-generated', name: aiResult.name || 'AI Workout' });
+        setSelectedExercises(aiResult.exercises || []);
+        setIsLogging(true);
+    };
+
     const handleStartEmpty = () => {
         setSelectedRoutine({ id: 'custom', name: 'Custom Workout' });
         setSelectedExercises([]);
@@ -82,6 +94,16 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         setSelectedExercises(exerciseNames);
         setIsLogging(true);
     };
+
+    // --- AI WORKOUT GENERATOR ---
+    if (showAiGenerator) {
+        return (
+            <AiWorkoutGenerator
+                onStartWorkout={handleAiWorkoutStart}
+                onClose={() => setShowAiGenerator(false)}
+            />
+        );
+    }
 
     // --- EXERCISE PICKER MODAL ---
     if (showPicker) {
@@ -145,6 +167,23 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                 </div>
                 <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Plus className="w-5 h-5 text-white" />
+                </div>
+            </button>
+
+            {/* AI Generate Button */}
+            <button
+                onClick={() => setShowAiGenerator(true)}
+                className="w-full p-4 rounded-xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 to-blue-500/10 hover:from-violet-500/20 hover:to-blue-500/20 transition-all text-left flex items-center justify-between group"
+            >
+                <div>
+                    <h3 className="text-white font-medium text-lg flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-violet-400" />
+                        AI Generate Workout
+                    </h3>
+                    <p className="text-sm text-violet-200/60">Describe what you need or answer quick questions</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-violet-500/20">
+                    <Sparkles className="w-5 h-5 text-white" />
                 </div>
             </button>
 

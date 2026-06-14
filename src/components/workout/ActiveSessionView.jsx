@@ -5,6 +5,8 @@ import { ExerciseCard } from './ExerciseCard';
 import { RestTimer } from './RestTimer';
 import { WorkoutDurationTimer } from './WorkoutDurationTimer';
 import { ShareModal } from './ShareModal';
+import { PostWorkoutSummary } from './PostWorkoutSummary';
+import { AiSuggestionButton } from './AiSuggestionButton';
 import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
@@ -21,6 +23,10 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
     const [newTemplateName, setNewTemplateName] = useState('');
     const [finalDataToSave, setFinalDataToSave] = useState(null);
+    
+    // Post-workout summary
+    const [showPostSummary, setShowPostSummary] = useState(false);
+    const [savedWorkoutData, setSavedWorkoutData] = useState(null);
     
     const { toast } = useToast();
     const { user } = useAuth();
@@ -70,7 +76,9 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
             return;
         }
 
+        setSavedWorkoutData(dataToSave);
         onSave(dataToSave, { saveAsTemplate: false });
+        setShowPostSummary(true);
     };
 
     const confirmFinish = (saveAsTemplate) => {
@@ -79,10 +87,12 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
             return;
         }
         setShowSaveTemplateModal(false);
+        setSavedWorkoutData(finalDataToSave);
         onSave(finalDataToSave, { 
             saveAsTemplate, 
             newTemplateName: newTemplateName.trim() 
         });
+        setShowPostSummary(true);
     };
 
     const handleShare = async () => {
@@ -185,11 +195,19 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                     })}
                 </div>
 
-                {/* Add More Button (Bottom of list) */}
-                <div className="flex justify-center pt-2">
-                    <Button variant="outline" size="sm" onClick={onAddMore} className="border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 w-full md:w-auto text-xs">
-                        <Plus className="w-3 h-3 mr-2" /> Add More Exercises
+                {/* Add More / AI Suggest Row */}
+                <div className="flex gap-2 justify-center pt-2">
+                    <Button variant="outline" size="sm" onClick={onAddMore} className="border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 flex-1 md:flex-none text-xs">
+                        <Plus className="w-3 h-3 mr-2" /> Add More
                     </Button>
+                    <AiSuggestionButton
+                        currentExercises={activeExercises}
+                        onAddExercise={(name) => {
+                            if (!activeExercises.includes(name)) {
+                                setActiveExercises(prev => [...prev, name]);
+                            }
+                        }}
+                    />
                 </div>
             </div>
 
@@ -261,6 +279,17 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                     </div>
                 </div>
             )}
+
+            {/* Post-Workout Summary */}
+            <PostWorkoutSummary
+                isOpen={showPostSummary}
+                onClose={() => {
+                    setShowPostSummary(false);
+                    onBack();
+                }}
+                workoutData={savedWorkoutData}
+                exerciseHistory={exerciseHistory}
+            />
         </div>
     );
 }

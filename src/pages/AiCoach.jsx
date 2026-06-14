@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft, MessageSquare } from 'lucide-react';
+import { AiChat } from '../components/ai/AiChat';
 import { generateHealthReport } from '../lib/openai';
 import { supabase } from '../lib/supabase';
 import ReactMarkdown from 'react-markdown';
@@ -29,6 +30,7 @@ export function AiCoach() {
     const [selectedReport, setSelectedReport] = useState(null);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('weekly');
+    const [coachMode, setCoachMode] = useState('reports'); // 'reports' or 'chat'
 
     // Fetch reports with React Query
     const { data: allReports = [] } = useQuery({
@@ -160,9 +162,41 @@ export function AiCoach() {
                         Your personal elite fitness strategist.
                     </p>
                 </div>
+                {/* Mode Switcher */}
+                <div className="flex p-1 bg-zinc-900/80 rounded-xl gap-1 border border-zinc-800">
+                    <button
+                        onClick={() => setCoachMode('reports')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+                            coachMode === 'reports'
+                                ? 'bg-zinc-800 text-white shadow-sm'
+                                : 'text-zinc-400 hover:text-zinc-200'
+                        }`}
+                    >
+                        <FileText className={`w-4 h-4 ${coachMode === 'reports' ? 'text-blue-500' : ''}`} />
+                        Reports
+                    </button>
+                    <button
+                        onClick={() => setCoachMode('chat')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+                            coachMode === 'chat'
+                                ? 'bg-zinc-800 text-white shadow-sm'
+                                : 'text-zinc-400 hover:text-zinc-200'
+                        }`}
+                    >
+                        <MessageSquare className={`w-4 h-4 ${coachMode === 'chat' ? 'text-violet-400' : ''}`} />
+                        Chat
+                    </button>
+                </div>
             </div>
 
-            {/* Tabs (Fixed) */}
+            {/* Chat Mode */}
+            {coachMode === 'chat' ? (
+                <div className="flex-1 min-h-0 border border-zinc-800 rounded-xl overflow-hidden bg-slate-950">
+                    <AiChat />
+                </div>
+            ) : (
+            <>
+            {/* Report Tabs (Fixed) */}
             <div className="flex-none flex p-1 bg-zinc-900 rounded-xl gap-1 overflow-x-auto shrink-0">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -334,6 +368,8 @@ export function AiCoach() {
                     )}
                 </div>
             </div>
+            </>
+            )}
         </div>
     );
 }

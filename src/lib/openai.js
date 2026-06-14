@@ -178,3 +178,155 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
         throw new Error(`Groq Failed: ${message}`);
     }
 }
+
+/**
+ * Generate a personalized workout plan using AI
+ * @param {Object} options - Generation options
+ * @param {string} options.goal - User's goal (strength, hypertrophy, endurance, fat_loss)
+ * @param {string} options.targetMuscles - Target muscle group(s)
+ * @param {string} options.duration - Available time (30, 45, 60, 90 minutes)
+ * @param {string} options.equipment - Available equipment
+ * @param {string} options.freeText - Free-text description from user
+ * @param {Object} options.userProfile - User profile data
+ * @param {Array} options.workoutHistory - Recent workout logs
+ * @param {Array} options.availableExercises - Exercises available in the app database
+ * @returns {Promise<Object>} Structured workout plan
+ */
+export async function generateWorkoutPlan({
+    goal = '',
+    targetMuscles = '',
+    duration = '60',
+    equipment = 'full_gym',
+    freeText = '',
+    userProfile = {},
+    workoutHistory = [],
+    availableExercises = []
+}) {
+    if (!apiKey) {
+        throw new Error("Missing Groq API Key");
+    }
+
+    const { displayName, currentWeight, height, targetWeight } = userProfile;
+
+    // Build recent workout context (last 7 days)
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const recentWorkouts = workoutHistory.filter(w => new Date(w.date) >= cutoff);
+    
+    let recentWorkoutSummary = "No recent workouts.";
+    if (recentWorkouts.length > 0) {
+        recentWorkoutSummary = recentWorkouts.map(w => {
+            let exerciseNames = [];
+            const exData = w.exercises;
+            if (exData && typeof exData === 'object' && !Array.isArray(exData)) {
+                exerciseNames = Object.keys(exData);
+            } else if (Array.isArray(exData)) {
+                exerciseNames = exData.map(e => e.name || e);
+            }
+            return `- ${w.type || 'Workout'} (${new Date(w.date).toLocaleDateString()}): ${exerciseNames.slice(0, 5).join(', ')}`;
+        }).join('\n');
+    }
+
+    // Build available exercises list for the AI to reference
+    const exercisesByCategory = {};
+    availableExercises.forEach(ex => {
+        const cat = ex.category || 'Other';
+        if (!exercisesByCategory[cat]) exercisesByCategory[cat] = [];
+        exercisesByCategory[cat].push(ex.name);
+    });
+    const exerciseListString = Object.entries(exercisesByCategory)
+        .map(([cat, names]) => `${cat}: ${names.join(', ')}`)
+        .join('\n');
+
+    // Build user request
+    let userRequest = '';
+    if (freeText) {
+        userRequest = freeText;
+    } else {
+        const parts = [];
+        if (goal) parts.push(`Goal: ${goal}`);
+        if (targetMuscles) parts.push(`Target: ${targetMuscles}`);
+        if (duration) parts.push(`Time available: ${duration} minutes`);
+        if (equipment) parts.push(`Equipment: ${equipment.replace('_', ' ')}`);
+        userRequest = parts.join('. ');
+    }
+
+    const systemPrompt = `You are an elite fitness coach. Generate a personalized workout plan.
+
+USER PROFILE:
+- Name: ${displayName || "Athlete"}
+- Current Weight: ${currentWeight ? currentWeight + 'kg' : 'Unknown'}
+- Height: ${height ? height + 'cm' : 'Unknown'}
+- Target Weight: ${targetWeight ? targetWeight + 'kg' : 'Not set'}
+
+RECENT WORKOUTS (last 7 days):
+${recentWorkoutSummary}
+
+AVAILABLE EXERCISES IN APP:
+${exerciseListString}
+
+RULES:
+1. ONLY use exercise names from the AVAILABLE EXERCISES list above. Match names EXACTLY.
+2. Generate 4-8 exercises depending on the time available.
+3. Consider what the user trained recently to avoid overtraining the same muscles.
+4. Tailor sets, reps, and rest to the user's stated goal.
+5. You MUST respond with ONLY valid JSON, no markdown, no code fences, no explanation text.
+
+RESPONSE FORMAT (strict JSON):
+{
+  "planName": "Short descriptive name for the workout",
+  "exercises": [
+    {
+      "name": "Exact exercise name from the list",
+      "sets": 3,
+      "reps": 10,
+      "restSeconds": 90,
+      "notes": "Brief coaching cue"
+    }
+  ],
+  "summary": "1-2 sentence description of the workout",
+  "estimatedDuration": "45 min",
+  "coachTip": "One motivational or strategic tip for this session"
+}`;
+
+    try {
+        const completion = await openai.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userRequest }
+            ],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.7,
+            max_tokens: 1024,
+        });
+
+        const rawContent = completion.choices[0].message.content;
+        
+        // Parse JSON from the response (handle potential markdown wrapping)
+        let jsonString = rawContent.trim();
+        
+        // Strip markdown code fences if present
+        if (jsonString.startsWith('```')) {
+            jsonString = jsonString.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+        }
+
+        const plan = JSON.parse(jsonString);
+        
+        // Validate structure
+        if (!plan.exercises || !Array.isArray(plan.exercises) || plan.exercises.length === 0) {
+            throw new Error("AI generated an empty workout plan");
+        }
+
+        return plan;
+    } catch (error) {
+        console.error("Workout Plan Generation Error:", error);
+        
+        // If JSON parse failed, give a more helpful error
+        if (error instanceof SyntaxError) {
+            throw new Error("AI returned an invalid response format. Please try again.");
+        }
+        
+        const message = error?.error?.message || error.message || "Unknown Error";
+        throw new Error(`Failed to generate workout plan: ${message}`);
+    }
+}

@@ -5,6 +5,8 @@ import { VolumeChart } from '../components/dashboard/VolumeChart';
 import { WorkoutHistoryList } from '../components/dashboard/WorkoutHistoryList';
 import { PersonalRecords } from '../components/dashboard/PersonalRecords';
 import { StreakCard } from '../components/dashboard/StreakCard';
+import { AiInsightsCard } from '../components/dashboard/AiInsightsCard';
+import { WorkoutCalendar } from '../components/dashboard/WorkoutCalendar';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SkeletonCard, SkeletonChart } from '../components/ui/Skeleton';
@@ -45,6 +47,15 @@ export function Dashboard() {
     return (
         <div className="grid gap-6 animate-in fade-in duration-500">
             <StatsOverview stats={userStats} currentBMI={currentBMI} />
+
+            {/* Smart AI Insights */}
+            {!isLoading && (
+                <AiInsightsCard
+                    workoutLogs={workoutLogs}
+                    weightHistory={weightHistory}
+                    profile={profile}
+                />
+            )}
 
             {/* Streak and PRs Row - PREMIUM */}
             <PremiumGate feature="streak tracking and personal records">
@@ -126,6 +137,11 @@ export function Dashboard() {
 
                     {/* Quick Height Entry */}
                     <HeightUpdater updateHeight={updateHeight} />
+
+                    {/* Workout Calendar */}
+                    {hasWorkouts && (
+                        <WorkoutCalendar workouts={workoutLogs} />
+                    )}
                 </div>
             </div>
         </div>
