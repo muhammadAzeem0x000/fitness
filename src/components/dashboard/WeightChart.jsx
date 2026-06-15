@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label, formatWeightLabel }) => {
 const CustomActiveDot = (props) => {
     const { cx, cy } = props;
     return (
-        <g>
+        <g style={{ pointerEvents: 'none' }}>
             {/* Outer subtle glow */}
             <circle cx={cx} cy={cy} r={12} fill="#3b82f6" fillOpacity={0.2} style={{ outline: 'none' }} />
             {/* Inner solid dot */}
@@ -78,6 +78,28 @@ export function WeightChart({ data }) {
 
     const visibleData = chartData.slice(currentIndex, currentIndex + visibleNodes);
 
+    // Ultimate Focus Killer: browsers draw thick focus rings on elements with tabindex.
+    // Recharts forces tabindex="0" on its wrappers. Removing it completely stops the borders.
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const killFocus = () => {
+            const elements = container.querySelectorAll('[tabindex]');
+            elements.forEach(el => {
+                el.removeAttribute('tabindex');
+            });
+            if (document.activeElement && container.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        };
+
+        killFocus();
+        const observer = new MutationObserver(killFocus);
+        observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
+        return () => observer.disconnect();
+    }, [visibleData]);
+
     return (
         <Card className="col-span-full border-zinc-800 bg-zinc-900/50 backdrop-blur-xl">
             <CardHeader className="pb-2">
@@ -91,6 +113,12 @@ export function WeightChart({ data }) {
                 </div>
             </CardHeader>
             <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2">
+                <style dangerouslySetInnerHTML={{__html: `
+                    .recharts-wrapper *, .recharts-surface * {
+                        outline: none !important;
+                        -webkit-tap-highlight-color: transparent !important;
+                    }
+                `}} />
                 <div className="flex flex-col gap-2">
                     <div ref={chartContainerRef} className="h-[260px] w-full min-w-0 pointer-events-auto" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -136,6 +164,7 @@ export function WeightChart({ data }) {
                                     dot={false}
                                     activeDot={<CustomActiveDot />}
                                     animationDuration={500}
+                                    style={{ pointerEvents: 'none' }}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>

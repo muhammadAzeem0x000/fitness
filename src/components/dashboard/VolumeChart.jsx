@@ -65,6 +65,28 @@ export function VolumeChart({ workouts }) {
         }).slice(-10);
     }, [workouts]);
 
+    // Ultimate Focus Killer: browsers draw thick focus rings on elements with tabindex.
+    // Recharts forces tabindex="0" on its wrappers. Removing it completely stops the borders.
+    useEffect(() => {
+        const container = chartContainerRef.current;
+        if (!container) return;
+
+        const killFocus = () => {
+            const elements = container.querySelectorAll('[tabindex]');
+            elements.forEach(el => {
+                el.removeAttribute('tabindex');
+            });
+            if (document.activeElement && container.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        };
+
+        killFocus();
+        const observer = new MutationObserver(killFocus);
+        observer.observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex'] });
+        return () => observer.disconnect();
+    }, [data]);
+
     if (!workouts || workouts.length === 0) return null;
 
     return (
@@ -77,6 +99,12 @@ export function VolumeChart({ workouts }) {
                 <span className="text-[10px] text-zinc-500 font-medium bg-zinc-800/50 px-2 py-1 rounded-md">Last 10 Sessions</span>
             </CardHeader>
             <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2 flex-1 relative">
+                <style dangerouslySetInnerHTML={{__html: `
+                    .recharts-wrapper *, .recharts-surface * {
+                        outline: none !important;
+                        -webkit-tap-highlight-color: transparent !important;
+                    }
+                `}} />
                 <div ref={chartContainerRef} className="h-[260px] w-full mt-2 pointer-events-auto" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart 
@@ -118,12 +146,13 @@ export function VolumeChart({ workouts }) {
                                 radius={[6, 6, 0, 0]} 
                                 barSize={isMobile ? 16 : 24}
                                 animationDuration={500}
+                                style={{ pointerEvents: 'none' }}
                             >
                                 {data.map((entry, index) => (
                                     <Cell 
                                         key={`cell-${index}`} 
                                         fill={index === activeIndex ? '#60a5fa' : '#3b82f6'} 
-                                        style={{ outline: 'none', transition: 'fill 0.2s ease' }}
+                                        style={{ outline: 'none', transition: 'fill 0.2s ease', pointerEvents: 'none' }}
                                     />
                                 ))}
                             </Bar>
