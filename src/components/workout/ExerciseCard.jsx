@@ -3,11 +3,14 @@ import { Card, CardContent } from '../ui/Card';
 import { History, Trophy, CheckCircle2, Check } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useToast } from '../../context/ToastContext';
+import { VideoGuideModal } from './VideoGuideModal';
+import { PlayCircle } from 'lucide-react';
 
 export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps = 12, exerciseHistory = [] }) {
     const { toast } = useToast();
     const [showConfetti, setShowConfetti] = useState(false);
     const [prSetIndex, setPrSetIndex] = useState(null);
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     // Track which sets the user has actually touched/modified
     const [touchedSets, setTouchedSets] = useState(new Set());
@@ -156,7 +159,16 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
             <Card className="mb-4 border-l-4 border-l-blue-500 bg-zinc-900/50">
                 <CardContent className="pt-4 pb-4">
                     <div className="flex justify-between items-start mb-3">
-                        <h4 className="text-lg font-semibold text-slate-200">{exercise}</h4>
+                        <div className="flex items-center gap-2">
+                            <h4 className="text-lg font-semibold text-slate-200">{exercise}</h4>
+                            <button
+                                onClick={() => setIsVideoModalOpen(true)}
+                                className="text-zinc-500 hover:text-blue-400 transition-colors p-1"
+                                title="Watch Video Guide"
+                            >
+                                <PlayCircle className="w-4 h-4" />
+                            </button>
+                        </div>
                         <div className="flex flex-col gap-1 items-end">
                             {actualLastSession && (
                                 <div className="flex items-center gap-1 text-xs text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded border border-yellow-500/20" title="Last Session Best">
@@ -230,6 +242,12 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                     </div>
                 </CardContent>
             </Card>
+
+            <VideoGuideModal 
+                isOpen={isVideoModalOpen}
+                onClose={() => setIsVideoModalOpen(false)}
+                exerciseName={exercise}
+            />
         </>
     );
 }
