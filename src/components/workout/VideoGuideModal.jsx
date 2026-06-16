@@ -45,15 +45,36 @@ export function VideoGuideModal({ isOpen, onClose, exerciseName }) {
                     </Button>
                 </div>
 
-                {/* Video Container */}
-                <div className="relative w-full bg-black aspect-video">
-                    <iframe
-                        src={videoUrl}
-                        title={`${exerciseName} Video Guide`}
-                        className="absolute inset-0 w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                    ></iframe>
+                {/* Video Container or Fallback */}
+                <div className="relative w-full bg-zinc-950 aspect-video flex items-center justify-center">
+                    {videoUrl ? (
+                        <iframe
+                            src={videoUrl}
+                            title={`${exerciseName} Video Guide`}
+                            className="absolute inset-0 w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                        ></iframe>
+                    ) : (
+                        <div className="text-center p-6 max-w-md animate-in fade-in zoom-in-95 duration-500">
+                            <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-800">
+                                <PlayCircle className="w-8 h-8 text-zinc-600" />
+                            </div>
+                            <h4 className="text-xl font-bold text-white mb-2">Video Not Available</h4>
+                            <p className="text-zinc-400 text-sm mb-6">
+                                We are still sourcing a high-quality, short-form premium guide for <span className="text-white font-medium">{exerciseName}</span>. 
+                            </p>
+                            <a 
+                                href={`https://www.youtube.com/results?search_query=how+to+do+${encodeURIComponent(exerciseName)}+exercise+guide+muscle+and+strength`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-all shadow-lg shadow-red-900/20"
+                            >
+                                <PlayCircle className="w-5 h-5" />
+                                Search YouTube Instead
+                            </a>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer/Info */}
