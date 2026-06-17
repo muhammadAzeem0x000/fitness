@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:android": "npm run build && npx cap sync android && cd android && gradlew assembleRelease",
+    "build:android": "npm run build && npx cap sync android && cd android && java -classpath \"gradle\\wrapper\\gradle-wrapper.jar\" org.gradle.wrapper.GradleWrapperMain assembleRelease",
     "lint": "eslint .",
     "preview": "vite preview"
   },
