@@ -7,6 +7,7 @@ import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
+import { initNativeFeatures } from './lib/native';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -82,7 +83,7 @@ const ProtectedLayout = () => {
   return (
     <RequireAuth>
       <Layout>
-        <PageTransition key={location.pathname} className="h-full">
+        <PageTransition key={location.pathname} className="h-full w-full">
           <Outlet />
         </PageTransition>
       </Layout>
@@ -162,6 +163,10 @@ const AppContent = () => {
 };
 
 function App() {
+  useEffect(() => {
+    initNativeFeatures();
+  }, []);
+
   return (
     <UserPreferencesProvider>
       <Suspense fallback={<FullScreenLoader />}>

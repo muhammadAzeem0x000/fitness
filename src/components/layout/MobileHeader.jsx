@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
+import { hapticLight } from '../../lib/haptics';
 
 export function MobileHeader() {
     const location = useLocation();
@@ -26,6 +27,7 @@ export function MobileHeader() {
     const showBack = !topLevelRoutes.includes(path);
 
     const handleBack = () => {
+        hapticLight();
         // If we came from nowhere and we hit back, fallback to dashboard
         if (window.history.length <= 2) {
             navigate('/dashboard', { replace: true });
@@ -62,7 +64,10 @@ export function MobileHeader() {
                 {/* Right: Unit Toggle */}
                 <div className="w-12 flex justify-end">
                     <button
-                        onClick={toggleWeightUnit}
+                        onClick={() => {
+                            hapticLight();
+                            toggleWeightUnit();
+                        }}
                         className="flex items-center justify-center rounded-md bg-zinc-800/80 border border-zinc-700 px-2 h-7 text-[11px] font-bold text-blue-400 active:scale-95 transition-all shadow-sm"
                         title="Toggle Unit"
                     >

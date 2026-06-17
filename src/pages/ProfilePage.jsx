@@ -10,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import { PasswordInput } from '../components/ui/PasswordInput';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
 
 export default function ProfilePage() {
     const { user, signOut } = useAuth();
@@ -66,8 +67,10 @@ export default function ProfilePage() {
                 goal_weight: newGoalWeight,
                 workout_days: workoutDays
             });
+            hapticSuccess();
             toast.success("Profile updated successfully!");
         } catch (error) {
+            hapticError();
             console.error("Failed to save profile", error);
             toast.error("Failed to save profile changes.");
         } finally {
@@ -78,10 +81,12 @@ export default function ProfilePage() {
     const handlePasswordUpdate = async (e) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
+            hapticError();
             toast.error("Passwords do not match!");
             return;
         }
         if (newPassword.length < 6) {
+            hapticError();
             toast.error("Password must be at least 6 characters long.");
             return;
         }
@@ -90,11 +95,13 @@ export default function ProfilePage() {
         try {
             const { error } = await supabase.auth.updateUser({ password: newPassword });
             if (error) throw error;
+            hapticSuccess();
             toast.success("Password updated successfully!");
             setNewPassword('');
             setConfirmPassword('');
             setPasswordOpen(false);
         } catch (error) {
+            hapticError();
             toast.error("Error updating password: " + error.message);
         } finally {
             setPasswordLoading(false);
@@ -121,6 +128,7 @@ export default function ProfilePage() {
     };
 
     const toggleDay = (day) => {
+        hapticMedium();
         const newDays = workoutDays.includes(day)
             ? workoutDays.filter(d => d !== day)
             : [...workoutDays, day];

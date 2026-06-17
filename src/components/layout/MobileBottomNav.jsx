@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, BrainCircuit, User } from 'lucide-react';
+import { hapticLight } from '../../lib/haptics';
 
 export function MobileBottomNav() {
     const location = useLocation();
@@ -25,14 +26,24 @@ export function MobileBottomNav() {
 
         if (onClick) {
             return (
-                <button onClick={onClick} className={baseClass}>
+                <button 
+                    onClick={(e) => {
+                        hapticLight();
+                        onClick(e);
+                    }} 
+                    className={baseClass}
+                >
                     {content}
                 </button>
             );
         }
 
         return (
-            <Link to={to} className={baseClass}>
+            <Link 
+                to={to} 
+                onClick={() => hapticLight()}
+                className={baseClass}
+            >
                 {content}
             </Link>
         );
