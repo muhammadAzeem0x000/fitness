@@ -143,7 +143,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
     // --- RESULTS VIEW ---
     if (generatedPlan) {
         return (
-            <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col animate-in fade-in duration-300">
+            <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-slate-900 flex flex-col animate-in fade-in duration-300">
                 {/* Header */}
                 <div className="flex-none px-4 py-4 border-b border-zinc-800/50">
                     <div className="flex items-center justify-between">
@@ -271,7 +271,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
 
     // --- GENERATOR INPUT VIEW ---
     return (
-        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col animate-in slide-in-from-bottom-4 duration-500">
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-slate-900 flex flex-col animate-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="flex-none px-4 py-4 border-b border-zinc-800/50">
                 <div className="flex items-center justify-between">

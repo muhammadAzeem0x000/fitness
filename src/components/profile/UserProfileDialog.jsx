@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, Upload, LogOut, User, Check, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
+import { useWeight } from '../../hooks/useWeight';
 import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
@@ -15,6 +16,7 @@ import { useUserPreferences } from '../../context/UserPreferencesContext';
 export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
+    const { addWeightEntry } = useWeight(user?.id);
     const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
     
     const hasUsedTrial = isTrialExpired ||
@@ -23,7 +25,8 @@ export function UserProfileDialog({ isOpen, onClose }) {
         subscription?.status === 'active' ||
         !!subscription?.stripe_subscription_id;
 
-    const { convertWeightToDb, displayWeight, formatWeightLabel } = useUserPreferences();
+    const { preferences, convertWeightToDb, displayWeight, formatWeightLabel, convertHeightToCm, formatHeightValue } = useUserPreferences();
+    const isFeet = preferences.heightUnit === 'ft';
 
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -35,6 +38,9 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const [displayName, setDisplayName] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [goalWeightInput, setGoalWeightInput] = useState('');
+    const [currentWeightInput, setCurrentWeightInput] = useState('');
+    const [heightVal1, setHeightVal1] = useState('');
+    const [heightVal2, setHeightVal2] = useState('');
     const [workoutDays, setWorkoutDays] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
@@ -52,13 +58,23 @@ export function UserProfileDialog({ isOpen, onClose }) {
             setAvatarUrl(profile.avatar_url || '');
             setGoalWeightInput(profile.goal_weight ? displayWeight(profile.goal_weight) : '');
             setWorkoutDays(profile.workout_days || []);
+            
+            if (profile.height) {
+                const h = formatHeightValue(profile.height);
+                setHeightVal1(h.val1?.toString() || '');
+                setHeightVal2(h.val2?.toString() || '');
+            } else {
+                setHeightVal1('');
+                setHeightVal2('');
+            }
+
             setIsDirty(false);
             // Reset password fields
             setPasswordOpen(false);
             setNewPassword('');
             setConfirmPassword('');
         }
-    }, [isOpen, profile]);
+    }, [isOpen, profile, formatHeightValue]);
 
     // Handle Closing
     if (!isOpen) return null;
@@ -67,11 +83,13 @@ export function UserProfileDialog({ isOpen, onClose }) {
         setLoading(true);
         try {
             const newGoalWeight = convertWeightToDb(goalWeightInput);
+            const newHeight = convertHeightToCm(heightVal1, heightVal2, preferences.heightUnit);
             
             await updateProfile({
                 display_name: displayName,
                 avatar_url: avatarUrl,
                 goal_weight: newGoalWeight,
+                height: newHeight,
                 workout_days: workoutDays
             });
             toast.success("Profile updated successfully!");
@@ -107,6 +125,18 @@ export function UserProfileDialog({ isOpen, onClose }) {
             toast.error("Error updating password: " + error.message);
         } finally {
             setPasswordLoading(false);
+        }
+    };
+
+    const handleWeightLog = async () => {
+        if (!currentWeightInput) return;
+        try {
+            const weightInKg = convertWeightToDb(currentWeightInput);
+            await addWeightEntry(weightInKg);
+            toast.success("Weight logged successfully!");
+            setCurrentWeightInput('');
+        } catch (error) {
+            toast.error("Failed to log weight.");
         }
     };
 
@@ -269,6 +299,54 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                             placeholder="e.g. 180"
                                             className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
                                         />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Body Metrics Update Section */}
+                            <div className="bg-zinc-950/30 border border-zinc-800 rounded-lg p-3 space-y-3">
+                                {/* Current Weight Log */}
+                                <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                                        Log Today's Weight ({formatWeightLabel()})
+                                    </label>
+                                    <div className="flex gap-2 w-full">
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            value={currentWeightInput}
+                                            onChange={(e) => setCurrentWeightInput(e.target.value)}
+                                            placeholder={`e.g. 180`}
+                                            className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                        />
+                                        <Button size="sm" className="px-4 text-xs" onClick={handleWeightLog}>
+                                            Log
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Height Update */}
+                                <div className="pt-2 border-t border-zinc-800/50">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                                        Height ({isFeet ? 'FT / IN' : 'CM'})
+                                    </label>
+                                    <div className={`grid gap-2 w-full ${isFeet ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                        <input
+                                            type="number"
+                                            value={heightVal1}
+                                            onChange={(e) => { setHeightVal1(e.target.value); setIsDirty(true); }}
+                                            placeholder={isFeet ? "Ft" : "Cm"}
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                        />
+                                        {isFeet && (
+                                            <input
+                                                type="number"
+                                                value={heightVal2}
+                                                onChange={(e) => { setHeightVal2(e.target.value); setIsDirty(true); }}
+                                                placeholder="In"
+                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>

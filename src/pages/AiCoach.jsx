@@ -222,27 +222,6 @@ export function AiCoach() {
             <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 relative">
                 {/* Sidebar: History List (Visible if showHistoryMobile is true OR on Desktop) */}
                 <div className={`${showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-1 flex-col h-full min-h-0 gap-4`}>
-                    <Button
-                        onClick={handleGenerateReport}
-                        disabled={loading || subLoading}
-                        className="flex-none w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20"
-                    >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                        {loading ? 'Analyzing...' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
-                    </Button>
-
-                    {/* Free tier usage indicator */}
-                    {!isPremium && !subLoading && (
-                        <div className="flex-none text-xs text-zinc-500 text-center px-2 py-2 bg-zinc-900/50 rounded border border-zinc-800">
-                            Free tier: 1 report/month
-                            <button
-                                onClick={() => navigate('/pricing')}
-                                className="ml-2 text-blue-400 hover:text-blue-300 underline"
-                            >
-                                Upgrade for unlimited
-                            </button>
-                        </div>
-                    )}
 
                     <div className="flex-1 min-h-0 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                         <div className="flex-none p-3 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
@@ -278,6 +257,28 @@ export function AiCoach() {
                             )}
                         </div>
                     </div>
+
+                    {/* Free tier usage indicator */}
+                    {!isPremium && !subLoading && (
+                        <div className="flex-none text-xs text-zinc-500 text-center px-2 py-2 bg-zinc-900/50 rounded border border-zinc-800">
+                            Free tier: 1 report/month
+                            <button
+                                onClick={() => navigate('/pricing')}
+                                className="ml-2 text-blue-400 hover:text-blue-300 underline"
+                            >
+                                Upgrade for unlimited
+                            </button>
+                        </div>
+                    )}
+
+                    <Button
+                        onClick={handleGenerateReport}
+                        disabled={loading || subLoading}
+                        className="flex-none w-full gap-2 h-12 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20"
+                    >
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
+                        {loading ? 'Analyzing...' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
+                    </Button>
                 </div>
 
                 {/* Right Panel: Report View (Visible if showHistoryMobile is false OR on Desktop) */}

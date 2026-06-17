@@ -75,6 +75,16 @@ export function UserPreferencesProvider({ children }) {
             const feet = parseFloat(val1) || 0;
             const inches = parseFloat(val2) || 0;
             return ((feet * 12) + inches) * 2.54;
+        },
+        formatHeightValue: (cmValue) => {
+            if (!cmValue) return { val1: '', val2: '' };
+            if (preferences.heightUnit === 'cm') {
+                return { val1: Math.round(cmValue), val2: '' };
+            }
+            const totalInches = cmValue / 2.54;
+            const feet = Math.floor(totalInches / 12);
+            const inches = Math.round(totalInches % 12);
+            return { val1: feet, val2: inches };
         }
     };
 
