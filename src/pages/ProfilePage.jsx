@@ -60,7 +60,7 @@ export default function ProfilePage() {
     }, [profile]);
 
     // Height state
-    const { convertHeightToCm, formatHeightValue } = useUserPreferences();
+    const { preferences, convertHeightToCm, formatHeightValue } = useUserPreferences();
     const [heightVal1, setHeightVal1] = useState('');
     const [heightVal2, setHeightVal2] = useState('');
 

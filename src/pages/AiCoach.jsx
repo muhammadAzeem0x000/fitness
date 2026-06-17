@@ -50,19 +50,10 @@ export function AiCoach() {
         refetchOnWindowFocus: false
     });
 
-    // Auto-select latest report when tab changes or data loads
+    // Clear selection when tab changes to show history list
     useEffect(() => {
-        const typeReports = allReports.filter(r => (r.report_type || 'weekly') === activeTab);
-        if (typeReports.length > 0) {
-            // Only select if nothing is selected or if the selected one is not of the current type
-            // Actually, simplified behavior: Always top one for now when tab changes is good default.
-            // But we might want to keep selection if switching tabs back and forth? 
-            // The user request implies "focused and displayed previously", which usually means "show me the latest".
-            setSelectedReport(typeReports[0]);
-        } else {
-            setSelectedReport(null);
-        }
-    }, [activeTab, allReports]);
+        setSelectedReport(null);
+    }, [activeTab]);
 
     const [showHistoryMobile, setShowHistoryMobile] = useState(true);
 
