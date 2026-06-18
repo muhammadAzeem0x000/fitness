@@ -92,7 +92,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
     };
 
     return (
-        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
             {/* Header Section (Fixed) */}
             <div className="flex-none space-y-4 py-4">
                 <div className="flex items-center justify-between">

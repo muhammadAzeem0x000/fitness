@@ -8,6 +8,7 @@ import { useProfile } from './hooks/useProfile';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
 import { initNativeFeatures } from './lib/native';
+import { useHardwareBackButton } from './hooks/useHardwareBackButton';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -97,6 +98,8 @@ const AppContent = () => {
   const { profile, isLoading: profileLoading } = useProfile(user?.id);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useHardwareBackButton();
 
   // Onboarding Redirect Verification (skip for public share pages)
   useEffect(() => {

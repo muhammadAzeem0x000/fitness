@@ -149,7 +149,7 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     };
 
     return (
-        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-40 bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
             {/* Header (Fixed) */}
             <div className="flex-none mb-4 space-y-3 border-b border-zinc-800/50 py-4">
                 <div className="flex items-center justify-between">
@@ -162,23 +162,36 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                         </div>
                     </div>
                     {/* Share Button only here, Finish moved to footer */}
-                    <Button variant="secondary" size="sm" onClick={handleShare} className="h-8">
-                        <Share2 className="w-3.5 h-3.5 mr-1" /> Share
-                    </Button>
+                    {activeExercises.length > 0 && (
+                        <Button variant="secondary" size="sm" onClick={handleShare} className="h-8">
+                            <Share2 className="w-3.5 h-3.5 mr-1" /> Share
+                        </Button>
+                    )}
                 </div>
 
                 {/* Workout Duration Timer */}
-                <div className="flex justify-center">
-                    <WorkoutDurationTimer />
-                </div>
+                {activeExercises.length > 0 && (
+                    <div className="flex justify-center">
+                        <WorkoutDurationTimer />
+                    </div>
+                )}
             </div>
 
             {/* Active List (Scrollable) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pb-4 min-h-0 space-y-4">
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                     {activeExercises.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-zinc-500 border-2 border-dashed border-zinc-800 rounded-xl">
-                            Add exercises using the manager below to start logging.
+                        <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/30">
+                            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                                <Plus className="w-8 h-8 text-blue-500" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2">Ready to Workout?</h3>
+                            <p className="text-zinc-500 text-sm mb-6 max-w-[250px]">
+                                Add some exercises to start building your custom routine.
+                            </p>
+                            <Button onClick={onAddMore} className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-base font-semibold shadow-lg shadow-blue-900/20">
+                                <Plus className="w-5 h-5 mr-2" /> Add Exercises
+                            </Button>
                         </div>
                     )}
 
@@ -196,37 +209,41 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                 </div>
 
                 {/* Add More / AI Suggest Row */}
-                <div className="flex gap-2 justify-center pt-2">
-                    <Button variant="outline" size="sm" onClick={onAddMore} className="border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 flex-1 md:flex-none text-xs">
-                        <Plus className="w-3 h-3 mr-2" /> Add More
-                    </Button>
-                    <AiSuggestionButton
-                        currentExercises={activeExercises}
-                        onAddExercise={(name) => {
-                            if (!activeExercises.includes(name)) {
-                                setActiveExercises(prev => [...prev, name]);
-                            }
-                        }}
-                    />
-                </div>
+                {activeExercises.length > 0 && (
+                    <div className="flex gap-2 justify-center pt-2">
+                        <Button variant="outline" size="sm" onClick={onAddMore} className="border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 flex-1 md:flex-none text-xs">
+                            <Plus className="w-3 h-3 mr-2" /> Add More
+                        </Button>
+                        <AiSuggestionButton
+                            currentExercises={activeExercises}
+                            onAddExercise={(name) => {
+                                if (!activeExercises.includes(name)) {
+                                    setActiveExercises(prev => [...prev, name]);
+                                }
+                            }}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Footer Action (Fixed) */}
-            <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900 mt-auto space-y-2">
-                <Button
-                    onClick={() => setShowRestTimer(!showRestTimer)}
-                    variant="outline"
-                    className="w-full"
-                >
-                    {showRestTimer ? 'Hide Rest Timer' : 'Start Rest Timer'}
-                </Button>
-                <Button
-                    onClick={handleFinish}
-                    className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 text-base font-semibold"
-                >
-                    <Save className="w-4 h-4 mr-2" /> Finish Workout
-                </Button>
-            </div>
+            {activeExercises.length > 0 && (
+                <div className="flex-none pt-3 border-t border-zinc-800 bg-slate-900 mt-auto space-y-2">
+                    <Button
+                        onClick={() => setShowRestTimer(!showRestTimer)}
+                        variant="outline"
+                        className="w-full"
+                    >
+                        {showRestTimer ? 'Hide Rest Timer' : 'Start Rest Timer'}
+                    </Button>
+                    <Button
+                        onClick={handleFinish}
+                        className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 text-base font-semibold"
+                    >
+                        <Save className="w-4 h-4 mr-2" /> Finish Workout
+                    </Button>
+                </div>
+            )}
 
             {/* Rest Timer */}
             {showRestTimer && <RestTimer onClose={() => setShowRestTimer(false)} />}
