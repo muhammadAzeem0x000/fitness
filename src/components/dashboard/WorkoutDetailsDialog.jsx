@@ -2,8 +2,12 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calendar, Dumbbell, Hash, Scale } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 
 export function WorkoutDetailsDialog({ isOpen, onClose, workout }) {
+    useBackInterceptor(() => {
+        onClose();
+    }, isOpen);
 
     return createPortal(
         <AnimatePresence>

@@ -10,6 +10,7 @@ import { AiSuggestionButton } from './AiSuggestionButton';
 import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 
 export function ActiveSessionView({ routineName, initialExercises, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
     const [activeExercises, setActiveExercises] = useState([]);
@@ -30,6 +31,28 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     
     const { toast } = useToast();
     const { user } = useAuth();
+
+    // Hardware Back Button Interceptor
+    useBackInterceptor(() => {
+        if (showPostSummary) {
+            setShowPostSummary(false);
+            onBack();
+            return;
+        }
+        if (showSaveTemplateModal) {
+            setShowSaveTemplateModal(false);
+            return;
+        }
+        if (showShareModal) {
+            setShowShareModal(false);
+            return;
+        }
+        if (showRestTimer) {
+            setShowRestTimer(false);
+            return;
+        }
+        onBack();
+    });
 
     // Initialize State
     useEffect(() => {

@@ -1,12 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, Check } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 
 export function ExercisePicker({ availableExercises, onComplete, onBack, initialSelection = [] }) {
     const [selected, setSelected] = useState(initialSelection);
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [customInputs, setCustomInputs] = useState([]); // List of custom added strings
+
+    useBackInterceptor(() => {
+        onBack();
+    });
 
     // 15 Most Frequent (In our case, just the first 15 seeded)
     // The prop `availableExercises` should ideally be sorted by frequency or just be the static list for now.

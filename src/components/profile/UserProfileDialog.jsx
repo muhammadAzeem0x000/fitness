@@ -12,8 +12,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useToast } from '../../context/ToastContext';
 import { PasswordInput } from '../ui/PasswordInput';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
+import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 
 export function UserProfileDialog({ isOpen, onClose }) {
+    useBackInterceptor(() => {
+        onClose();
+    }, isOpen);
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
     const { addWeightEntry } = useWeight(user?.id);

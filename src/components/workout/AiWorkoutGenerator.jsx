@@ -13,6 +13,7 @@ import { useWeight } from '../../hooks/useWeight';
 import { useSubscription } from '../../hooks/useSubscription';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
+import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 
 // Survey option definitions
 const GOALS = [
@@ -73,6 +74,14 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
     const [error, setError] = useState(null);
     const [generatedPlan, setGeneratedPlan] = useState(null);
     const [showExerciseDetails, setShowExerciseDetails] = useState(true);
+
+    useBackInterceptor(() => {
+        if (generatedPlan) {
+            setGeneratedPlan(null);
+        } else {
+            onClose();
+        }
+    });
 
     const canGenerate = mode === 'freetext'
         ? freeText.trim().length > 5
