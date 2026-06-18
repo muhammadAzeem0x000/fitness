@@ -16,6 +16,7 @@ import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
 import { useSubscription } from '../hooks/useSubscription';
 import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
+import { useBackInterceptor } from '../hooks/useHardwareBackButton';
 
 export function AiCoach() {
     const { user } = useAuth();
@@ -31,6 +32,18 @@ export function AiCoach() {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('weekly');
     const [coachMode, setCoachMode] = useState('chat'); // 'reports' or 'chat'
+    const [showHistoryMobile, setShowHistoryMobile] = useState(true);
+
+    useBackInterceptor(() => {
+        if (coachMode === 'reports') {
+            if (!showHistoryMobile) {
+                setShowHistoryMobile(true);
+                setSelectedReport(null);
+            } else {
+                setCoachMode('chat');
+            }
+        }
+    }, coachMode === 'reports');
 
     // Fetch reports with React Query
     const { data: allReports = [] } = useQuery({
@@ -54,8 +67,6 @@ export function AiCoach() {
     useEffect(() => {
         setSelectedReport(null);
     }, [activeTab]);
-
-    const [showHistoryMobile, setShowHistoryMobile] = useState(true);
 
     // Auto-switch to report view on mobile when report selected or generated
     useEffect(() => {
