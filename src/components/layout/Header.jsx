@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X } from 'lucide-react';
+import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
@@ -9,6 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserProfileDialog } from '../profile/UserProfileDialog';
 import { useState } from 'react';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useNetwork } from '../../hooks/useNetwork';
 
 export function Header() {
     const { preferences, toggleWeightUnit } = useUserPreferences();
@@ -17,6 +18,7 @@ export function Header() {
     const location = useLocation();
     const navigate = useNavigate();
     const { isPremium, isLoading: subLoading, subscription, isTrialExpired } = useSubscription();
+    const { isOffline } = useNetwork();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -112,8 +114,16 @@ export function Header() {
 
                 {/* Right: Actions */}
                 <div className="flex-1 flex items-center justify-end gap-2 md:gap-4">
+                    {/* Offline Indicator */}
+                    {isOffline && (
+                        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                            <WifiOff className="w-3.5 h-3.5" />
+                            <span>Offline</span>
+                        </div>
+                    )}
+
                     {/* Upgrade Button (Free Users Only) */}
-                    {!isPremium && !subLoading && (
+                    {!isPremium && !subLoading && !isOffline && (
                         <button
                             onClick={() => navigate('/pricing')}
                             className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all"

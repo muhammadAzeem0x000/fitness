@@ -1,13 +1,15 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, WifiOff } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { hapticLight } from '../../lib/haptics';
+import { useNetwork } from '../../hooks/useNetwork';
 
 export function MobileHeader() {
     const location = useLocation();
     const navigate = useNavigate();
     const { preferences, toggleWeightUnit } = useUserPreferences();
+    const { isOffline } = useNetwork();
 
     const path = location.pathname;
     
@@ -55,10 +57,15 @@ export function MobileHeader() {
                 </div>
 
                 {/* Center: Title */}
-                <div className="flex-1 flex justify-center text-center">
+                <div className="flex-1 flex flex-col justify-center items-center text-center">
                     <h1 className="text-lg font-bold tracking-tight text-slate-100 truncate">
                         {title}
                     </h1>
+                    {isOffline && (
+                        <span className="flex items-center gap-1 text-[10px] text-red-400 font-medium leading-none mt-0.5">
+                            <WifiOff className="w-3 h-3" /> Offline
+                        </span>
+                    )}
                 </div>
 
                 {/* Right: Unit Toggle */}

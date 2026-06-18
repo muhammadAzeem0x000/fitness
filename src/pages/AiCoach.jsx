@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft, MessageSquare, WifiOff } from 'lucide-react';
 import { AiChat } from '../components/ai/AiChat';
 import { generateHealthReport } from '../lib/openai';
 import { supabase } from '../lib/supabase';
@@ -17,6 +17,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
 import { useBackInterceptor } from '../hooks/useHardwareBackButton';
+import { useNetwork } from '../hooks/useNetwork';
 
 export function AiCoach() {
     const { user } = useAuth();
@@ -26,6 +27,7 @@ export function AiCoach() {
     const queryClient = useQueryClient();
     const { isPremium, isLoading: subLoading } = useSubscription();
     const navigate = useNavigate();
+    const { isOffline } = useNetwork();
 
     const [loading, setLoading] = useState(false); // Keep for generation state
     const [selectedReport, setSelectedReport] = useState(null);
@@ -193,7 +195,16 @@ export function AiCoach() {
 
             {/* Chat Mode */}
             {coachMode === 'chat' ? (
-                <div className="flex-1 min-h-0 border border-zinc-800 rounded-xl overflow-hidden bg-slate-950">
+                <div className="flex-1 min-h-0 border border-zinc-800 rounded-xl overflow-hidden bg-slate-950 relative">
+                    {isOffline && (
+                        <div className="absolute inset-0 z-10 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                            <WifiOff className="w-12 h-12 text-red-500/50 mb-4" />
+                            <h3 className="text-lg font-bold text-white mb-2">Offline Mode</h3>
+                            <p className="text-zinc-400 max-w-sm">
+                                AI Coach requires an active internet connection to communicate with the models. Please reconnect to continue your conversation.
+                            </p>
+                        </div>
+                    )}
                     <AiChat />
                 </div>
             ) : (
@@ -275,11 +286,11 @@ export function AiCoach() {
 
                     <Button
                         onClick={handleGenerateReport}
-                        disabled={loading || subLoading}
-                        className="flex-none w-full gap-2 h-12 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20"
+                        disabled={loading || subLoading || isOffline}
+                        className="flex-none w-full gap-2 h-12 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20 disabled:opacity-50"
                     >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                        {loading ? 'Analyzing...' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
+                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isOffline ? <WifiOff className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                        {loading ? 'Analyzing...' : isOffline ? 'Unavailable Offline' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
                     </Button>
                 </div>
 

@@ -81,7 +81,6 @@ export function useWorkouts(userId, type = null) {
         refetchOnWindowFocus: false,
     });
 
-    // Mutation: Add Log
     const addWorkoutLogMutation = useMutation({
         mutationFn: async (workoutData) => {
             const { type, exercises, timestamp } = workoutData;
@@ -95,16 +94,37 @@ export function useWorkouts(userId, type = null) {
                 });
             if (error) throw error;
         },
-        onSuccess: () => {
+        onMutate: async (newWorkout) => {
+            await queryClient.cancelQueries({ queryKey: ['workoutLogs', userId] });
+            const previousWorkouts = queryClient.getQueryData(['workoutLogs', userId]);
+
+            queryClient.setQueryData(['workoutLogs', userId], (old) => {
+                const optimisticWorkout = {
+                    id: `temp-${Date.now()}`,
+                    user_id: userId,
+                    type: newWorkout.type,
+                    exercises: newWorkout.exercises,
+                    date: newWorkout.timestamp,
+                    created_at: new Date().toISOString()
+                };
+                // Sort by date descending
+                const newArray = old ? [optimisticWorkout, ...old] : [optimisticWorkout];
+                return newArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+            });
+
+            return { previousWorkouts };
+        },
+        onError: (err, newWorkout, context) => {
+            queryClient.setQueryData(['workoutLogs', userId], context.previousWorkouts);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['workoutLogs', userId] });
-            // Also invalidate last workout for this type
             if (type) {
                 queryClient.invalidateQueries({ queryKey: ['lastWorkout', userId, type] });
             }
         }
     });
 
-    // Mutation: Add Routine
     const addRoutineMutation = useMutation({
         mutationFn: async (routineData) => {
             const { name, exercises } = routineData;
@@ -117,7 +137,27 @@ export function useWorkouts(userId, type = null) {
                 });
             if (error) throw error;
         },
-        onSuccess: () => {
+        onMutate: async (newRoutine) => {
+            await queryClient.cancelQueries({ queryKey: ['routines', userId] });
+            const previousRoutines = queryClient.getQueryData(['routines', userId]);
+
+            queryClient.setQueryData(['routines', userId], (old) => {
+                const optimisticRoutine = {
+                    id: `temp-${Date.now()}`,
+                    user_id: userId,
+                    name: newRoutine.name,
+                    exercises: newRoutine.exercises,
+                    created_at: new Date().toISOString()
+                };
+                return old ? [...old, optimisticRoutine] : [optimisticRoutine];
+            });
+
+            return { previousRoutines };
+        },
+        onError: (err, newRoutine, context) => {
+            queryClient.setQueryData(['routines', userId], context.previousRoutines);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['routines', userId] });
         }
     });

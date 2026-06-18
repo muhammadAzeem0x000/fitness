@@ -39,7 +39,35 @@ export function useWeight(userId) {
                 .eq('id', userId);
             if (profileError) console.error(profileError); // Non-blocking
         },
-        onSuccess: () => {
+        onMutate: async (newWeight) => {
+            await queryClient.cancelQueries({ queryKey: ['weightHistory', userId] });
+            await queryClient.cancelQueries({ queryKey: ['profile', userId] });
+
+            const previousWeightHistory = queryClient.getQueryData(['weightHistory', userId]);
+            const previousProfile = queryClient.getQueryData(['profile', userId]);
+
+            queryClient.setQueryData(['weightHistory', userId], (old) => {
+                const optimisticEntry = {
+                    id: `temp-${Date.now()}`,
+                    weight: parseFloat(newWeight),
+                    date: new Date().toISOString().split('T')[0],
+                    user_id: userId
+                };
+                return old ? [...old, optimisticEntry] : [optimisticEntry];
+            });
+
+            queryClient.setQueryData(['profile', userId], (old) => {
+                if (!old) return old;
+                return { ...old, current_weight: parseFloat(newWeight) };
+            });
+
+            return { previousWeightHistory, previousProfile };
+        },
+        onError: (err, newWeight, context) => {
+            queryClient.setQueryData(['weightHistory', userId], context.previousWeightHistory);
+            queryClient.setQueryData(['profile', userId], context.previousProfile);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['weightHistory', userId] });
             queryClient.invalidateQueries({ queryKey: ['profile', userId] });
         }
