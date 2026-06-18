@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavig
 import { Layout } from './components/layout/Layout';
 import { PageTransition } from './components/ui/PageTransition';
 import { Auth } from './components/auth/Auth';
-import { useAuth } from './hooks/useAuth';
+import { useAuth, AuthProvider } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
@@ -171,17 +171,19 @@ function App() {
   }, []);
 
   return (
-    <UserPreferencesProvider>
-      <Suspense fallback={<FullScreenLoader />}>
-        <Routes>
-          {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
-          <Route path="/share/:shareId" element={<SharedWorkout />} />
+    <AuthProvider>
+      <UserPreferencesProvider>
+        <Suspense fallback={<FullScreenLoader />}>
+          <Routes>
+            {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
+            <Route path="/share/:shareId" element={<SharedWorkout />} />
 
-          {/* All other routes */}
-          <Route path="/*" element={<AppContent />} />
-        </Routes>
-      </Suspense>
-    </UserPreferencesProvider>
+            {/* All other routes */}
+            <Route path="/*" element={<AppContent />} />
+          </Routes>
+        </Suspense>
+      </UserPreferencesProvider>
+    </AuthProvider>
   );
 }
 
