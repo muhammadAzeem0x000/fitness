@@ -179,6 +179,10 @@
   /* Custom scrollbar - optimized */
   .custom-scrollbar {
     scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.5) rgba(241, 245, 249, 1);
+  }
+
+  .dark .custom-scrollbar {
     scrollbar-color: rgba(113, 113, 122, 0.5) rgb(24, 24, 27);
   }
 
@@ -188,11 +192,11 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-zinc-900 rounded-full;
+    @apply bg-slate-100 dark:bg-zinc-900 rounded-full;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-zinc-700/50 rounded-full hover:bg-zinc-600 transition-colors;
+    @apply bg-slate-300 dark:bg-zinc-700/50 rounded-full hover:bg-slate-400 dark:hover:bg-zinc-600 transition-colors;
   }
 
   /* Prevent layout shift during animations */
