@@ -97,13 +97,13 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
     };
 
     return (
-        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-slate-50 dark:bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
             {/* Header Section (Fixed) */}
             <div className="flex-none space-y-4 py-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl md:text-2xl font-bold text-white">Select Exercises</h2>
-                        <p className="text-zinc-400 text-xs md:text-sm">Choose exercises or add your own.</p>
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Select Exercises</h2>
+                        <p className="text-slate-500 dark:text-zinc-400 text-xs md:text-sm">Choose exercises or add your own.</p>
                     </div>
                     <Button variant="ghost" onClick={onBack}>Back</Button>
                 </div>
@@ -116,7 +116,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search or type to add custom..."
-                        className="w-full h-12 bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all placeholder:text-zinc-600"
+                        className="w-full h-12 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl pl-10 pr-4 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all placeholder:text-slate-400 dark:placeholder:text-zinc-600"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') handleAddCustom();
                         }}
@@ -143,7 +143,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                 className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                                     activeCategory === cat
                                         ? 'bg-blue-600 text-white'
-                                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                                        : 'bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-300 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                             >
                                 <span aria-hidden="true">{icon}</span>
@@ -177,7 +177,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                 onClick={() => handleToggle(ex.name)}
                                 className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left shrink-0 ${isSelected
                                     ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20'
-                                    : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                                    : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-200'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
@@ -192,7 +192,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
             </div>
 
             {/* Footer Action (Fixed) */}
-            <div className="flex-none pt-4 border-t border-zinc-800 text-right bg-slate-900 mt-auto">
+            <div className="flex-none pt-4 border-t border-slate-200 dark:border-zinc-800 text-right bg-slate-50 dark:bg-slate-900 mt-auto">
                 <Button
                     onClick={handleFinish}
                     disabled={selected.length === 0}

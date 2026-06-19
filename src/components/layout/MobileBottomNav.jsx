@@ -10,13 +10,13 @@ export function MobileBottomNav() {
         const isActive = to ? location.pathname === to : false;
         
         const activeClass = isActive 
-            ? "text-blue-500 font-semibold" 
-            : "text-zinc-500 hover:text-zinc-300";
+            ? "text-blue-600 dark:text-blue-500 font-semibold" 
+            : "text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-300";
 
         const content = (
             <>
                 <div className={`mb-1 p-1 rounded-full transition-colors ${isActive ? 'bg-blue-500/20' : ''}`}>
-                    <Icon className={`w-6 h-6 ${isActive ? 'text-blue-500' : 'text-zinc-500'}`} />
+                    <Icon className={`w-6 h-6 ${isActive ? 'text-blue-600 dark:text-blue-500' : 'text-slate-500 dark:text-zinc-500'}`} />
                 </div>
                 <span className={`text-[10px] ${activeClass}`}>{label}</span>
             </>
@@ -51,7 +51,7 @@ export function MobileBottomNav() {
 
     return (
         <nav 
-            className="bg-slate-900 border-t border-zinc-800 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full flex-none z-50"
+            className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-zinc-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full flex-none z-50"
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
             <div className="flex flex-row justify-around items-center h-16 px-1">
