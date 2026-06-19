@@ -158,22 +158,22 @@ export function AiCoach() {
             {/* Header (Fixed) */}
             <div className="flex-none flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <Bot className="h-8 w-8 text-blue-500" />
                         Master AI Coach
                     </h1>
-                    <p className="text-zinc-400 text-sm md:text-base mt-1">
+                    <p className="text-slate-500 dark:text-zinc-400 text-sm md:text-base mt-1">
                         Your personal elite fitness strategist.
                     </p>
                 </div>
                 {/* Mode Switcher */}
-                <div className="flex p-1 bg-zinc-900/80 rounded-xl gap-1 border border-zinc-800">
+                <div className="flex p-1 bg-slate-100 dark:bg-zinc-900/80 rounded-xl gap-1 border border-slate-300 dark:border-zinc-800">
                     <button
                         onClick={() => setCoachMode('chat')}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
                             coachMode === 'chat'
-                                ? 'bg-zinc-800 text-white shadow-sm'
-                                : 'text-zinc-400 hover:text-zinc-200'
+                                ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                         }`}
                     >
                         <MessageSquare className={`w-4 h-4 ${coachMode === 'chat' ? 'text-violet-400' : ''}`} />
@@ -183,8 +183,8 @@ export function AiCoach() {
                         onClick={() => setCoachMode('reports')}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
                             coachMode === 'reports'
-                                ? 'bg-zinc-800 text-white shadow-sm'
-                                : 'text-zinc-400 hover:text-zinc-200'
+                                ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                         }`}
                     >
                         <FileText className={`w-4 h-4 ${coachMode === 'reports' ? 'text-blue-500' : ''}`} />
@@ -195,7 +195,7 @@ export function AiCoach() {
 
             {/* Chat Mode */}
             {coachMode === 'chat' ? (
-                <div className="flex-1 min-h-0 border border-zinc-800 rounded-xl overflow-hidden bg-slate-950 relative">
+                <div className="flex-1 min-h-0 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-slate-950 relative">
                     {isOffline && (
                         <div className="absolute inset-0 z-10 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
                             <WifiOff className="w-12 h-12 text-red-500/50 mb-4" />
@@ -210,7 +210,7 @@ export function AiCoach() {
             ) : (
             <>
             {/* Report Tabs (Fixed) */}
-            <div className="flex-none flex p-1 bg-zinc-900 rounded-xl gap-1 overflow-x-auto shrink-0">
+            <div className="flex-none flex p-1 bg-slate-100 dark:bg-zinc-900 rounded-xl gap-1 overflow-x-auto shrink-0">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -222,7 +222,7 @@ export function AiCoach() {
                                 setShowHistoryMobile(true); // Go back to list on tab change
                             }}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-                            ${isActive ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}
+                            ${isActive ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800/50'}`}
                         >
                             <Icon className={`w-4 h-4 ${isActive ? 'text-blue-500' : ''}`} />
                             {tab.label}
@@ -236,9 +236,9 @@ export function AiCoach() {
                 {/* Sidebar: History List (Visible if showHistoryMobile is true OR on Desktop) */}
                 <div className={`${showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-1 flex-col h-full min-h-0 gap-4`}>
 
-                    <div className="flex-1 min-h-0 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
-                        <div className="flex-none p-3 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
-                            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Past Reports</h3>
+                    <div className="flex-1 min-h-0 bg-slate-50 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+                        <div className="flex-none p-3 border-b border-slate-200 dark:border-zinc-800 bg-slate-100/80 dark:bg-zinc-900/80 backdrop-blur-sm">
+                            <h3 className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Past Reports</h3>
                         </div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                             {historyList.length > 0 ? (
@@ -250,8 +250,8 @@ export function AiCoach() {
                                             setShowHistoryMobile(false);
                                         }}
                                         className={`w-full text-left p-3 rounded-lg text-sm transition-all border ${selectedReport?.id === item.id
-                                            ? 'bg-blue-500/10 border-blue-500/20 text-blue-200 shadow-sm'
-                                            : 'border-transparent text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                                            ? 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-200 shadow-sm'
+                                            : 'border-transparent text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-200'
                                             }`}
                                     >
                                         <div className="font-medium truncate">
@@ -304,14 +304,14 @@ export function AiCoach() {
                     )}
 
                     {selectedReport ? (
-                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-slate-950">
-                            <CardHeader className="flex-none border-b border-zinc-800/50 bg-blue-500/5 py-4">
+                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-white dark:bg-slate-950">
+                            <CardHeader className="flex-none border-b border-slate-200 dark:border-zinc-800/50 bg-blue-500/5 py-4">
                                 <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                                     {/* Mobile Back Button */}
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-zinc-400"
+                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                         onClick={() => setShowHistoryMobile(true)}
                                     >
                                         <ArrowLeft className="w-5 h-5" />
@@ -320,26 +320,26 @@ export function AiCoach() {
                                     <FileText className="h-5 w-5 text-blue-400 hidden md:block" />
                                     {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Analysis
                                     <div className="ml-auto flex items-center gap-2">
-                                        <span className="text-xs font-normal text-zinc-500 bg-zinc-900/80 px-2 py-1 rounded border border-zinc-800">
+                                        <span className="text-xs font-normal text-slate-600 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-900/80 px-2 py-1 rounded border border-slate-300 dark:border-zinc-800">
                                             {new Date(selectedReport.created_at).toLocaleString()}
                                         </span>
                                     </div>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:text-blue-100 prose-a:text-blue-400 prose-strong:text-white prose-li:text-zinc-300">
+                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
                                 <ReactMarkdown>{selectedReport.report_text}</ReactMarkdown>
                             </CardContent>
                         </Card>
                     ) : historyList.length === 0 ? (
                         // Show sample report for new users
-                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-slate-950">
-                            <CardHeader className="flex-none border-b border-zinc-800/50 bg-blue-500/5 py-4">
+                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-white dark:bg-slate-950">
+                            <CardHeader className="flex-none border-b border-slate-200 dark:border-zinc-800/50 bg-blue-500/5 py-4">
                                 <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                                     {/* Mobile Back Button */}
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-zinc-400"
+                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                         onClick={() => setShowHistoryMobile(true)}
                                     >
                                         <ArrowLeft className="w-5 h-5" />
@@ -352,7 +352,7 @@ export function AiCoach() {
                                     </span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose prose-invert max-w-none prose-headings:text-blue-100 prose-a:text-blue-400 prose-strong:text-white prose-li:text-zinc-300">
+                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
                                 <ReactMarkdown>
                                     {activeTab === 'daily' ? SAMPLE_DAILY_REPORT :
                                         activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT :
@@ -361,21 +361,21 @@ export function AiCoach() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-800/50 rounded-xl bg-zinc-900/20 text-center">
+                        <div className="flex-1 flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-zinc-800/50 rounded-xl bg-slate-50 dark:bg-zinc-900/20 text-center">
                             {/* Mobile Back Button State for Empty */}
                             <Button
                                 variant="ghost"
-                                className="md:hidden absolute top-4 left-4 text-zinc-400"
+                                className="md:hidden absolute top-4 left-4 text-slate-500 dark:text-zinc-400"
                                 onClick={() => setShowHistoryMobile(true)}
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
                             </Button>
 
-                            <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center mb-6 shadow-xl border border-zinc-800">
-                                <Bot className="h-10 w-10 text-zinc-600" />
+                            <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-zinc-900 flex items-center justify-center mb-6 shadow-xl border border-slate-300 dark:border-zinc-800">
+                                <Bot className="h-10 w-10 text-slate-500 dark:text-zinc-600" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Ready to Analyze</h3>
-                            <p className="text-zinc-500 max-w-md mx-auto leading-relaxed">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Ready to Analyze</h3>
+                            <p className="text-slate-500 dark:text-zinc-500 max-w-md mx-auto leading-relaxed">
                                 Select a report type from the tabs above and click "New Report" to generate AI insights, or view past analysis from the sidebar.
                             </p>
                         </div>

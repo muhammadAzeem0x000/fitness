@@ -199,8 +199,8 @@ export function AiChat() {
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-violet-500/30 flex items-center justify-center mb-4 shadow-lg shadow-violet-500/10">
                             <Bot className="w-8 h-8 text-violet-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-2">Chat with Your AI Coach</h3>
-                        <p className="text-sm text-zinc-400 max-w-sm mb-6 leading-relaxed">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Chat with Your AI Coach</h3>
+                        <p className="text-sm text-slate-500 dark:text-zinc-400 max-w-sm mb-6 leading-relaxed">
                             Ask me anything about your training, nutrition, recovery, or form. I have access to your workout history and profile.
                         </p>
 
@@ -209,7 +209,7 @@ export function AiChat() {
                                 <button
                                     key={i}
                                     onClick={() => handleSend(prompt)}
-                                    className="text-xs text-left px-3 py-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+                                    className="text-xs text-left px-3 py-2.5 bg-slate-100 dark:bg-zinc-900/80 border border-slate-300 dark:border-zinc-800 rounded-xl text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 transition-all"
                                 >
                                     {prompt}
                                 </button>
@@ -217,7 +217,7 @@ export function AiChat() {
                         </div>
 
                         {!isPremium && !subLoading && (
-                            <div className="mt-6 text-xs text-zinc-500 bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2">
+                            <div className="mt-6 text-xs text-slate-500 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-lg px-4 py-2">
                                 Free tier: 5 messages/month
                                 <button
                                     onClick={() => navigate('/pricing')}
@@ -246,11 +246,11 @@ export function AiChat() {
                                     className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-3 ${
                                         msg.role === 'user'
                                             ? 'bg-blue-600 text-white rounded-br-md'
-                                            : 'bg-zinc-900/80 border border-zinc-800 text-zinc-200 rounded-bl-md'
+                                            : 'bg-slate-100 dark:bg-zinc-900/80 border border-slate-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 rounded-bl-md'
                                     }`}
                                 >
                                     {msg.role === 'assistant' ? (
-                                        <div className="prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-li:my-0.5 prose-headings:my-2 prose-strong:text-white">
+                                        <div className="prose dark:prose-invert prose-sm max-w-none prose-p:my-1.5 prose-li:my-0.5 prose-headings:my-2 prose-strong:text-slate-900 dark:prose-strong:text-white">
                                             <ReactMarkdown>{msg.content || (msg.isStreaming ? '...' : '')}</ReactMarkdown>
                                             {msg.isStreaming && msg.content && (
                                                 <span className="inline-block w-1.5 h-4 bg-violet-400 animate-pulse ml-0.5 rounded-sm" />
@@ -292,14 +292,14 @@ export function AiChat() {
             )}
 
             {/* Input Area */}
-            <div className="flex-none px-4 py-3 border-t border-zinc-800/50 bg-slate-900/95 backdrop-blur-sm">
+            <div className="flex-none px-4 py-3 border-t border-slate-200 dark:border-zinc-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm">
                 <div className="flex gap-2 items-end">
                     {messages.length > 0 && (
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleClearChat}
-                            className="h-11 w-11 shrink-0 text-zinc-500 hover:text-red-400"
+                            className="h-11 w-11 shrink-0 text-slate-400 dark:text-zinc-500 hover:text-red-400"
                             title="Clear chat"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -314,7 +314,7 @@ export function AiChat() {
                             onKeyDown={handleKeyDown}
                             placeholder="Ask your AI coach..."
                             rows={1}
-                            className="w-full min-h-[44px] max-h-[120px] bg-zinc-900 border border-zinc-800 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all resize-none"
+                            className="w-full min-h-[44px] max-h-[120px] bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl pl-4 pr-12 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all resize-none"
                             style={{ height: 'auto' }}
                             onInput={(e) => {
                                 e.target.style.height = 'auto';

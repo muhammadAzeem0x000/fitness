@@ -7,7 +7,7 @@ export function StatsOverview({ stats, currentBMI }) {
     const { displayWeight, displayHeight, formatWeightLabel, formatHeightLabel } = useUserPreferences();
 
     const getBMIData = (bmi) => {
-        if (!bmi || bmi === '0.0') return { category: 'N/A', color: 'text-zinc-500', percent: 0 };
+        if (!bmi || bmi === '0.0') return { category: 'N/A', color: 'text-slate-500 dark:text-zinc-500', percent: 0 };
         const val = parseFloat(bmi);
         
         let percent = 0;
@@ -80,15 +80,15 @@ export function StatsOverview({ stats, currentBMI }) {
                     
                     <div className="relative w-full pb-1">
                         <div 
-                            className="absolute -top-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white drop-shadow-md transition-all duration-500 z-10"
+                            className="absolute -top-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-slate-800 dark:border-t-white drop-shadow-md transition-all duration-500 z-10"
                             style={{ left: `calc(${weightData.percent}% - 6px)` }}
                         />
-                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-zinc-800">
+                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-slate-200 dark:bg-zinc-800">
                             <div className={`h-full ${weightData.barColor} transition-all duration-500`} style={{ width: `${weightData.percent}%` }}></div>
                         </div>
                     </div>
                     
-                    <div className="flex w-full justify-between text-[10px] font-medium text-zinc-500 mt-1">
+                    <div className="flex w-full justify-between text-[10px] font-medium text-slate-500 dark:text-zinc-500 mt-1">
                         <span>{displayWeight(stats.startWeight)} {formatWeightLabel()}</span>
                         <span>Goal: {displayWeight(stats.goalWeight)} {formatWeightLabel()}</span>
                     </div>
@@ -116,11 +116,11 @@ export function StatsOverview({ stats, currentBMI }) {
                     <div className="relative w-full pb-1">
                         {currentBMI && currentBMI !== '0.0' && (
                             <div 
-                                className="absolute -top-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-white drop-shadow-md transition-all duration-500 z-10"
+                                className="absolute -top-3 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-slate-800 dark:border-t-white drop-shadow-md transition-all duration-500 z-10"
                                 style={{ left: `calc(${bmiData.percent}% - 6px)` }}
                             />
                         )}
-                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-zinc-800">
+                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-slate-200 dark:bg-zinc-800">
                             <div className="w-1/4 bg-blue-500/80"></div>
                             <div className="w-1/4 bg-emerald-500/80"></div>
                             <div className="w-1/4 bg-yellow-500/80"></div>
@@ -129,7 +129,7 @@ export function StatsOverview({ stats, currentBMI }) {
                     </div>
                     
                     {/* Scale Labels */}
-                    <div className="flex w-full justify-between text-[10px] font-medium text-zinc-500 mt-1">
+                    <div className="flex w-full justify-between text-[10px] font-medium text-slate-500 dark:text-zinc-500 mt-1">
                         <span className="w-1/4 text-center">Under</span>
                         <span className="w-1/4 text-center">Normal</span>
                         <span className="w-1/4 text-center">Over</span>
@@ -145,7 +145,7 @@ export function StatsOverview({ stats, currentBMI }) {
             {statItems.map((item) => (
                 <Card key={item.title}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-sm font-medium text-zinc-400">
+                        <CardTitle className="text-sm font-medium text-slate-600 dark:text-zinc-400">
                             {item.title}
                         </CardTitle>
                         <item.icon className={`h-4 w-4 ${item.color}`} />
@@ -155,7 +155,7 @@ export function StatsOverview({ stats, currentBMI }) {
                         {item.customRender ? (
                             item.customRender
                         ) : item.description ? (
-                            <p className="text-xs text-zinc-500">{item.description}</p>
+                            <p className="text-xs text-slate-500 dark:text-zinc-500">{item.description}</p>
                         ) : null}
                     </CardContent>
                 </Card>

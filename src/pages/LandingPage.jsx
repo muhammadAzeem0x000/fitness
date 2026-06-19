@@ -7,22 +7,22 @@ export default function LandingPage() {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-sans selection:bg-blue-500/30">
             {/* Navbar */}
-            <nav className="border-b border-white/5 bg-slate-950/50 backdrop-blur-md fixed w-full z-50 transition-all duration-300">
+            <nav className="border-b border-slate-200 dark:border-white/5 bg-white/80 dark:bg-slate-950/50 backdrop-blur-md fixed w-full z-50 transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-3">
                             <img src="/logo.png" alt="SmartFit Logo" className="w-8 h-8 object-contain" />
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
                                 SmartFit
                             </span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <button onClick={() => navigate('/auth', { state: { view: 'login' } })} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                            <button onClick={() => navigate('/auth', { state: { view: 'login' } })} className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">
                                 Login
                             </button>
-                            <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} className="bg-white text-slate-950 hover:bg-slate-200 transition-transform active:scale-95">
+                            <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} className="bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 transition-transform active:scale-95">
                                 Get Started
                             </Button>
                         </div>
@@ -50,7 +50,7 @@ export default function LandingPage() {
                         </span>
                     </h1>
 
-                    <p className="max-w-2xl mx-auto text-xl text-slate-400 mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-12 duration-1000">
+                    <p className="max-w-2xl mx-auto text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-12 duration-1000">
                         Stop guessing in the gym. Track your progressive overload, analyze your weak points, and get personalized coaching insights instantly.
                     </p>
 
@@ -58,7 +58,7 @@ export default function LandingPage() {
                         <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} size="lg" className="w-full sm:w-auto text-lg h-12 px-8 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-1">
                             Start for Free <ArrowRight className="ml-2 w-5 h-5" />
                         </Button>
-                        <Button onClick={() => navigate('/auth', { state: { view: 'login' } })} size="lg" variant="secondary" className="w-full sm:w-auto text-lg h-12 px-8 bg-slate-800 text-white hover:bg-slate-700 border border-slate-700 hover:border-slate-500 transition-all hover:-translate-y-1">
+                        <Button onClick={() => navigate('/auth', { state: { view: 'login' } })} size="lg" variant="secondary" className="w-full sm:w-auto text-lg h-12 px-8 bg-white text-slate-900 hover:bg-slate-50 border border-slate-200 hover:border-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 dark:border-slate-700 dark:hover:border-slate-500 transition-all hover:-translate-y-1">
                             <LogIn className="mr-2 w-5 h-5" /> Login
                         </Button>
                     </div>
@@ -66,38 +66,38 @@ export default function LandingPage() {
             </div>
 
             {/* Features Grid */}
-            <div className="py-24 bg-slate-900/50">
+            <div className="py-24 bg-slate-100/50 dark:bg-slate-900/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-3 gap-8">
                         {/* Feature 1 */}
-                        <div className="p-8 rounded-2xl bg-slate-950 border border-white/5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 group hover:-translate-y-1">
+                        <div className="p-8 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 group hover:-translate-y-1">
                             <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-6 text-blue-500 group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
                                 <Dumbbell className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">Smart Logging</h3>
-                            <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                            <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">Smart Logging</h3>
+                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed group-hover:text-slate-800 dark:group-hover:text-slate-300 transition-colors">
                                 Effortlessly track sets, reps, and weights. Our intelligent logger remembers your history and suggests progressive overload targets.
                             </p>
                         </div>
 
                         {/* Feature 2 */}
-                        <div className="p-8 rounded-2xl bg-slate-950 border border-white/5 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group hover:-translate-y-1">
+                        <div className="p-8 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/5 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 group hover:-translate-y-1">
                             <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-6 text-purple-500 group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300">
                                 <Brain className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold mb-3 text-white group-hover:text-purple-400 transition-colors">AI Coaching</h3>
-                            <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                            <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors">AI Coaching</h3>
+                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed group-hover:text-slate-800 dark:group-hover:text-slate-300 transition-colors">
                                 Your personal AI coach analyzes every workout. Get actionable feedback on volume, frequency, and intensity to break through plateaus.
                             </p>
                         </div>
 
                         {/* Feature 3 */}
-                        <div className="p-8 rounded-2xl bg-slate-950 border border-white/5 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 group hover:-translate-y-1">
+                        <div className="p-8 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/5 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-300 group hover:-translate-y-1">
                             <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-6 text-emerald-500 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
                                 <TrendingUp className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold mb-3 text-white group-hover:text-emerald-400 transition-colors">Visual Progress</h3>
-                            <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                            <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">Visual Progress</h3>
+                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed group-hover:text-slate-800 dark:group-hover:text-slate-300 transition-colors">
                                 Watch your strength skyrocket with interactive charts. Track volume load, estimated 1RM, and body weight trends over time.
                             </p>
                         </div>
@@ -106,37 +106,37 @@ export default function LandingPage() {
             </div>
 
             {/* App Preview Section (New) */}
-            <div className="py-24 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950">
+            <div className="py-24 bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <div className="mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">Experience the Dashboard</h2>
-                        <p className="text-slate-400 max-w-2xl mx-auto">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-white">Experience the Dashboard</h2>
+                        <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
                             A command center for your physique. Analyze detailed stats, manage routines, and chat with your AI coach all in one place.
                         </p>
                     </div>
 
-                    <div className="relative rounded-xl border border-white/10 shadow-2xl bg-slate-900/50 overflow-hidden aspect-video md:aspect-[16/9] group">
+                    <div className="relative rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl bg-white/50 dark:bg-slate-900/50 overflow-hidden aspect-video md:aspect-[16/9] group">
                         {/* Placeholder for Screenshot */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50">
+                        <div className="absolute inset-0 flex items-center justify-center bg-slate-100/50 dark:bg-slate-800/50">
                             <div className="text-center p-8">
-                                <Laptop className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                                <p className="text-slate-400 font-medium">Dashboard Screenshot Placeholder</p>
-                                <p className="text-slate-600 text-sm mt-2">Paste your screenshot here</p>
+                                <Laptop className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+                                <p className="text-slate-600 dark:text-slate-400 font-medium">Dashboard Screenshot Placeholder</p>
+                                <p className="text-slate-500 dark:text-slate-600 text-sm mt-2">Paste your screenshot here</p>
                             </div>
                         </div>
                         {/* Optional overlay effect */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-slate-950/80 to-transparent pointer-events-none" />
                     </div>
                 </div>
             </div>
 
 
             {/* How It Works */}
-            <div className="py-24 bg-slate-950">
+            <div className="py-24 bg-slate-50 dark:bg-slate-950">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-                        <p className="text-slate-400">Three simple steps to your best physique.</p>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-white">How It Works</h2>
+                        <p className="text-slate-600 dark:text-slate-400">Three simple steps to your best physique.</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-12 relative">
@@ -145,29 +145,29 @@ export default function LandingPage() {
 
                         {/* Step 1 */}
                         <div className="relative z-10 text-center group">
-                            <div className="w-16 h-16 mx-auto rounded-full bg-slate-900 border-4 border-slate-950 shadow-xl flex items-center justify-center text-lg font-bold text-blue-500 mb-6 relative group-hover:scale-110 group-hover:border-blue-500/30 transition-all duration-300">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-white dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 shadow-xl flex items-center justify-center text-lg font-bold text-blue-500 mb-6 relative group-hover:scale-110 group-hover:border-blue-500/30 transition-all duration-300">
                                 1
                             </div>
-                            <h3 className="text-lg font-bold mb-2 text-white">Create Profile</h3>
-                            <p className="text-sm text-slate-400 group-hover:text-blue-400 transition-colors">Set your goals and biometrics.</p>
+                            <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">Create Profile</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">Set your goals and biometrics.</p>
                         </div>
 
                         {/* Step 2 */}
                         <div className="relative z-10 text-center group">
-                            <div className="w-16 h-16 mx-auto rounded-full bg-slate-900 border-4 border-slate-950 shadow-xl flex items-center justify-center text-lg font-bold text-blue-500 mb-6 relative group-hover:scale-110 group-hover:border-blue-500/30 transition-all duration-300">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-white dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 shadow-xl flex items-center justify-center text-lg font-bold text-blue-500 mb-6 relative group-hover:scale-110 group-hover:border-blue-500/30 transition-all duration-300">
                                 2
                             </div>
-                            <h3 className="text-lg font-bold mb-2 text-white">Log Workouts</h3>
-                            <p className="text-sm text-slate-400 group-hover:text-blue-400 transition-colors">Track your lifts with the intuitive logger.</p>
+                            <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">Log Workouts</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">Track your lifts with the intuitive logger.</p>
                         </div>
 
                         {/* Step 3 */}
                         <div className="relative z-10 text-center group">
-                            <div className="w-16 h-16 mx-auto rounded-full bg-slate-900 border-4 border-slate-950 shadow-xl flex items-center justify-center text-lg font-bold text-blue-500 mb-6 relative group-hover:scale-110 group-hover:border-blue-500/30 transition-all duration-300">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-white dark:bg-slate-900 border-4 border-slate-50 dark:border-slate-950 shadow-xl flex items-center justify-center text-lg font-bold text-blue-500 mb-6 relative group-hover:scale-110 group-hover:border-blue-500/30 transition-all duration-300">
                                 3
                             </div>
-                            <h3 className="text-lg font-bold mb-2 text-white">Get Insights</h3>
-                            <p className="text-sm text-slate-400 group-hover:text-blue-400 transition-colors">Receive weekly AI reports and growth plans.</p>
+                            <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-white">Get Insights</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">Receive weekly AI reports and growth plans.</p>
                         </div>
                     </div>
                 </div>
@@ -195,11 +195,11 @@ export default function LandingPage() {
             </div>
 
             {/* Footer */}
-            <footer className="border-t border-white/5 bg-slate-950 py-12">
+            <footer className="border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950 py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-2">
                         <Dumbbell className="w-6 h-6 text-blue-600" />
-                        <span className="font-bold text-lg text-slate-200">SmartFit</span>
+                        <span className="font-bold text-lg text-slate-900 dark:text-slate-200">SmartFit</span>
                     </div>
                     <p className="text-slate-500 text-sm">
                         © {new Date().getFullYear()} SmartFit. All rights reserved.

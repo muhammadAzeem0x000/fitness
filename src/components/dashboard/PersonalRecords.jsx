@@ -52,7 +52,7 @@ export function PersonalRecords({ workouts = [] }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-yellow-500" />
                     Personal Records
                 </CardTitle>
@@ -62,10 +62,10 @@ export function PersonalRecords({ workouts = [] }) {
                     {personalRecords.map((pr, index) => (
                         <div
                             key={pr.exercise + pr.date}
-                            className="flex items-center justify-between p-3 rounded-lg bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700 transition-colors"
+                            className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800/50 hover:border-slate-300 dark:hover:border-zinc-700 transition-colors"
                         >
                             <div className="flex-1">
-                                <div className="font-medium text-white text-sm flex items-center gap-2">
+                                <div className="font-medium text-slate-900 dark:text-white text-sm flex items-center gap-2">
                                     {pr.exercise}
                                     {pr.isRecent && (
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
@@ -74,7 +74,7 @@ export function PersonalRecords({ workouts = [] }) {
                                     )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-zinc-500 flex items-center gap-1">
+                                    <span className="text-xs text-slate-500 dark:text-zinc-500 flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
                                         {new Date(pr.date).toLocaleDateString()}
                                     </span>
@@ -84,7 +84,7 @@ export function PersonalRecords({ workouts = [] }) {
                                 <div className="text-lg font-bold text-yellow-500">
                                     {displayWeight(pr.weight)} {formatWeightLabel()}
                                 </div>
-                                <div className="text-xs text-zinc-500">
+                                <div className="text-xs text-slate-500 dark:text-zinc-500">
                                     {pr.reps} reps
                                 </div>
                             </div>
@@ -93,7 +93,7 @@ export function PersonalRecords({ workouts = [] }) {
                 </div>
 
                 {personalRecords.length === 0 && (
-                    <p className="text-center text-zinc-500 text-sm py-4">
+                    <p className="text-center text-slate-500 dark:text-zinc-500 text-sm py-4">
                         No personal records yet. Keep lifting! 💪
                     </p>
                 )}

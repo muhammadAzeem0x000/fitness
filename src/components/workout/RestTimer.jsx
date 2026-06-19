@@ -69,13 +69,13 @@ export function RestTimer({ defaultDuration = 90, onComplete }) {
     }
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 bg-zinc-900 border-2 border-zinc-700 rounded-xl shadow-2xl p-4 w-72 animate-in slide-in-from-bottom-4">
+        <div className="fixed bottom-4 right-4 z-50 bg-white dark:bg-zinc-900 border-2 border-slate-200 dark:border-zinc-700 rounded-xl shadow-2xl p-4 w-72 animate-in slide-in-from-bottom-4">
             <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-white">Rest Timer</h4>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Rest Timer</h4>
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => setIsMinimized(true)}
-                        className="p-1 text-zinc-400 hover:text-white transition-colors"
+                        className="p-1 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -83,7 +83,7 @@ export function RestTimer({ defaultDuration = 90, onComplete }) {
                     </button>
                     <button
                         onClick={handleReset}
-                        className="p-1 text-zinc-400 hover:text-white transition-colors"
+                        className="p-1 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                         <X className="w-4 h-4" />
                     </button>
@@ -100,7 +100,7 @@ export function RestTimer({ defaultDuration = 90, onComplete }) {
                         stroke="currentColor"
                         strokeWidth="8"
                         fill="none"
-                        className="text-zinc-800"
+                        className="text-slate-200 dark:text-zinc-800"
                     />
                     <circle
                         cx="64"
@@ -117,7 +117,7 @@ export function RestTimer({ defaultDuration = 90, onComplete }) {
                     />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className={`font-mono text-3xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-white'
+                    <span className={`font-mono text-3xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-slate-900 dark:text-white'
                         }`}>
                         {formatTime(timeLeft)}
                     </span>

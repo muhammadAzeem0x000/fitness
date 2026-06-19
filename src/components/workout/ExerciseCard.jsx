@@ -156,14 +156,14 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                 />
             )}
 
-            <Card className="mb-4 border-l-4 border-l-blue-500 bg-zinc-900/50">
+            <Card className="mb-4 border-l-4 border-l-blue-500 bg-white dark:bg-zinc-900/50 shadow-sm dark:shadow-none">
                 <CardContent className="pt-4 pb-4">
                     <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
-                            <h4 className="text-lg font-semibold text-slate-200">{exercise}</h4>
+                            <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-200">{exercise}</h4>
                             <button
                                 onClick={() => setIsVideoModalOpen(true)}
-                                className="text-zinc-500 hover:text-blue-400 transition-colors p-1"
+                                className="text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-1"
                                 title="Watch Video Guide"
                             >
                                 <PlayCircle className="w-4 h-4" />
@@ -193,7 +193,7 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
 
                             return (
                                 <div key={index} className={`flex gap-2 items-center transition-opacity ${isComplete ? 'opacity-100' : 'opacity-70'}`}>
-                                    <span className="text-xs font-mono text-zinc-500 w-8 shrink-0">#{index + 1}</span>
+                                    <span className="text-xs font-mono text-slate-400 dark:text-zinc-500 w-8 shrink-0">#{index + 1}</span>
 
                                     <div className="relative w-1/2">
                                         <input
@@ -202,7 +202,7 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                                             value={set.weight}
                                             onChange={(e) => updateSet(index, 'weight', e.target.value)}
                                             onBlur={() => handleBlur(index)}
-                                            className={`w-full h-9 rounded-md border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-zinc-800'} bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow`}
+                                            className={`w-full h-9 rounded-md border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-slate-300 dark:border-zinc-800'} bg-slate-50 dark:bg-zinc-950 px-2 text-sm text-center text-slate-900 dark:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow`}
                                         />
                                         {prSetIndex === index && set.weight && (
                                             <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg animate-bounce flex items-center gap-1">
@@ -218,18 +218,18 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                                         value={set.reps}
                                         onChange={(e) => updateSet(index, 'reps', e.target.value)}
                                         onBlur={() => handleBlur(index)}
-                                        className="w-1/2 h-9 rounded-md border border-zinc-800 bg-zinc-950 px-2 text-sm text-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow"
+                                        className="w-1/2 h-9 rounded-md border border-slate-300 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 px-2 text-sm text-center text-slate-900 dark:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow"
                                     />
 
                                     {/* Confirm button or checkmark */}
                                     {canConfirm ? (
                                         <button
                                             onClick={() => confirmSet(index)}
-                                            className="p-2 hover:bg-zinc-800 rounded transition-all border border-zinc-700 hover:border-green-500/50 group"
+                                            className="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded transition-all border border-slate-300 dark:border-zinc-700 hover:border-green-500/50 dark:hover:border-green-500/50 group"
                                             title="Confirm set with these values"
                                             type="button"
                                         >
-                                            <Check className="w-5 h-5 text-zinc-500 group-hover:text-green-500 transition-colors" />
+                                            <Check className="w-5 h-5 text-slate-400 dark:text-zinc-500 group-hover:text-green-500 transition-colors" />
                                         </button>
                                     ) : isComplete ? (
                                         <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 animate-fade-in" />

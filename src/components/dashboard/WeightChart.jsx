@@ -11,9 +11,9 @@ const MOBILE_BREAKPOINT = 768;
 const CustomTooltip = ({ active, payload, label, formatWeightLabel }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-3 rounded-xl shadow-2xl">
-                <p className="text-zinc-400 text-xs mb-1">{label}</p>
-                <p className="text-white font-semibold text-lg flex items-baseline gap-1">
+            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200 dark:border-zinc-800 p-3 rounded-xl shadow-2xl">
+                <p className="text-slate-500 dark:text-zinc-400 text-xs mb-1">{label}</p>
+                <p className="text-slate-900 dark:text-white font-semibold text-lg flex items-baseline gap-1">
                     {payload[0].value} <span className="text-xs text-blue-400 font-medium">{formatWeightLabel()}</span>
                 </p>
             </div>
@@ -101,12 +101,12 @@ export function WeightChart({ data }) {
     }, [visibleData]);
 
     return (
-        <Card className="col-span-full border-zinc-800 bg-zinc-900/50 backdrop-blur-xl">
+        <Card className="col-span-full">
             <CardHeader className="pb-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <CardTitle className="text-lg font-semibold text-white">Weight Progress</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Weight Progress</CardTitle>
                     {chartData.length > visibleNodes && (
-                        <span className="text-[10px] text-zinc-400 bg-zinc-800/80 px-2.5 py-1 rounded-full border border-zinc-700/50 w-fit">
+                        <span className="text-[10px] text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-1 rounded-full border border-slate-200 dark:border-zinc-700/50 w-fit">
                             Swipe or drag slider for history
                         </span>
                     )}
@@ -129,10 +129,10 @@ export function WeightChart({ data }) {
                                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-zinc-800" vertical={false} />
                                 <XAxis
                                     dataKey="date"
-                                    stroke="#52525b"
+                                    className="fill-slate-500 dark:fill-zinc-400"
                                     fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
@@ -140,7 +140,7 @@ export function WeightChart({ data }) {
                                     dy={10}
                                 />
                                 <YAxis
-                                    stroke="#52525b"
+                                    className="fill-slate-500 dark:fill-zinc-400"
                                     fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
@@ -151,7 +151,7 @@ export function WeightChart({ data }) {
                                 />
                                 <Tooltip
                                     content={<CustomTooltip formatWeightLabel={formatWeightLabel} />}
-                                    cursor={{ stroke: '#52525b', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                    cursor={{ stroke: 'currentColor', strokeWidth: 1, strokeDasharray: '4 4', className: 'text-slate-400 dark:text-zinc-500' }}
                                     isAnimationActive={false}
                                 />
                                 <Area
@@ -180,10 +180,10 @@ export function WeightChart({ data }) {
                                 step="any"
                                 value={sliderValue}
                                 onChange={(e) => setSliderValue(parseFloat(e.target.value))}
-                                className="w-full h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-0 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
+                                className="w-full h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-0 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
                                 style={{ accentColor: '#3b82f6' }}
                             />
-                            <div className="flex justify-between mt-2 text-[10px] text-zinc-500 px-1 font-medium">
+                            <div className="flex justify-between mt-2 text-[10px] text-slate-500 dark:text-zinc-500 px-1 font-medium">
                                 <span>Older</span>
                                 <span>Newer</span>
                             </div>

@@ -10,7 +10,7 @@ export function MobileLayout({ children, mainRef }) {
     const isFixedLayout = ['/ai-coach'].includes(location.pathname);
 
     return (
-        <div className="h-[100dvh] w-full bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
+        <div className="h-[100dvh] w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
             <MobileHeader />
 
             <main 

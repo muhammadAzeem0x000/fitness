@@ -35,9 +35,9 @@ export function WorkoutHistoryList({ workouts }) {
 
     return (
         <>
-            <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full flex flex-col max-h-[500px]">
-                <CardHeader className="flex flex-row items-center justify-between pb-4 flex-none border-b border-zinc-800/50">
-                    <CardTitle className="text-sm font-medium text-zinc-400">
+            <Card className="h-full flex flex-col max-h-[500px]">
+                <CardHeader className="flex flex-row items-center justify-between pb-4 flex-none border-b border-slate-200 dark:border-zinc-800/50">
+                    <CardTitle className="text-sm font-medium text-slate-600 dark:text-zinc-400">
                         Recent History ({validWorkouts.length})
                     </CardTitle>
                     <History className="h-4 w-4 text-blue-500" />
@@ -47,9 +47,9 @@ export function WorkoutHistoryList({ workouts }) {
                     ref={scrollContainerRef}
                     onScroll={handleScroll}
                 >
-                    <div className="divide-y divide-zinc-800/50">
+                    <div className="divide-y divide-slate-200 dark:divide-zinc-800/50">
                         {validWorkouts.length === 0 ? (
-                            <div className="p-6 text-center text-zinc-500 text-sm">
+                            <div className="p-6 text-center text-slate-500 dark:text-zinc-500 text-sm">
                                 No workouts logged yet.
                             </div>
                         ) : (
@@ -57,17 +57,17 @@ export function WorkoutHistoryList({ workouts }) {
                                 <button
                                     key={workout.id}
                                     onClick={() => setSelectedWorkout(workout)}
-                                    className="w-full flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors text-left group"
+                                    className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors text-left group"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
                                             <Dumbbell className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <h4 className="font-medium text-zinc-200 group-hover:text-white transition-colors text-sm">
+                                            <h4 className="font-medium text-slate-800 dark:text-zinc-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors text-sm">
                                                 {workout.type}
                                             </h4>
-                                            <div className="flex items-center gap-2 text-xs text-zinc-500 group-hover:text-zinc-400">
+                                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-500 group-hover:text-slate-600 dark:group-hover:text-zinc-400">
                                                 <Calendar className="w-3 h-3" />
                                                 {new Date(workout.date).toLocaleDateString(undefined, {
                                                     weekday: 'short',
@@ -79,20 +79,20 @@ export function WorkoutHistoryList({ workouts }) {
                                             </div>
                                         </div>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors" />
+                                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-zinc-600 group-hover:text-slate-600 dark:group-hover:text-zinc-300 transition-colors" />
                                 </button>
                             ))
                         )}
 
                         {/* Loading Indicator */}
                         {isLoadingMore && (
-                            <div className="p-4 flex justify-center items-center text-zinc-500 text-xs gap-2">
+                            <div className="p-4 flex justify-center items-center text-slate-500 dark:text-zinc-500 text-xs gap-2">
                                 <Loader2 className="w-3 h-3 animate-spin" /> Loading more...
                             </div>
                         )}
 
                         {!hasMore && validWorkouts.length > 6 && (
-                            <div className="p-3 text-center text-xs text-zinc-600">
+                            <div className="p-3 text-center text-xs text-slate-400 dark:text-zinc-600">
                                 End of history
                             </div>
                         )}

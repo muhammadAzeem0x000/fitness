@@ -153,8 +153,8 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pt-6 px-3 md:px-4 pb-20">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight text-white mb-2">Log Workout</h2>
-                <p className="text-zinc-400">Start a blank session or pick a saved template.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Log Workout</h2>
+                <p className="text-slate-500 dark:text-zinc-400">Start a blank session or pick a saved template.</p>
             </div>
 
             <button
@@ -162,8 +162,8 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                 className="w-full p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 transition-all text-left flex items-center justify-between group"
             >
                 <div>
-                    <h3 className="text-white font-medium text-lg">Start Empty Workout</h3>
-                    <p className="text-sm text-blue-200/70">Build your session from scratch</p>
+                    <h3 className="text-slate-900 dark:text-white font-medium text-lg">Start Empty Workout</h3>
+                    <p className="text-sm text-blue-600 dark:text-blue-200/70">Build your session from scratch</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Plus className="w-5 h-5 text-white" />
@@ -176,19 +176,19 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                 className="w-full p-4 rounded-xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 to-blue-500/10 hover:from-violet-500/20 hover:to-blue-500/20 transition-all text-left flex items-center justify-between group"
             >
                 <div>
-                    <h3 className="text-white font-medium text-lg flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-violet-400" />
+                    <h3 className="text-slate-900 dark:text-white font-medium text-lg flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                         AI Generate Workout
                     </h3>
-                    <p className="text-sm text-violet-200/60">Describe what you need or answer quick questions</p>
+                    <p className="text-sm text-violet-600 dark:text-violet-200/60">Describe what you need or answer quick questions</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-violet-500/20">
                     <Sparkles className="w-5 h-5 text-white" />
                 </div>
             </button>
 
-            <div className="pt-4 border-t border-zinc-800">
-                <h3 className="text-lg font-semibold text-white mb-4">Your Templates</h3>
+            <div className="pt-4 border-t border-slate-200 dark:border-zinc-800">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Your Templates</h3>
                 <SplitSelector
                     routines={routines}
                     selectedRoutine={selectedRoutine}

@@ -134,13 +134,13 @@ export function StreakCard({ workouts = [], workoutDays = [] }) {
             <CardContent className="p-6 relative">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${streak.current > 0 ? 'bg-orange-500/20' : 'bg-zinc-800'
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${streak.current > 0 ? 'bg-orange-500/20' : 'bg-slate-100 dark:bg-zinc-800'
                             }`}>
-                            <Flame className={`w-5 h-5 ${streak.current > 0 ? 'text-orange-500' : 'text-zinc-600'
+                            <Flame className={`w-5 h-5 ${streak.current > 0 ? 'text-orange-500' : 'text-slate-400 dark:text-zinc-600'
                                 }`} />
                         </div>
                         <div>
-                            <h3 className="text-sm font-medium text-zinc-400">Workout Streak</h3>
+                            <h3 className="text-sm font-medium text-slate-600 dark:text-zinc-400">Workout Streak</h3>
                         </div>
                     </div>
                 </div>
@@ -148,28 +148,28 @@ export function StreakCard({ workouts = [], workoutDays = [] }) {
                 <div className="space-y-3">
                     <div>
                         <div className="flex items-baseline gap-2">
-                            <span className={`text-4xl font-bold ${streak.current > 0 ? 'text-orange-500' : 'text-zinc-500'
+                            <span className={`text-4xl font-bold ${streak.current > 0 ? 'text-orange-500' : 'text-slate-500 dark:text-zinc-500'
                                 }`}>
                                 {streak.current}
                             </span>
-                            <span className="text-zinc-500 text-lg">
+                            <span className="text-slate-500 dark:text-zinc-500 text-lg">
                                 {streak.current === 1 ? 'day' : 'days'}
                             </span>
                             {streak.current >= 3 && <span className="text-2xl">🔥</span>}
                             {streak.current >= 7 && <span className="text-2xl">🔥</span>}
                             {streak.current >= 14 && <span className="text-2xl">🔥</span>}
                         </div>
-                        <p className="text-xs text-zinc-600 mt-1">Current streak</p>
+                        <p className="text-xs text-slate-400 dark:text-zinc-600 mt-1">Current streak</p>
                     </div>
 
                     {streak.longest > 0 && (
-                        <div className="pt-3 border-t border-zinc-800">
+                        <div className="pt-3 border-t border-slate-200 dark:border-zinc-800">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-zinc-500 flex items-center gap-1">
+                                <span className="text-xs text-slate-500 dark:text-zinc-500 flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
                                     Longest streak
                                 </span>
-                                <span className="text-sm font-semibold text-zinc-400">
+                                <span className="text-sm font-semibold text-slate-600 dark:text-zinc-400">
                                     {streak.longest} {streak.longest === 1 ? 'day' : 'days'}
                                 </span>
                             </div>
@@ -177,7 +177,7 @@ export function StreakCard({ workouts = [], workoutDays = [] }) {
                     )}
 
                     {streak.current === 0 && (
-                        <p className="text-xs text-zinc-600 mt-2">
+                        <p className="text-xs text-slate-400 dark:text-zinc-600 mt-2">
                             Start your streak by logging a workout today!
                         </p>
                     )}

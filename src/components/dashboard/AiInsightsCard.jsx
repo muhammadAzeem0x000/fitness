@@ -225,7 +225,7 @@ export function AiInsightsCard({ workoutLogs = [], weightHistory = [], profile =
             className={`relative overflow-hidden rounded-xl border ${currentInsight.border} bg-gradient-to-r ${currentInsight.bg} p-4 transition-all`}
         >
             <div className="flex items-start gap-3">
-                <div className={`w-9 h-9 rounded-lg bg-zinc-900/50 border border-zinc-800 flex items-center justify-center shrink-0`}>
+                <div className={`w-9 h-9 rounded-lg bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 flex items-center justify-center shrink-0`}>
                     <Icon className={`w-4.5 h-4.5 ${currentInsight.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -236,14 +236,14 @@ export function AiInsightsCard({ workoutLogs = [], weightHistory = [], profile =
                         {insights.length > 1 && (
                             <button
                                 onClick={nextInsight}
-                                className="p-1 rounded hover:bg-zinc-800/50 transition-colors group"
+                                className="p-1 rounded hover:bg-slate-200 dark:hover:bg-zinc-800/50 transition-colors group"
                                 title="Next insight"
                             >
-                                <RefreshCw className="w-3.5 h-3.5 text-zinc-500 group-hover:text-white transition-colors" />
+                                <RefreshCw className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 group-hover:text-slate-600 dark:group-hover:text-white transition-colors" />
                             </button>
                         )}
                     </div>
-                    <p className="text-sm text-zinc-300 leading-relaxed">{currentInsight.text}</p>
+                    <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">{currentInsight.text}</p>
                     {insights.length > 1 && (
                         <div className="flex gap-1 mt-2.5">
                             {insights.map((_, i) => (
@@ -252,7 +252,7 @@ export function AiInsightsCard({ workoutLogs = [], weightHistory = [], profile =
                                     className={`h-1 rounded-full transition-all ${
                                         i === currentInsightIdx % insights.length
                                             ? `w-4 ${currentInsight.color.replace('text-', 'bg-')}`
-                                            : 'w-1.5 bg-zinc-700'
+                                            : 'w-1.5 bg-slate-300 dark:bg-zinc-700'
                                     }`}
                                 />
                             ))}

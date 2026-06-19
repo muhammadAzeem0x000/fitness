@@ -119,16 +119,16 @@ export function Auth() {
     const headerContent = renderHeader();
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
-            <Card className="w-full max-w-sm border-slate-800 bg-slate-950">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
+            <Card className="w-full max-w-sm border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl">
                 <CardHeader className="text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10">
                         {headerContent.icon}
                     </div>
-                    <CardTitle className="text-2xl text-white">
+                    <CardTitle className="text-2xl text-slate-900 dark:text-white">
                         {headerContent.title}
                     </CardTitle>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                         {headerContent.subtitle}
                     </p>
                 </CardHeader>
@@ -141,7 +141,7 @@ export function Auth() {
                                 <div>
                                     <input
                                         {...registerLogin('email')}
-                                        className={`flex h-10 w-full rounded-md border ${loginErrors.email ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        className={`flex h-10 w-full rounded-md border ${loginErrors.email ? 'border-red-500' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                         type="email"
                                         placeholder="Email"
                                     />
@@ -150,7 +150,7 @@ export function Auth() {
                                 <div>
                                     <PasswordInput
                                         {...registerLogin('password')}
-                                        className={`flex h-10 w-full rounded-md border ${loginErrors.password ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        className={`flex h-10 w-full rounded-md border ${loginErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                         placeholder="Password"
                                     />
                                     {loginErrors.password && <p className="text-xs text-red-500 mt-1">{loginErrors.password.message}</p>}
@@ -172,7 +172,7 @@ export function Auth() {
                             >
                                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Log In'}
                             </Button>
-                            <div className="text-center text-sm text-slate-400 mt-4">
+                            <div className="text-center text-sm text-slate-600 dark:text-slate-400 mt-4">
                                 Don't have an account?{' '}
                                 <button
                                     type="button"
@@ -192,7 +192,7 @@ export function Auth() {
                                 <div>
                                     <input
                                         {...registerSignup('email')}
-                                        className={`flex h-10 w-full rounded-md border ${signupErrors.email ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        className={`flex h-10 w-full rounded-md border ${signupErrors.email ? 'border-red-500' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                         type="email"
                                         placeholder="Email"
                                     />
@@ -201,7 +201,7 @@ export function Auth() {
                                 <div>
                                     <PasswordInput
                                         {...registerSignup('password')}
-                                        className={`flex h-10 w-full rounded-md border ${signupErrors.password ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        className={`flex h-10 w-full rounded-md border ${signupErrors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                         placeholder="Password (min 6 chars)"
                                     />
                                     {signupErrors.password && <p className="text-xs text-red-500 mt-1">{signupErrors.password.message}</p>}
@@ -209,7 +209,7 @@ export function Auth() {
                                 <div>
                                     <PasswordInput
                                         {...registerSignup('confirmPassword')}
-                                        className={`flex h-10 w-full rounded-md border ${signupErrors.confirmPassword ? 'border-red-500' : 'border-slate-800'} bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                                        className={`flex h-10 w-full rounded-md border ${signupErrors.confirmPassword ? 'border-red-500' : 'border-slate-200 dark:border-slate-800'} bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                                         placeholder="Confirm Password"
                                     />
                                     {signupErrors.confirmPassword && <p className="text-xs text-red-500 mt-1">{signupErrors.confirmPassword.message}</p>}
@@ -222,7 +222,7 @@ export function Auth() {
                             >
                                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Account'}
                             </Button>
-                            <div className="text-center text-sm text-slate-400 mt-4">
+                            <div className="text-center text-sm text-slate-600 dark:text-slate-400 mt-4">
                                 Already have an account?{' '}
                                 <button
                                     type="button"
@@ -241,7 +241,7 @@ export function Auth() {
                             <div className="space-y-2">
                                 <input
                                     name="email"
-                                    className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    className="flex h-10 w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                     type="email"
                                     placeholder="Email address"
                                     required
@@ -256,7 +256,7 @@ export function Auth() {
                             </Button>
                             <Button
                                 variant="ghost"
-                                className="w-full text-slate-400 hover:text-white"
+                                className="w-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                                 type="button"
                                 onClick={() => setView('login')}
                                 disabled={loading}

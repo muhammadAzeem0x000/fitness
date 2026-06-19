@@ -10,6 +10,7 @@ import { UserProfileDialog } from '../profile/UserProfileDialog';
 import { useState } from 'react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useNetwork } from '../../hooks/useNetwork';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 export function Header() {
     const { preferences, toggleWeightUnit } = useUserPreferences();
@@ -79,11 +80,11 @@ export function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-slate-900/95 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-slate-900/80">
+        <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-zinc-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-slate-900/80">
             <div className="container flex h-14 items-center px-3 md:px-6">
                 {/* Left: Logo */}
                 <div className="flex-1 flex justify-start">
-                    <Link to="/dashboard" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-400 hover:text-blue-300 transition-colors">
+                    <Link to="/dashboard" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
                         <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
                         <span className="hidden sm:inline">SmartFit</span>
                     </Link>
@@ -142,6 +143,11 @@ export function Header() {
                         <span className="font-mono tracking-wider">{preferences.weightUnit === 'kg' ? 'KG/FT' : 'LB/CM'}</span>
                     </button>
 
+                    {/* Theme Toggle (Desktop) */}
+                    <div className="hidden md:block">
+                        <ThemeToggle className="h-8 w-8 !p-1.5 rounded-full" />
+                    </div>
+
                     {/* Profile Trigger */}
                     <button
                         onClick={() => setIsProfileOpen(true)}
@@ -183,6 +189,12 @@ export function Header() {
                         icon={BrainCircuit}
                         label="AI Coach"
                     />
+
+                    {/* Theme Toggle (Mobile Menu) */}
+                    <div className="flex items-center justify-between px-4 py-3 mt-2 border-t border-zinc-800/50">
+                        <span className="text-sm font-medium text-zinc-400">Theme</span>
+                        <ThemeToggle />
+                    </div>
 
                     {!isPremium && !subLoading && (
                         <div className="pt-2 mt-2 border-t border-zinc-800">

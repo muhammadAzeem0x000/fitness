@@ -92,8 +92,8 @@ export function ReportSummaryCards({ workouts = [], weightData = [], reportType 
                 <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs text-zinc-500 uppercase tracking-wide font-medium">Total Volume</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">
+                            <p className="text-xs text-slate-500 dark:text-zinc-500 uppercase tracking-wide font-medium">Total Volume</p>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
                                 {metrics.totalVolume.toLocaleString()} kg
                             </h3>
                             <div className="flex items-center gap-1 mt-2">
@@ -109,7 +109,7 @@ export function ReportSummaryCards({ workouts = [], weightData = [], reportType 
                                         </span>
                                     </>
                                 )}
-                                <span className="text-xs text-zinc-600">vs last period</span>
+                                <span className="text-xs text-slate-400 dark:text-zinc-600">vs last period</span>
                             </div>
                         </div>
                         <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -124,12 +124,12 @@ export function ReportSummaryCards({ workouts = [], weightData = [], reportType 
                 <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs text-zinc-500 uppercase tracking-wide font-medium">Frequency</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">
+                            <p className="text-xs text-slate-500 dark:text-zinc-500 uppercase tracking-wide font-medium">Frequency</p>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
                                 {metrics.frequency} workouts
                             </h3>
                             <div className="flex items-center gap-2 mt-2">
-                                <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                                <div className="flex-1 h-2 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full transition-all duration-500 ${metrics.frequencyPercentage >= 75 ? 'bg-green-500' :
                                                 metrics.frequencyPercentage >= 50 ? 'bg-yellow-500' :
@@ -138,7 +138,7 @@ export function ReportSummaryCards({ workouts = [], weightData = [], reportType 
                                         style={{ width: `${metrics.frequencyPercentage}%` }}
                                     />
                                 </div>
-                                <span className="text-xs text-zinc-600">{metrics.frequencyPercentage}%</span>
+                                <span className="text-xs text-slate-400 dark:text-zinc-600">{metrics.frequencyPercentage}%</span>
                             </div>
                         </div>
                         <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -153,11 +153,11 @@ export function ReportSummaryCards({ workouts = [], weightData = [], reportType 
                 <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs text-zinc-500 uppercase tracking-wide font-medium">Weight Change</p>
-                            <h3 className="text-2xl font-bold text-white mt-1">
+                            <p className="text-xs text-slate-500 dark:text-zinc-500 uppercase tracking-wide font-medium">Weight Change</p>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
                                 {metrics.weightChange > 0 ? '+' : ''}{metrics.weightChange} kg
                             </h3>
-                            <p className="text-xs text-zinc-600 mt-2">
+                            <p className="text-xs text-slate-400 dark:text-zinc-600 mt-2">
                                 {metrics.weightTrend === 'up' && 'Trending up'}
                                 {metrics.weightTrend === 'down' && 'Trending down'}
                                 {metrics.weightTrend === 'stable' && 'Holding steady'}

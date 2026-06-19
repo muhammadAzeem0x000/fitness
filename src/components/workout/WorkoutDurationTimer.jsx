@@ -36,29 +36,29 @@ export function WorkoutDurationTimer({ onTimeUpdate }) {
     };
 
     return (
-        <div className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800 rounded-lg px-4 py-2">
-            <Timer className="w-4 h-4 text-blue-400" />
-            <span className="font-mono text-lg font-semibold text-white min-w-[60px]">
+        <div className="flex items-center gap-3 bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-lg px-4 py-2">
+            <Timer className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+            <span className="font-mono text-lg font-semibold text-slate-900 dark:text-white min-w-[60px]">
                 {formatTime(seconds)}
             </span>
             <div className="flex items-center gap-1">
                 <button
                     onClick={() => setIsActive(!isActive)}
-                    className="p-1.5 hover:bg-zinc-800 rounded transition-colors"
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded transition-colors"
                     type="button"
                 >
                     {isActive ? (
-                        <Pause className="w-3.5 h-3.5 text-zinc-400" />
+                        <Pause className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
                     ) : (
-                        <Play className="w-3.5 h-3.5 text-zinc-400" />
+                        <Play className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
                     )}
                 </button>
                 <button
                     onClick={handleReset}
-                    className="p-1.5 hover:bg-zinc-800 rounded transition-colors"
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded transition-colors"
                     type="button"
                 >
-                    <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
+                    <RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
                 </button>
             </div>
         </div>

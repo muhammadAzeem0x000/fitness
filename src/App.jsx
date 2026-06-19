@@ -165,25 +165,29 @@ const AppContent = () => {
   );
 };
 
+import { ThemeProvider } from './context/ThemeContext';
+
 function App() {
   useEffect(() => {
     initNativeFeatures();
   }, []);
 
   return (
-    <AuthProvider>
-      <UserPreferencesProvider>
-        <Suspense fallback={<FullScreenLoader />}>
-          <Routes>
-            {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
-            <Route path="/share/:shareId" element={<SharedWorkout />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <UserPreferencesProvider>
+          <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+              {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
+              <Route path="/share/:shareId" element={<SharedWorkout />} />
 
-            {/* All other routes */}
-            <Route path="/*" element={<AppContent />} />
-          </Routes>
-        </Suspense>
-      </UserPreferencesProvider>
-    </AuthProvider>
+              {/* All other routes */}
+              <Route path="/*" element={<AppContent />} />
+            </Routes>
+          </Suspense>
+        </UserPreferencesProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

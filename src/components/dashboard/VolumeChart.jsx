@@ -9,13 +9,13 @@ const CustomTooltip = ({ active, payload, label, formatWeightLabel }) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload;
         return (
-            <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 p-3 rounded-xl shadow-2xl z-50 relative">
-                <p className="text-zinc-400 text-xs mb-1 font-medium">{data.fullDate}</p>
+            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200 dark:border-zinc-800 p-3 rounded-xl shadow-2xl z-50 relative">
+                <p className="text-slate-500 dark:text-zinc-400 text-xs mb-1 font-medium">{data.fullDate}</p>
                 <div className="flex items-center justify-between gap-4">
-                    <span className="text-white font-semibold flex items-baseline gap-1">
-                        {payload[0].value.toLocaleString()} <span className="text-xs text-zinc-500">{formatWeightLabel()}</span>
+                    <span className="text-slate-900 dark:text-white font-semibold flex items-baseline gap-1">
+                        {payload[0].value.toLocaleString()} <span className="text-xs text-slate-500 dark:text-zinc-500">{formatWeightLabel()}</span>
                     </span>
-                    <span className="text-[10px] font-medium bg-zinc-800 px-2 py-0.5 rounded-md text-zinc-300">
+                    <span className="text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md text-slate-600 dark:text-zinc-300">
                         {data.type}
                     </span>
                 </div>
@@ -90,13 +90,13 @@ export function VolumeChart({ workouts }) {
     if (!workouts || workouts.length === 0) return null;
 
     return (
-        <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full flex flex-col">
+        <Card className="h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between pb-2 flex-shrink-0">
-                <CardTitle className="text-sm font-medium text-white flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-blue-400" />
                     Volume Load
                 </CardTitle>
-                <span className="text-[10px] text-zinc-500 font-medium bg-zinc-800/50 px-2 py-1 rounded-md">Last 10 Sessions</span>
+                <span className="text-[10px] text-slate-500 dark:text-zinc-500 font-medium bg-slate-100 dark:bg-zinc-800/50 px-2 py-1 rounded-md">Last 10 Sessions</span>
             </CardHeader>
             <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2 flex-1 relative">
                 <style dangerouslySetInnerHTML={{__html: `
@@ -117,10 +117,10 @@ export function VolumeChart({ workouts }) {
                             }}
                             onMouseLeave={() => setActiveIndex(null)}
                         >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-zinc-800" vertical={false} />
                             <XAxis
                                 dataKey="date"
-                                stroke="#52525b"
+                                className="fill-slate-500 dark:fill-zinc-400"
                                 fontSize={isMobile ? 9 : 10}
                                 tickLine={false}
                                 axisLine={false}
@@ -128,7 +128,7 @@ export function VolumeChart({ workouts }) {
                                 dy={10}
                             />
                             <YAxis
-                                stroke="#52525b"
+                                className="fill-slate-500 dark:fill-zinc-400"
                                 fontSize={isMobile ? 9 : 10}
                                 tickLine={false}
                                 axisLine={false}
@@ -137,7 +137,7 @@ export function VolumeChart({ workouts }) {
                                 dx={-5}
                             />
                             <Tooltip
-                                cursor={{ fill: '#27272a', opacity: 0.4 }}
+                                cursor={{ fill: 'currentColor', opacity: 0.1, className: 'text-slate-800 dark:text-zinc-200' }}
                                 content={<CustomTooltip formatWeightLabel={formatWeightLabel} />}
                                 isAnimationActive={false}
                             />
