@@ -60,13 +60,6 @@ export function Dashboard() {
                 />
             )}
 
-            {/* 3D Muscle Activation Heatmap */}
-            {!isLoading && (
-                <Suspense fallback={<SkeletonChart />}>
-                    <BodyHeatmap3D workouts={workoutLogs} />
-                </Suspense>
-            )}
-
             {/* Streak and PRs Row - PREMIUM */}
             <PremiumGate feature="streak tracking and personal records">
                 <div className="grid md:grid-cols-2 gap-6">
@@ -83,6 +76,13 @@ export function Dashboard() {
                     )}
                 </div>
             </PremiumGate>
+
+            {/* 3D Muscle Activation Heatmap */}
+            {!isLoading && (
+                <Suspense fallback={<SkeletonChart />}>
+                    <BodyHeatmap3D workouts={workoutLogs} />
+                </Suspense>
+            )}
 
             {/* Charts Row - PREMIUM */}
             <PremiumGate feature="advanced progress charts">
