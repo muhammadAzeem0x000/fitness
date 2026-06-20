@@ -19,6 +19,8 @@
     "@capacitor/status-bar": "^8.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@stripe/stripe-js": "^8.7.0",
     "@supabase/supabase-js": "^2.91.1",
     "@tanstack/query-sync-storage-persister": "^5.101.0",
@@ -30,6 +32,7 @@
     "lucide-react": "^0.563.0",
     "openai": "^6.16.0",
     "react": "^19.2.0",
+    "react-body-highlighter": "^2.0.5",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.1.0",
@@ -41,6 +44,7 @@
     "stripe": "^20.3.1",
     "supabase": "^2.76.4",
     "tailwind-merge": "^3.4.0",
+    "three": "^0.184.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

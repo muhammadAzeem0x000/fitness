@@ -85,7 +85,7 @@ export function Header() {
                 {/* Left: Logo */}
                 <div className="flex-1 flex justify-start">
                     <Link to="/dashboard" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
-                        <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+                        <img src="/logo.png" alt="Logo" className="h-8 w-8 object-cover rounded-full" />
                         <span className="hidden sm:inline">SmartFit</span>
                     </Link>
                 </div>

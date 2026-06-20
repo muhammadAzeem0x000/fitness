@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { StatsOverview } from '../components/dashboard/StatsOverview';
 import { WeightChart } from '../components/dashboard/WeightChart';
 import { VolumeChart } from '../components/dashboard/VolumeChart';
@@ -19,6 +19,9 @@ import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
 import { Dumbbell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PremiumGate } from '../components/premium/PremiumGate';
+
+// Lazy load the 3D heatmap to keep initial bundle lean (Three.js is heavy)
+const BodyHeatmap3D = lazy(() => import('../components/dashboard/BodyHeatmap3D').then(m => ({ default: m.BodyHeatmap3D })));
 
 export function Dashboard() {
     const navigate = useNavigate();
@@ -55,6 +58,13 @@ export function Dashboard() {
                     weightHistory={weightHistory}
                     profile={profile}
                 />
+            )}
+
+            {/* 3D Muscle Activation Heatmap */}
+            {!isLoading && (
+                <Suspense fallback={<SkeletonChart />}>
+                    <BodyHeatmap3D workouts={workoutLogs} />
+                </Suspense>
             )}
 
             {/* Streak and PRs Row - PREMIUM */}
