@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, BrainCircuit, User } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, BrainCircuit, User, Utensils } from 'lucide-react';
 import { hapticLight } from '../../lib/haptics';
 
 export function MobileBottomNav() {
@@ -57,6 +57,7 @@ export function MobileBottomNav() {
             <div className="flex flex-row justify-around items-center h-16 px-1">
                 <NavItem to="/dashboard" icon={LayoutDashboard} label="Training" />
                 <NavItem to="/log" icon={PlusCircle} label="Workout" />
+                <NavItem to="/nutrition" icon={Utensils} label="Nutrition" />
                 <NavItem to="/ai-coach" icon={BrainCircuit} label="Insights" />
                 <NavItem to="/profile" icon={User} label="Profile" />
             </div>
