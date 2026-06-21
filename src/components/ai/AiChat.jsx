@@ -306,7 +306,7 @@ export function AiChat() {
                         </Button>
                     )}
 
-                    <div className="flex-1 relative">
+                    <div className="flex-1 flex items-end bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl focus-within:ring-2 focus-within:ring-violet-500/50 focus-within:border-violet-500/50 transition-all overflow-hidden">
                         <textarea
                             ref={inputRef}
                             value={input}
@@ -314,24 +314,26 @@ export function AiChat() {
                             onKeyDown={handleKeyDown}
                             placeholder="Ask your AI coach..."
                             rows={1}
-                            className="w-full min-h-[44px] max-h-[120px] bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl pl-4 pr-12 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all resize-none"
+                            className="block w-full min-h-[44px] max-h-[120px] bg-transparent border-0 pl-4 pr-2 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:ring-0 resize-none custom-scrollbar"
                             style={{ height: 'auto' }}
                             onInput={(e) => {
                                 e.target.style.height = 'auto';
                                 e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
                             }}
                         />
-                        <button
-                            onClick={() => handleSend()}
-                            disabled={!input.trim() || isStreaming}
-                            className="absolute right-2 bottom-2 p-2 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                        >
-                            {isStreaming ? (
-                                <Loader2 className="w-4 h-4 text-white animate-spin" />
-                            ) : (
-                                <Send className="w-4 h-4 text-white" />
-                            )}
-                        </button>
+                        <div className="p-1.5 shrink-0 flex items-center justify-center">
+                            <button
+                                onClick={() => handleSend()}
+                                disabled={!input.trim() || isStreaming}
+                                className="h-8 w-8 flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            >
+                                {isStreaming ? (
+                                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                ) : (
+                                    <Send className="w-4 h-4 text-white -ml-0.5" />
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
