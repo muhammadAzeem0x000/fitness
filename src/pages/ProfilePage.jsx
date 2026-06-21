@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles, Trophy, Lock, Activity, Heart } from 'lucide-react';
+import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles, Trophy, Lock, Activity, Heart, Ruler, Utensils } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
@@ -12,6 +12,44 @@ import { PasswordInput } from '../components/ui/PasswordInput';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
+
+const CollapsibleSection = ({ title, icon: Icon, defaultOpen = false, children, extraHeader }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    return (
+        <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900/50">
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    setIsOpen(!isOpen);
+                }}
+                className="w-full flex items-center justify-between p-5 text-xs font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300 uppercase tracking-wider transition-colors"
+            >
+                <span className="flex items-center gap-2">
+                    {Icon && <Icon className="w-4 h-4" />} {title}
+                </span>
+                <div className="flex items-center gap-3">
+                    {extraHeader}
+                    {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </div>
+            </button>
+            <AnimatePresence initial={false}>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="p-5 pt-2 space-y-4">
+                            {children}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 export default function ProfilePage() {
     const { user, signOut } = useAuth();
@@ -257,9 +295,8 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            {/* Body Metrics */}
-            <div className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-slate-200 dark:border-zinc-800 space-y-5">
-                {/* Current Weight Log */}
+            {/* Body Metrics Section */}
+            <CollapsibleSection title="Body Metrics" icon={Ruler} defaultOpen={true}>
                 <div>
                     <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
                         Log Today's Weight ({formatWeightLabel()})
@@ -279,8 +316,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Height Update */}
-                <div className="pt-4 border-t border-slate-200 dark:border-zinc-800/50">
+                <div className="pt-2 border-t border-slate-200 dark:border-zinc-800/50">
                     <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
                         Height ({isFeet ? 'FT / IN' : 'CM'})
                     </label>
@@ -302,67 +338,8 @@ export default function ProfilePage() {
                             />
                         )}
                     </div>
-                    
-                    {/* Nutrition Profile */}
-                    <div className="pt-4 mt-4 border-t border-zinc-800/50">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">
-                            Nutrition Profile
-                        </label>
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                            <div className="space-y-1">
-                                <label className="text-xs text-slate-500">Age</label>
-                                <input
-                                    type="number"
-                                    value={age}
-                                    onChange={(e) => { setAge(e.target.value); setIsDirty(true); }}
-                                    placeholder="Age"
-                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs text-slate-500">Gender</label>
-                                <select
-                                    value={gender}
-                                    onChange={(e) => { setGender(e.target.value); setIsDirty(true); }}
-                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <label className="text-xs text-slate-500">Activity Level</label>
-                                <select
-                                    value={activityLevel}
-                                    onChange={(e) => { setActivityLevel(e.target.value); setIsDirty(true); }}
-                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="sedentary">Sedentary</option>
-                                    <option value="lightly_active">Lightly Active</option>
-                                    <option value="moderately_active">Moderately Active</option>
-                                    <option value="very_active">Very Active</option>
-                                    <option value="super_active">Super Active</option>
-                                </select>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs text-slate-500">Goal</label>
-                                <select
-                                    value={goalType}
-                                    onChange={(e) => { setGoalType(e.target.value); setIsDirty(true); }}
-                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="maintain">Maintain</option>
-                                    <option value="cut">Cut</option>
-                                    <option value="bulk">Bulk</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                {/* Goal Weight */}
                 <div className="pt-2 border-t border-slate-200 dark:border-zinc-800/50">
                     <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
                         Goal Weight ({formatWeightLabel()})
@@ -376,13 +353,65 @@ export default function ProfilePage() {
                         className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-center"
                     />
                 </div>
-            </div>
+            </CollapsibleSection>
 
-            {/* Workout Days */}
-            <div className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-4 block flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Weekly Schedule
-                </label>
+            {/* Nutrition & Goals Section */}
+            <CollapsibleSection title="Nutrition Profile" icon={Utensils} defaultOpen={false}>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="space-y-1">
+                        <label className="text-xs text-slate-500">Age</label>
+                        <input
+                            type="number"
+                            value={age}
+                            onChange={(e) => { setAge(e.target.value); setIsDirty(true); }}
+                            placeholder="Age"
+                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs text-slate-500">Gender</label>
+                        <select
+                            value={gender}
+                            onChange={(e) => { setGender(e.target.value); setIsDirty(true); }}
+                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        >
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                        <label className="text-xs text-slate-500">Activity Level</label>
+                        <select
+                            value={activityLevel}
+                            onChange={(e) => { setActivityLevel(e.target.value); setIsDirty(true); }}
+                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        >
+                            <option value="sedentary">Sedentary</option>
+                            <option value="lightly_active">Lightly Active</option>
+                            <option value="moderately_active">Moderately Active</option>
+                            <option value="very_active">Very Active</option>
+                            <option value="super_active">Super Active</option>
+                        </select>
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-xs text-slate-500">Goal</label>
+                        <select
+                            value={goalType}
+                            onChange={(e) => { setGoalType(e.target.value); setIsDirty(true); }}
+                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                        >
+                            <option value="maintain">Maintain</option>
+                            <option value="cut">Cut</option>
+                            <option value="bulk">Bulk</option>
+                        </select>
+                    </div>
+                </div>
+            </CollapsibleSection>
+
+            {/* Training Schedule */}
+            <CollapsibleSection title="Training Schedule" icon={Calendar} defaultOpen={false}>
                 <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
                     {days.map(day => {
                         const isSelected = workoutDays.includes(day);
@@ -400,17 +429,16 @@ export default function ProfilePage() {
                         );
                     })}
                 </div>
-            </div>
+            </CollapsibleSection>
 
-            {/* Badges Gallery */}
-            <div className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                <div className="flex items-center justify-between mb-4">
-                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                        <Trophy className="w-4 h-4" /> Achievements
-                    </label>
-                    <span className="text-xs text-blue-500 font-bold">1 / 5</span>
-                </div>
-                <div className="grid grid-cols-4 gap-3">
+            {/* Gamification & Health */}
+            <CollapsibleSection 
+                title="Achievements & Sync" 
+                icon={Trophy} 
+                defaultOpen={false} 
+                extraHeader={<span className="text-[10px] text-blue-500 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full">1 / 5</span>}
+            >
+                <div className="grid grid-cols-4 gap-3 mb-4">
                     <div className="aspect-square bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-inner relative group cursor-pointer">
                         <Trophy className="w-6 h-6 text-white drop-shadow" />
                         <div className="absolute inset-0 bg-black/80 text-white text-[10px] p-1 flex items-center justify-center text-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
@@ -424,21 +452,15 @@ export default function ProfilePage() {
                         </div>
                     ))}
                 </div>
-            </div>
 
-            {/* Wearable Integrations */}
-            <div className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Activity className="w-4 h-4" /> Health Sync
-                </label>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                             <Heart className="w-4 h-4 text-red-500" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-slate-900 dark:text-white">Apple Health / Google Fit</p>
-                            <p className="text-xs text-slate-500">Sync steps & sleep data</p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">Health Sync</p>
+                            <p className="text-[10px] text-slate-500">Connect to Apple / Google</p>
                         </div>
                     </div>
                     <Button 
@@ -458,7 +480,7 @@ export default function ProfilePage() {
                         Connect
                     </Button>
                 </div>
-            </div>
+            </CollapsibleSection>
 
             {/* Subscription Plan Section */}
             <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900/50">
