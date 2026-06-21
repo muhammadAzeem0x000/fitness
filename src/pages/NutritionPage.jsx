@@ -94,7 +94,7 @@ export function NutritionPage() {
                     type="date" 
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="px-4 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500"
+                    className="px-4 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 [color-scheme:light] dark:[color-scheme:dark] text-slate-900 dark:text-slate-100"
                 />
             </div>
 
