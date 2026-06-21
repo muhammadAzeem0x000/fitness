@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff, Utensils } from 'lucide-react';
+import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff, Utensils, Trophy } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
@@ -117,6 +117,12 @@ export function Header() {
                         label="Nutrition"
                         description="Track macros and generate AI meal plans"
                     />
+                    <NavLink
+                        to="/leaderboard"
+                        icon={Trophy}
+                        label="Ranks"
+                        description="View global leaderboards and achievements"
+                    />
                 </nav>
 
                 {/* Right: Actions */}
@@ -199,6 +205,11 @@ export function Header() {
                         to="/nutrition"
                         icon={Utensils}
                         label="Nutrition"
+                    />
+                    <MobileNavLink
+                        to="/leaderboard"
+                        icon={Trophy}
+                        label="Ranks"
                     />
 
                     {/* Theme Toggle (Mobile Menu) */}

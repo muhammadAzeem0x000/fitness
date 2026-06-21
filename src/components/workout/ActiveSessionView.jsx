@@ -11,6 +11,8 @@ import { useToast } from '../../context/ToastContext';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
+import { checkAndAwardAchievements } from '../../lib/wearables';
+import { AchievementUnlockedToast } from '../ui/AchievementUnlockedToast';
 
 export function ActiveSessionView({ routineName, initialExercises, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
     const [activeExercises, setActiveExercises] = useState([]);
@@ -28,6 +30,7 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     // Post-workout summary
     const [showPostSummary, setShowPostSummary] = useState(false);
     const [savedWorkoutData, setSavedWorkoutData] = useState(null);
+    const [unlockedAchievement, setUnlockedAchievement] = useState(null);
     
     const { toast } = useToast();
     const { user } = useAuth();
@@ -100,7 +103,16 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
         }
 
         setSavedWorkoutData(dataToSave);
-        onSave(dataToSave, { saveAsTemplate: false });
+        
+        onSave(dataToSave, { saveAsTemplate: false }).then(async () => {
+            // Check for gamification achievements
+            const newUnlocks = await checkAndAwardAchievements(user?.id, dataToSave, exerciseHistory);
+            if (newUnlocks && newUnlocks.length > 0) {
+                // For simplicity, just show the first one if multiple unlocked at once
+                setUnlockedAchievement(newUnlocks[0]);
+            }
+        });
+        
         setShowPostSummary(true);
     };
 
@@ -111,10 +123,17 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
         }
         setShowSaveTemplateModal(false);
         setSavedWorkoutData(finalDataToSave);
+        
         onSave(finalDataToSave, { 
             saveAsTemplate, 
             newTemplateName: newTemplateName.trim() 
+        }).then(async () => {
+            const newUnlocks = await checkAndAwardAchievements(user?.id, finalDataToSave, exerciseHistory);
+            if (newUnlocks && newUnlocks.length > 0) {
+                setUnlockedAchievement(newUnlocks[0]);
+            }
         });
+        
         setShowPostSummary(true);
     };
 
@@ -329,6 +348,12 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                 }}
                 workoutData={savedWorkoutData}
                 exerciseHistory={exerciseHistory}
+            />
+
+            {/* Gamification Toast */}
+            <AchievementUnlockedToast 
+                achievement={unlockedAchievement} 
+                onClose={() => setUnlockedAchievement(null)} 
             />
         </div>
     );

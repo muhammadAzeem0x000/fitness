@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles } from 'lucide-react';
+import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles, Trophy, Lock, Activity, Heart } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
@@ -399,6 +399,64 @@ export default function ProfilePage() {
                             </button>
                         );
                     })}
+                </div>
+            </div>
+
+            {/* Badges Gallery */}
+            <div className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-slate-200 dark:border-zinc-800">
+                <div className="flex items-center justify-between mb-4">
+                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                        <Trophy className="w-4 h-4" /> Achievements
+                    </label>
+                    <span className="text-xs text-blue-500 font-bold">1 / 5</span>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                    <div className="aspect-square bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-inner relative group cursor-pointer">
+                        <Trophy className="w-6 h-6 text-white drop-shadow" />
+                        <div className="absolute inset-0 bg-black/80 text-white text-[10px] p-1 flex items-center justify-center text-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                            First Step
+                        </div>
+                    </div>
+                    {/* Locked badges */}
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="aspect-square bg-slate-100 dark:bg-zinc-800 rounded-xl flex items-center justify-center opacity-50 relative group cursor-pointer border border-slate-200 dark:border-zinc-700">
+                            <Lock className="w-5 h-5 text-slate-400 dark:text-zinc-600" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Wearable Integrations */}
+            <div className="bg-white dark:bg-zinc-900/50 p-5 rounded-2xl border border-slate-200 dark:border-zinc-800">
+                <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <Activity className="w-4 h-4" /> Health Sync
+                </label>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <Heart className="w-4 h-4 text-red-500" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">Apple Health / Google Fit</p>
+                            <p className="text-xs text-slate-500">Sync steps & sleep data</p>
+                        </div>
+                    </div>
+                    <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-xs h-8"
+                        onClick={async () => {
+                            const { requestHealthPermissions } = await import('../lib/wearables');
+                            const success = await requestHealthPermissions();
+                            if(success) {
+                                toast.success("Health sync activated!");
+                            } else {
+                                toast.error("Failed to connect health data.");
+                            }
+                        }}
+                    >
+                        Connect
+                    </Button>
                 </div>
             </div>
 
