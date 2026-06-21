@@ -39,6 +39,10 @@ export default function ProfilePage() {
     const [avatarUrl, setAvatarUrl] = useState('');
     const [goalWeightInput, setGoalWeightInput] = useState('');
     const [workoutDays, setWorkoutDays] = useState([]);
+    const [age, setAge] = useState('');
+    const [gender, setGender] = useState('male');
+    const [activityLevel, setActivityLevel] = useState('sedentary');
+    const [goalType, setGoalType] = useState('maintain');
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -55,6 +59,10 @@ export default function ProfilePage() {
             setAvatarUrl(profile.avatar_url || '');
             setGoalWeightInput(profile.goal_weight ? displayWeight(profile.goal_weight) : '');
             setWorkoutDays(profile.workout_days || []);
+            setAge(profile.age?.toString() || '');
+            setGender(profile.gender || 'male');
+            setActivityLevel(profile.activity_level || 'sedentary');
+            setGoalType(profile.goal_type || 'maintain');
             setIsDirty(false);
         }
     }, [profile]);
@@ -85,7 +93,11 @@ export default function ProfilePage() {
                 avatar_url: avatarUrl,
                 goal_weight: newGoalWeight,
                 height: newHeight,
-                workout_days: workoutDays
+                workout_days: workoutDays,
+                age: age ? parseInt(age) : null,
+                gender,
+                activity_level: activityLevel,
+                goal_type: goalType
             });
             hapticSuccess();
             toast.success("Profile updated successfully!");
@@ -289,6 +301,64 @@ export default function ProfilePage() {
                                 className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-center"
                             />
                         )}
+                    </div>
+                    
+                    {/* Nutrition Profile */}
+                    <div className="pt-4 mt-4 border-t border-zinc-800/50">
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">
+                            Nutrition Profile
+                        </label>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="space-y-1">
+                                <label className="text-xs text-slate-500">Age</label>
+                                <input
+                                    type="number"
+                                    value={age}
+                                    onChange={(e) => { setAge(e.target.value); setIsDirty(true); }}
+                                    placeholder="Age"
+                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs text-slate-500">Gender</label>
+                                <select
+                                    value={gender}
+                                    onChange={(e) => { setGender(e.target.value); setIsDirty(true); }}
+                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <label className="text-xs text-slate-500">Activity Level</label>
+                                <select
+                                    value={activityLevel}
+                                    onChange={(e) => { setActivityLevel(e.target.value); setIsDirty(true); }}
+                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="sedentary">Sedentary</option>
+                                    <option value="lightly_active">Lightly Active</option>
+                                    <option value="moderately_active">Moderately Active</option>
+                                    <option value="very_active">Very Active</option>
+                                    <option value="super_active">Super Active</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs text-slate-500">Goal</label>
+                                <select
+                                    value={goalType}
+                                    onChange={(e) => { setGoalType(e.target.value); setIsDirty(true); }}
+                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="maintain">Maintain</option>
+                                    <option value="cut">Cut</option>
+                                    <option value="bulk">Bulk</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
