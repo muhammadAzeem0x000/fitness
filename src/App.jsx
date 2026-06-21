@@ -40,6 +40,7 @@ const OnboardingPage = lazyWithRetry(() => import('./pages/OnboardingPage'));
 const SharedWorkout = lazyWithRetry(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
 const Pricing = lazyWithRetry(() => import('./pages/Pricing').then(module => ({ default: module.Pricing })));
 const Success = lazyWithRetry(() => import('./pages/Success').then(module => ({ default: module.Success })));
+const NutritionPage = lazyWithRetry(() => import('./pages/NutritionPage').then(module => ({ default: module.NutritionPage })));
 
 // Simple Loader Component
 const Loader = () => (
@@ -144,6 +145,7 @@ const AppContent = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/log" element={<WorkoutLoggerPage />} />
           <Route path="/ai-coach" element={<AiCoach />} />
+          <Route path="/nutrition" element={<NutritionPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/success" element={<Success />} />

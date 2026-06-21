@@ -46,6 +46,10 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const [heightVal1, setHeightVal1] = useState('');
     const [heightVal2, setHeightVal2] = useState('');
     const [workoutDays, setWorkoutDays] = useState([]);
+    const [age, setAge] = useState('');
+    const [gender, setGender] = useState('male');
+    const [activityLevel, setActivityLevel] = useState('sedentary');
+    const [goalType, setGoalType] = useState('maintain');
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -62,6 +66,10 @@ export function UserProfileDialog({ isOpen, onClose }) {
             setAvatarUrl(profile.avatar_url || '');
             setGoalWeightInput(profile.goal_weight ? displayWeight(profile.goal_weight) : '');
             setWorkoutDays(profile.workout_days || []);
+            setAge(profile.age?.toString() || '');
+            setGender(profile.gender || 'male');
+            setActivityLevel(profile.activity_level || 'sedentary');
+            setGoalType(profile.goal_type || 'maintain');
             
             if (profile.height) {
                 const h = formatHeightValue(profile.height);
@@ -94,7 +102,11 @@ export function UserProfileDialog({ isOpen, onClose }) {
                 avatar_url: avatarUrl,
                 goal_weight: newGoalWeight,
                 height: newHeight,
-                workout_days: workoutDays
+                workout_days: workoutDays,
+                age: age ? parseInt(age) : null,
+                gender,
+                activity_level: activityLevel,
+                goal_type: goalType
             });
             toast.success("Profile updated successfully!");
             onClose();
@@ -351,6 +363,52 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                                 className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
                                             />
                                         )}
+                                    </div>
+                                </div>
+
+                                {/* Nutrition Profile (TDEE) Update */}
+                                <div className="pt-2 border-t border-zinc-800/50">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 block">
+                                        Nutrition Profile
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-2 w-full mb-2">
+                                        <input
+                                            type="number"
+                                            value={age}
+                                            onChange={(e) => { setAge(e.target.value); setIsDirty(true); }}
+                                            placeholder="Age"
+                                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
+                                        />
+                                        <select
+                                            value={gender}
+                                            onChange={(e) => { setGender(e.target.value); setIsDirty(true); }}
+                                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                        >
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 w-full">
+                                        <select
+                                            value={activityLevel}
+                                            onChange={(e) => { setActivityLevel(e.target.value); setIsDirty(true); }}
+                                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                        >
+                                            <option value="sedentary">Sedentary</option>
+                                            <option value="lightly_active">Lightly Active</option>
+                                            <option value="moderately_active">Moderately Active</option>
+                                            <option value="very_active">Very Active</option>
+                                            <option value="super_active">Super Active</option>
+                                        </select>
+                                        <select
+                                            value={goalType}
+                                            onChange={(e) => { setGoalType(e.target.value); setIsDirty(true); }}
+                                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                        >
+                                            <option value="maintain">Maintain</option>
+                                            <option value="cut">Cut</option>
+                                            <option value="bulk">Bulk</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>

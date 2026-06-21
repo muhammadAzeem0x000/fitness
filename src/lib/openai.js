@@ -330,3 +330,124 @@ RESPONSE FORMAT (strict JSON):
         throw new Error(`Failed to generate workout plan: ${message}`);
     }
 }
+
+// --- NEW: Phase 2 Nutrition AI Functions ---
+
+/**
+ * Parses natural language food descriptions into estimated calories and macros.
+ * Uses Groq to return a strict JSON object.
+ */
+export async function analyzeFoodInput(text) {
+    if (!apiKey) throw new Error("Missing Groq API Key");
+
+    const prompt = `
+    You are a professional sports nutritionist and calorie estimator API.
+    The user will provide a text describing what they ate.
+    You must estimate the calories, protein (g), carbs (g), and fats (g) for the entire meal described.
+    
+    CRITICAL INSTRUCTION: Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.
+    Format required:
+    {
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fats": number,
+      "food_name": "A short 2-4 word summary of the meal"
+    }
+    
+    User Input: "${text}"
+    `;
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "llama-3.1-8b-instant", // Fast model for simple parsing
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.1,
+            response_format: { type: "json_object" }
+        });
+
+        const rawContent = response.choices[0]?.message?.content || "{}";
+        const match = rawContent.match(/\{[\s\S]*\}/);
+        const jsonContent = match ? match[0] : "{}";
+        const parsed = JSON.parse(jsonContent);
+        // Enforce 4/4/9 strict mathematical accuracy
+        parsed.calories = Math.round((parsed.protein * 4) + (parsed.carbs * 4) + (parsed.fats * 9));
+        return parsed;
+    } catch (error) {
+        console.error("Error parsing food input:", error);
+        throw error;
+    }
+}
+
+/**
+ * Generates a full 1-day meal plan based on target macros.
+ */
+export async function generateMealPlan(targetMacros, preferences = "") {
+    if (!apiKey) throw new Error("Missing Groq API Key");
+
+    const prompt = `
+    You are a professional sports nutritionist. Generate a 1-day meal plan that hits these exact daily targets:
+    Calories: ${targetMacros.calories} kcal
+    Protein: ${targetMacros.protein}g
+    Carbs: ${targetMacros.carbs}g
+    Fats: ${targetMacros.fats}g
+
+    Additional User Preferences/Allergies: ${preferences || "None"}
+
+    CRITICAL INSTRUCTION: Return ONLY a valid JSON object representing the meal plan. Do not include markdown formatting.
+    Format required:
+    {
+      "meals": [
+        {
+          "type": "Breakfast",
+          "name": "Meal name",
+          "description": "Short description of ingredients",
+          "calories": number,
+          "protein": number,
+          "carbs": number,
+          "fats": number
+        },
+        // repeat for Lunch, Dinner, Snack
+      ],
+      "total_calories": number,
+      "total_protein": number,
+      "total_carbs": number,
+      "total_fats": number
+    }
+    `;
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "llama-3.3-70b-versatile", // Use the smarter model for meal planning
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.5,
+            response_format: { type: "json_object" }
+        });
+
+        const rawContent = response.choices[0]?.message?.content || "{}";
+        const match = rawContent.match(/\{[\s\S]*\}/);
+        const jsonContent = match ? match[0] : "{}";
+        const parsed = JSON.parse(jsonContent);
+        
+        // Enforce 4/4/9 strict mathematical accuracy on all meals
+        if (parsed.meals && Array.isArray(parsed.meals)) {
+            parsed.total_calories = 0;
+            parsed.total_protein = 0;
+            parsed.total_carbs = 0;
+            parsed.total_fats = 0;
+
+            parsed.meals.forEach(meal => {
+                meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
+                parsed.total_calories += meal.calories;
+                parsed.total_protein += meal.protein;
+                parsed.total_carbs += meal.carbs;
+                parsed.total_fats += meal.fats;
+            });
+        }
+        
+        return parsed;
+    } catch (error) {
+        console.error("Error generating meal plan:", error);
+        throw error;
+    }
+}

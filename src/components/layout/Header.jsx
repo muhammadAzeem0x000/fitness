@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff } from 'lucide-react';
+import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff, Utensils } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
@@ -111,6 +111,12 @@ export function Header() {
                         label="AI Coach"
                         description="Get personalized AI insights and recommendations"
                     />
+                    <NavLink
+                        to="/nutrition"
+                        icon={Utensils}
+                        label="Nutrition"
+                        description="Track macros and generate AI meal plans"
+                    />
                 </nav>
 
                 {/* Right: Actions */}
@@ -188,6 +194,11 @@ export function Header() {
                         to="/ai-coach"
                         icon={BrainCircuit}
                         label="AI Coach"
+                    />
+                    <MobileNavLink
+                        to="/nutrition"
+                        icon={Utensils}
+                        label="Nutrition"
                     />
 
                     {/* Theme Toggle (Mobile Menu) */}
