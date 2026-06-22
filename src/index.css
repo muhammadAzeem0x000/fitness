@@ -205,4 +205,10 @@
     backface-visibility: hidden;
     perspective: 1000px;
   }
+
+  /* HD Image Enhancer for blurry thumbnails */
+  .hd-image {
+    image-rendering: -webkit-optimize-contrast;
+    filter: contrast(1.08) saturate(1.05) brightness(1.02);
+  }
 }

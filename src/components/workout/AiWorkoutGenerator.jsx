@@ -245,7 +245,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                                     >
                                         <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden relative group-hover:ring-2 ring-violet-500/50 transition-all">
                                             {ex.thumbnail_url ? (
-                                                <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
+                                                <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover hd-image" />
                                             ) : (
                                                 <Dumbbell className="w-5 h-5 text-slate-400 dark:text-zinc-500" />
                                             )}

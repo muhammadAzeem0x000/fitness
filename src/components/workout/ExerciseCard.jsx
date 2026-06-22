@@ -177,8 +177,8 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                                     <img
                                         src={exerciseImgData.image_url}
                                         alt={exercise}
+                                        className="w-full h-full object-cover hd-image"
                                         loading="lazy"
-                                        className="w-full h-full object-cover"
                                     />
                                 </div>
                             ) : null}

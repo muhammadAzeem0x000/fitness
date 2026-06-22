@@ -230,7 +230,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                                 src={thumbnailUrl}
                                                 alt={ex.name}
                                                 loading="lazy"
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover hd-image"
                                             />
                                         </div>
                                     ) : (

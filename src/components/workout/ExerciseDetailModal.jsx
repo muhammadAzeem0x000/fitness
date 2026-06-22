@@ -56,7 +56,7 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
               <img
                 src={exerciseData.gif_url}
                 alt={`${exerciseName} demonstration`}
-                className={`w-full max-h-[280px] object-contain transition-opacity duration-300 ${gifLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-full max-h-[280px] object-contain hd-image transition-opacity duration-300 ${gifLoaded ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => setGifLoaded(true)}
               />
             </>
