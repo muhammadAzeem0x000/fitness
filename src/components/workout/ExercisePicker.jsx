@@ -1,17 +1,43 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Plus, Check } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Plus, Check, Info } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
+import { getExerciseDataBatch, getCategoryFallbackIcon, formatEquipment, formatTarget, getExerciseLibrary } from '../../lib/exerciseImages';
+import { ExerciseDetailModal } from './ExerciseDetailModal';
 
 export function ExercisePicker({ availableExercises, onComplete, onBack, initialSelection = [] }) {
     const [selected, setSelected] = useState(initialSelection);
     const [search, setSearch] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [customInputs, setCustomInputs] = useState([]); // List of custom added strings
+    const [libraryExercises, setLibraryExercises] = useState([]);
+    const [exerciseImageData, setExerciseImageData] = useState(new Map());
+    const [detailExercise, setDetailExercise] = useState(null);
+    const [visibleCount, setVisibleCount] = useState(50);
 
     useBackInterceptor(() => {
         onBack();
     });
+
+    // Load the full exercise library from the service
+    useEffect(() => {
+        getExerciseLibrary().then(data => {
+            if (data && data.length > 0) {
+                setLibraryExercises(data);
+                // Also prepopulate the image data map since the library contains it all
+                const map = new Map();
+                data.forEach(ex => {
+                    map.set(ex.name, ex);
+                });
+                setExerciseImageData(map);
+            }
+        });
+    }, []);
+
+    // Combine prop availableExercises with full library
+    const fullExerciseList = useMemo(() => {
+        return libraryExercises.length > 0 ? libraryExercises : availableExercises;
+    }, [libraryExercises, availableExercises]);
 
     // 15 Most Frequent (In our case, just the first 15 seeded)
     // The prop `availableExercises` should ideally be sorted by frequency or just be the static list for now.
@@ -20,24 +46,36 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
     // For now, assume availableExercises is the full list.
 
     const categoryIcons = {
-        Chest: '👕',      // Torso/Shirt
-        Back: '🎒',       // Backpack
-        Shoulders: '🏋️',  // Weightlifter
+        // App categories
+        Chest: '👕',
+        Back: '🎒',
+        Shoulders: '🏋️',
         Arms: '💪',
         Legs: '🦵',
         Cardio: '🏃',
         Core: '🔥',
+        // Dataset original body parts
+        'waist': '🔥',
+        'upper legs': '🦵',
+        'lower legs': '🦵',
+        'chest': '👕',
+        'back': '🎒',
+        'shoulders': '🏋️',
+        'upper arms': '💪',
+        'lower arms': '💪',
+        'cardio': '🏃',
+        'neck': '🎯',
         Default: '🎯'
     };
 
     // Extract unique categories for filter tabs
     const categories = useMemo(() => {
-        const cats = new Set(availableExercises.map(e => e.category));
+        const cats = new Set(fullExerciseList.map(e => e.category));
         return ['All', ...Array.from(cats).filter(Boolean).sort()];
-    }, [availableExercises]);
+    }, [fullExerciseList]);
 
     const filtered = useMemo(() => {
-        let list = availableExercises;
+        let list = fullExerciseList;
         
         // Filter by category
         if (activeCategory !== 'All') {
@@ -49,7 +87,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
             list = list.filter(ex => ex.name.toLowerCase().includes(search.toLowerCase()));
         }
         return list;
-    }, [availableExercises, search, activeCategory]);
+    }, [fullExerciseList, search, activeCategory]);
 
     const handleToggle = (name) => {
         setSelected(prev => {
@@ -139,7 +177,10 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                         return (
                             <button
                                 key={cat}
-                                onClick={() => setActiveCategory(cat)}
+                                onClick={() => {
+                                    setActiveCategory(cat);
+                                    setVisibleCount(50); // Reset pagination on filter change
+                                }}
                                 className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                                     activeCategory === cat
                                         ? 'bg-blue-600 text-white'
@@ -147,7 +188,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                 }`}
                             >
                                 <span aria-hidden="true">{icon}</span>
-                                <span>{cat}</span>
+                                <span className="capitalize">{cat}</span>
                             </button>
                         );
                     })}
@@ -168,27 +209,79 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                         </div>
                     ))}
 
-                    {filtered.map(ex => {
+                    {filtered.slice(0, visibleCount).map(ex => {
                         const isSelected = selected.includes(ex.name);
                         const icon = categoryIcons[ex.category] || categoryIcons.Default;
+                        const imgData = exerciseImageData.get(ex.name);
+                        const thumbnailUrl = imgData?.image_url;
                         return (
-                            <button
-                                key={ex.id}
-                                onClick={() => handleToggle(ex.name)}
-                                className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left shrink-0 ${isSelected
-                                    ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20'
-                                    : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-200'
-                                    }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xl" aria-hidden="true">{icon}</span>
-                                    <span className="font-medium">{ex.name}</span>
-                                </div>
-                                {isSelected && <Check className="w-5 h-5 text-white" />}
-                            </button>
+                            <div key={ex.id} className="relative shrink-0">
+                                <button
+                                    onClick={() => handleToggle(ex.name)}
+                                    className={`flex items-center w-full gap-3 p-3 rounded-xl border transition-all text-left ${isSelected
+                                        ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20'
+                                        : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-200'
+                                        }`}
+                                >
+                                    {/* Thumbnail or Fallback Icon */}
+                                    {thumbnailUrl ? (
+                                        <div className={`w-12 h-12 rounded-lg overflow-hidden flex-none border ${isSelected ? 'border-blue-400/50' : 'border-slate-200 dark:border-zinc-700'}`}>
+                                            <img
+                                                src={thumbnailUrl}
+                                                alt={ex.name}
+                                                loading="lazy"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className={`w-12 h-12 rounded-lg flex-none flex items-center justify-center text-xl ${isSelected ? 'bg-blue-500/30' : 'bg-slate-100 dark:bg-zinc-800'}`}>
+                                            {icon}
+                                        </div>
+                                    )}
+
+                                    {/* Text Content */}
+                                    <div className="flex-1 min-w-0">
+                                        <span className="font-medium text-sm block truncate capitalize">{ex.name}</span>
+                                        {imgData && (
+                                            <span className={`text-xs block truncate mt-0.5 ${isSelected ? 'text-blue-200' : 'text-slate-400 dark:text-zinc-500'}`}>
+                                                {formatTarget(imgData.target)}{imgData.equipment ? ` • ${formatEquipment(imgData.equipment)}` : ''}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Selection indicator */}
+                                    <div className="flex items-center gap-1 flex-none">
+                                        {isSelected && <Check className="w-5 h-5 text-white" />}
+                                    </div>
+                                </button>
+
+                                {/* Info button for exercise details */}
+                                {imgData && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setDetailExercise(ex.name); }}
+                                        className={`absolute top-2 right-2 p-1 rounded-full transition-colors ${isSelected ? 'text-blue-200 hover:text-white hover:bg-blue-500/30' : 'text-slate-300 dark:text-zinc-600 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-800'}`}
+                                        title="View exercise details"
+                                    >
+                                        <Info className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
                         );
                     })}
                 </div>
+                
+                {/* Lazy Load More Button */}
+                {visibleCount < filtered.length && (
+                    <div className="mt-6 flex justify-center pb-4">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setVisibleCount(c => c + 50)}
+                            className="bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700"
+                        >
+                            Load More Exercises ({filtered.length - visibleCount} remaining)
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* Footer Action (Fixed) */}
@@ -201,6 +294,13 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                     Start Logging ({selected.length})
                 </Button>
             </div>
+
+            {/* Exercise Detail Modal */}
+            <ExerciseDetailModal
+                isOpen={!!detailExercise}
+                onClose={() => setDetailExercise(null)}
+                exerciseName={detailExercise}
+            />
         </div>
     );
 }

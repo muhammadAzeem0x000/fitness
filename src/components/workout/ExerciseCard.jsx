@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '../ui/Card';
-import { History, Trophy, CheckCircle2, Check } from 'lucide-react';
+import { History, Trophy, CheckCircle2, Check, Info } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useToast } from '../../context/ToastContext';
 import { VideoGuideModal } from './VideoGuideModal';
+import { ExerciseDetailModal } from './ExerciseDetailModal';
 import { PlayCircle } from 'lucide-react';
+import { getExerciseData, formatEquipment, formatTarget } from '../../lib/exerciseImages';
 
 export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps = 12, exerciseHistory = [] }) {
     const { toast } = useToast();
@@ -14,6 +16,8 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
 
     // Track which sets the user has actually touched/modified
     const [touchedSets, setTouchedSets] = useState(new Set());
+    const [exerciseImgData, setExerciseImgData] = useState(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     // Find the most recent session for this specific exercise
     const getDerivedLastSession = () => {
@@ -84,6 +88,13 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
     useEffect(() => {
         onUpdateSets(exercise, sets);
     }, [sets, onUpdateSets, exercise]);
+
+    // Load exercise image data
+    useEffect(() => {
+        getExerciseData(exercise).then(data => {
+            setExerciseImgData(data);
+        });
+    }, [exercise]);
 
     const updateSet = (index, field, value) => {
         const newSets = [...sets];
@@ -159,15 +170,44 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
             <Card className="mb-4 border-l-4 border-l-blue-500 bg-white dark:bg-zinc-900/50 shadow-sm dark:shadow-none">
                 <CardContent className="pt-4 pb-4">
                     <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2">
-                            <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-200">{exercise}</h4>
-                            <button
-                                onClick={() => setIsVideoModalOpen(true)}
-                                className="text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-1"
-                                title="Watch Video Guide"
-                            >
-                                <PlayCircle className="w-4 h-4" />
-                            </button>
+                        <div className="flex items-center gap-2.5">
+                            {/* Exercise Thumbnail */}
+                            {exerciseImgData?.image_url ? (
+                                <div className="w-10 h-10 rounded-lg overflow-hidden flex-none border border-slate-200 dark:border-zinc-700">
+                                    <img
+                                        src={exerciseImgData.image_url}
+                                        alt={exercise}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            ) : null}
+                            <div>
+                                <div className="flex items-center gap-1.5">
+                                    <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-200">{exercise}</h4>
+                                    <button
+                                        onClick={() => setIsVideoModalOpen(true)}
+                                        className="text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-1"
+                                        title="Watch Video Guide"
+                                    >
+                                        <PlayCircle className="w-4 h-4" />
+                                    </button>
+                                    {exerciseImgData && (
+                                        <button
+                                            onClick={() => setIsDetailModalOpen(true)}
+                                            className="text-slate-400 dark:text-zinc-500 hover:text-purple-500 dark:hover:text-purple-400 transition-colors p-1"
+                                            title="View exercise details & form guide"
+                                        >
+                                            <Info className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                {exerciseImgData && (
+                                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+                                        {formatTarget(exerciseImgData.target)}{exerciseImgData.equipment ? ` • ${formatEquipment(exerciseImgData.equipment)}` : ''}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                         <div className="flex flex-col gap-1 items-end">
                             {actualLastSession && (
@@ -246,6 +286,12 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
             <VideoGuideModal 
                 isOpen={isVideoModalOpen}
                 onClose={() => setIsVideoModalOpen(false)}
+                exerciseName={exercise}
+            />
+
+            <ExerciseDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
                 exerciseName={exercise}
             />
         </>

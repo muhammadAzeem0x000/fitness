@@ -25,6 +25,11 @@ export const DEFAULT_EXERCISES = {
         "Bulgarian Split Squat", "Lunges", "Hack Squat", "Calf Raises", "Front Squat",
         "Seated Leg Curls", "Hip Thrusts", "Goblet Squat", "Sumo Deadlift", "Step Ups"
     ],
+    Core: [
+        "Crunches", "Sit-Ups", "Plank", "Russian Twists", "Leg Raises",
+        "Hanging Knee Raises", "Cable Crunches", "Ab Wheel Rollout", "Side Plank",
+        "Decline Sit-Ups", "Bicycle Crunches", "Dead Bug", "Flutter Kicks"
+    ],
     Cardio: [
         "Treadmill Run", "Cycling", "Elliptical", "Rowing Machine", "Stair Climber",
         "Jump Rope", "HIIT", "Swimming", "Walking", "Sprinting",
