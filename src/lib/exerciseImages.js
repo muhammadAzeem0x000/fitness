@@ -105,9 +105,15 @@ export async function getExerciseData(exerciseName) {
     // Calculate overlap: how many target words are in the key words?
     let overlap = 0;
     for (const tw of targetWords) {
-      // Allow partial word matches (e.g., "dumbell" vs "dumbbell" or "raise" vs "raises")
-      // To be safe and fast, just check if the key word includes the target word or vice-versa
-      if (keyWords.some(kw => kw.includes(tw) || tw.includes(kw))) {
+      // Safe word match: exact match, or one is the plural of the other (ends with 's')
+      // Also allow if it's a known prefix but only if it's longer than 3 characters
+      if (keyWords.some(kw => {
+          if (kw === tw) return true;
+          if (kw === tw + 's' || tw === kw + 's') return true;
+          if (kw === tw + 'es' || tw === kw + 'es') return true;
+          if (kw.length > 3 && tw.length > 3 && (kw.startsWith(tw) || tw.startsWith(kw))) return true;
+          return false;
+      })) {
         overlap++;
       }
     }

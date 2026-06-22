@@ -163,31 +163,31 @@ const OnboardingPage = () => {
                     { 
                         user_id: user.id, name: 'Push', schedule_days: [], exercises: [
                             { name: 'Barbell Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
-                            { name: 'Seated Dumbbell Press', category: 'Shoulders', sets: 3, reps: 10 }, 
-                            { name: 'Incline Dumbbell Press', category: 'Chest', sets: 3, reps: 10 },
-                            { name: 'Lateral Raises', category: 'Shoulders', sets: 3, reps: 15 },
-                            { name: 'Tricep Pushdowns', category: 'Arms', sets: 3, reps: 12 },
-                            { name: 'Overhead Tricep Extension', category: 'Arms', sets: 3, reps: 12 }
+                            { name: 'Dumbbell Seated Press', category: 'Shoulders', sets: 3, reps: 10 }, 
+                            { name: 'Dumbbell Incline Press', category: 'Chest', sets: 3, reps: 10 },
+                            { name: 'Cable Lateral Raise', category: 'Shoulders', sets: 3, reps: 15 },
+                            { name: 'Cable Tricep Pushdown', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Cable Overhead Triceps Extension', category: 'Arms', sets: 3, reps: 12 }
                         ] 
                     },
                     { 
                         user_id: user.id, name: 'Pull', schedule_days: [], exercises: [
-                            { name: 'Lat Pulldowns', category: 'Back', sets: 3, reps: 10 }, 
-                            { name: 'Seated Cable Rows', category: 'Back', sets: 3, reps: 10 }, 
-                            { name: 'Face Pulls', category: 'Shoulders', sets: 3, reps: 15 },
-                            { name: 'Dumbbell Shrugs', category: 'Back', sets: 3, reps: 15 },
-                            { name: 'Barbell Curls', category: 'Arms', sets: 3, reps: 12 },
-                            { name: 'Hammer Curls', category: 'Arms', sets: 3, reps: 12 }
+                            { name: 'Cable Pulldown', category: 'Back', sets: 3, reps: 10 }, 
+                            { name: 'Cable Seated Row', category: 'Back', sets: 3, reps: 10 }, 
+                            { name: 'Cable Rear Delt Row', category: 'Shoulders', sets: 3, reps: 15 },
+                            { name: 'Dumbbell Shrug', category: 'Back', sets: 3, reps: 15 },
+                            { name: 'Barbell Curl', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Dumbbell Hammer Curl', category: 'Arms', sets: 3, reps: 12 }
                         ] 
                     },
                     { 
                         user_id: user.id, name: 'Legs', schedule_days: [], exercises: [
                             { name: 'Barbell Squat', category: 'Legs', sets: 3, reps: 10 }, 
                             { name: 'Leg Press', category: 'Legs', sets: 3, reps: 10 }, 
-                            { name: 'Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 },
-                            { name: 'Leg Extensions', category: 'Legs', sets: 3, reps: 15 },
-                            { name: 'Lying Leg Curls', category: 'Legs', sets: 3, reps: 15 },
-                            { name: 'Standing Calf Raises', category: 'Legs', sets: 4, reps: 15 }
+                            { name: 'Barbell Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 },
+                            { name: 'Leg Extension', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Seated Leg Curl', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Standing Calf Raise', category: 'Legs', sets: 4, reps: 15 }
                         ] 
                     },
                 ];
@@ -196,22 +196,22 @@ const OnboardingPage = () => {
                     { 
                         user_id: user.id, name: 'Upper Body', schedule_days: [], exercises: [
                             { name: 'Barbell Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
-                            { name: 'Barbell Rows', category: 'Back', sets: 3, reps: 10 }, 
-                            { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 },
-                            { name: 'Lat Pulldowns', category: 'Back', sets: 3, reps: 10 },
-                            { name: 'Cable Crossovers', category: 'Chest', sets: 3, reps: 12 },
-                            { name: 'Bicep Curls', category: 'Arms', sets: 3, reps: 12 },
-                            { name: 'Tricep Pushdowns', category: 'Arms', sets: 3, reps: 12 }
+                            { name: 'Barbell Row', category: 'Back', sets: 3, reps: 10 }, 
+                            { name: 'Dumbbell Seated Press', category: 'Shoulders', sets: 3, reps: 10 },
+                            { name: 'Cable Pulldown', category: 'Back', sets: 3, reps: 10 },
+                            { name: 'Cable Crossover', category: 'Chest', sets: 3, reps: 12 },
+                            { name: 'Dumbbell Bicep Curl', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Cable Tricep Pushdown', category: 'Arms', sets: 3, reps: 12 }
                         ] 
                     },
                     { 
                         user_id: user.id, name: 'Lower Body', schedule_days: [], exercises: [
-                            { name: 'Barbell Squats', category: 'Legs', sets: 3, reps: 10 }, 
-                            { name: 'Romanian Deadlifts', category: 'Legs', sets: 3, reps: 10 }, 
-                            { name: 'Walking Lunges', category: 'Legs', sets: 3, reps: 12 },
-                            { name: 'Leg Extensions', category: 'Legs', sets: 3, reps: 15 },
-                            { name: 'Seated Leg Curls', category: 'Legs', sets: 3, reps: 15 },
-                            { name: 'Seated Calf Raises', category: 'Legs', sets: 4, reps: 15 }
+                            { name: 'Barbell Squat', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Barbell Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Barbell Lunge', category: 'Legs', sets: 3, reps: 12 },
+                            { name: 'Leg Extension', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Seated Leg Curl', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Seated Calf Raise', category: 'Legs', sets: 4, reps: 15 }
                         ] 
                     },
                 ];
@@ -219,13 +219,18 @@ const OnboardingPage = () => {
                 templates = [
                     { 
                         user_id: user.id, name: 'Full Body', schedule_days: [], exercises: [
-                            { name: 'Barbell Squats', category: 'Legs', sets: 3, reps: 10 }, 
-                            { name: 'Flat Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
-                            { name: 'Barbell Rows', category: 'Back', sets: 3, reps: 10 },
-                            { name: 'Overhead Press', category: 'Shoulders', sets: 3, reps: 10 },
-                            { name: 'Romanian Deadlifts', category: 'Legs', sets: 3, reps: 10 },
-                            { name: 'Dumbbell Bicep Curls', category: 'Arms', sets: 3, reps: 12 },
-                            { name: 'Tricep Rope Pushdowns', category: 'Arms', sets: 3, reps: 12 }
+                            { name: 'Barbell Squat', category: 'Legs', sets: 3, reps: 10 }, 
+                            { name: 'Barbell Bench Press', category: 'Chest', sets: 3, reps: 10 }, 
+                            { name: 'Cable Seated Row', category: 'Back', sets: 3, reps: 10 },
+                            { name: 'Dumbbell Seated Press', category: 'Shoulders', sets: 3, reps: 10 },
+                            { name: 'Barbell Romanian Deadlift', category: 'Legs', sets: 3, reps: 10 },
+                            { name: 'Cable Pulldown', category: 'Back', sets: 3, reps: 10 },
+                            { name: 'Dumbbell Incline Press', category: 'Chest', sets: 3, reps: 10 },
+                            { name: 'Cable Rear Delt Row', category: 'Shoulders', sets: 3, reps: 12 },
+                            { name: 'Dumbbell Bicep Curl', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Cable Tricep Pushdown', category: 'Arms', sets: 3, reps: 12 },
+                            { name: 'Standing Calf Raise', category: 'Legs', sets: 3, reps: 15 },
+                            { name: 'Cable Crunch', category: 'Core', sets: 3, reps: 15 }
                         ] 
                     },
                 ];
