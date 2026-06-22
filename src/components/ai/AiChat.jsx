@@ -63,10 +63,15 @@ export function AiChat() {
             ? weightHistory[weightHistory.length - 1].weight
             : null;
 
-        // Full workout history
-        let workoutHistoryStr = "No workout data available.";
-        if (workoutLogs && workoutLogs.length > 0) {
-            workoutHistoryStr = workoutLogs.map(w => {
+        // Filter dates for last 14 days
+        const fourteenDaysAgo = new Date();
+        fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+        // Recent workout history (14 days)
+        let workoutHistoryStr = "No recent workout data.";
+        const recentWorkouts = workoutLogs?.filter(w => new Date(w.date) >= fourteenDaysAgo) || [];
+        if (recentWorkouts.length > 0) {
+            workoutHistoryStr = recentWorkouts.map(w => {
                 let exerciseNames = [];
                 const exData = w.exercises;
                 if (exData && typeof exData === 'object' && !Array.isArray(exData)) {
@@ -88,10 +93,11 @@ export function AiChat() {
             }).join('\n');
         }
 
-        // Full nutrition history
-        let nutritionHistoryStr = "No nutrition data available.";
-        if (allNutrition && allNutrition.length > 0) {
-            nutritionHistoryStr = allNutrition.map(n => {
+        // Recent nutrition history (14 days)
+        let nutritionHistoryStr = "No recent nutrition data.";
+        const recentNutrition = allNutrition?.filter(n => new Date(n.date) >= fourteenDaysAgo) || [];
+        if (recentNutrition.length > 0) {
+            nutritionHistoryStr = recentNutrition.map(n => {
                 return `- ${new Date(n.date).toLocaleDateString()}: ${n.calories || 0}kcal (P:${n.protein || 0}g, C:${n.carbs || 0}g, F:${n.fats || 0}g)`;
             }).join('\n');
         }

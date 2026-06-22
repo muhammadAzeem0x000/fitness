@@ -92,11 +92,40 @@ export async function getExerciseData(exerciseName) {
   // Direct match
   if (cache.has(lower)) return cache.get(lower);
 
-  // Try partial matching — find entries that contain the search term
+  // Robust Word-based partial matching
+  // Remove punctuation and split into words
+  const targetWords = lower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  
+  let bestMatch = null;
+  let bestScore = 0;
+
   for (const [key, value] of cache) {
-    if (key.includes(lower) || lower.includes(key)) {
-      return value;
+    const keyWords = key.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+    
+    // Calculate overlap: how many target words are in the key words?
+    let overlap = 0;
+    for (const tw of targetWords) {
+      // Allow partial word matches (e.g., "dumbell" vs "dumbbell" or "raise" vs "raises")
+      // To be safe and fast, just check if the key word includes the target word or vice-versa
+      if (keyWords.some(kw => kw.includes(tw) || tw.includes(kw))) {
+        overlap++;
+      }
     }
+
+    // Calculate score percentage (overlap / max words)
+    // We want to penalize keys that have way too many extra words, but prioritize high overlap
+    const score = overlap / Math.max(targetWords.length, keyWords.length);
+
+    // If it's a very strong match (e.g. all words match)
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = value;
+    }
+  }
+
+  // Require at least a 50% word overlap to consider it a valid match
+  if (bestScore >= 0.5) {
+    return bestMatch;
   }
 
   return null;
@@ -119,38 +148,14 @@ export async function getExerciseGif(exerciseName) {
   return data?.gif_url || null;
 }
 
-/**
- * Batch-fetches exercise data for multiple exercises.
- * Returns a Map of exerciseName → exerciseData.
- */
 export async function getExerciseDataBatch(exerciseNames) {
-  const cache = await loadLibraryCache();
+  // We can just rely on getExerciseData which has the robust fuzzy matching
+  // and already caches the library internally, so it's very fast.
   const results = new Map();
-
   for (const name of exerciseNames) {
-    const lower = name.toLowerCase().trim();
-    
-    // Direct match
-    if (cache.has(lower)) {
-      results.set(name, cache.get(lower));
-      continue;
-    }
-
-    // Fuzzy match
-    let found = false;
-    for (const [key, value] of cache) {
-      if (key.includes(lower) || lower.includes(key)) {
-        results.set(name, value);
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      results.set(name, null);
-    }
+    const data = await getExerciseData(name);
+    results.set(name, data);
   }
-
   return results;
 }
 

@@ -62,13 +62,15 @@ Respond with ONLY valid JSON, no markdown, no code fences:
                 ],
                 model: "deepseek-v4-flash",
                 temperature: 0.7,
-                max_tokens: 300,
-                response_format: { type: "json_object" }
+                max_tokens: 300
             });
 
             let cleanedContent = completion.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
             const match = cleanedContent.match(/\{[\s\S]*\}/);
-            const jsonString = match ? match[0] : "{}";
+            let jsonString = match ? match[0] : "{}";
+            
+            // Fix trailing commas
+            jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
 
             const result = JSON.parse(jsonString);
             setSuggestions(result);

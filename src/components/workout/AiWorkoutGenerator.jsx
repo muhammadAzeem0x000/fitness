@@ -14,7 +14,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
-
+import { getExerciseDataBatch } from '../../lib/exerciseImages';
 // Survey option definitions
 const GOALS = [
     { id: 'strength', label: 'Strength', icon: Dumbbell, desc: 'Heavy weight, low reps' },
@@ -121,8 +121,28 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                     targetWeight: profile?.goal_weight,
                 },
                 workoutHistory: workoutLogs || [],
-                availableExercises: exercises || [],
             });
+
+            // Map the AI-generated exercises back to our real 1300+ database exercises
+            if (plan && plan.exercises) {
+                const aiNames = plan.exercises.map(ex => ex.name);
+                const batchMatches = await getExerciseDataBatch(aiNames);
+                
+                plan.exercises = plan.exercises.map(ex => {
+                    const match = batchMatches.get(ex.name);
+                    if (match) {
+                        return {
+                            ...ex,
+                            name: match.display_name || match.name, // Use matched DB name
+                            id: match.id,
+                            thumbnail_url: match.image_url,
+                            category: match.category || match.app_category,
+                            equipment: match.equipment
+                        };
+                    }
+                    return ex;
+                });
+            }
 
             setGeneratedPlan(plan);
 
@@ -223,11 +243,25 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                                         key={i}
                                         className="bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 flex items-start gap-4 group hover:border-slate-300 dark:hover:border-zinc-700 transition-colors"
                                     >
-                                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 text-sm font-bold text-slate-500 dark:text-zinc-400 group-hover:bg-blue-500/20 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                                            {i + 1}
+                                        <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 overflow-hidden relative group-hover:ring-2 ring-violet-500/50 transition-all">
+                                            {ex.thumbnail_url ? (
+                                                <img src={ex.thumbnail_url} alt={ex.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Dumbbell className="w-5 h-5 text-slate-400 dark:text-zinc-500" />
+                                            )}
+                                            <div className="absolute top-0 right-0 bg-black/60 text-white text-[10px] font-bold px-1 rounded-bl-lg">
+                                                {i + 1}
+                                            </div>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="text-slate-900 dark:text-white font-medium text-sm">{ex.name}</h4>
+                                            <div className="flex items-start justify-between gap-2">
+                                                <h4 className="text-slate-900 dark:text-white font-medium text-sm leading-tight">{ex.name}</h4>
+                                                {ex.id && (
+                                                    <button onClick={() => window.open(`/exercises/${ex.id}`, '_blank')} className="text-slate-400 hover:text-violet-500 transition-colors">
+                                                        <Info className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                             <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-600 dark:text-zinc-400">
                                                 <span className="bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded">{ex.sets} sets</span>
                                                 <span className="bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded">{ex.reps} reps</span>

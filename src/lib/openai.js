@@ -16,11 +16,11 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     const { displayName, workoutDays } = userProfile;
 
     // Filter Data based on Type
-    let daysToLookBack = 7;
+    let daysToLookBack = 8; // Weekly report (7-8 days)
     let promoText = "";
 
-    if (reportType === 'daily') daysToLookBack = 3; // Extended from 1 to 3 days to catch recent entries
-    if (reportType === 'monthly') daysToLookBack = 30;
+    if (reportType === 'daily') daysToLookBack = 2; // Yesterday + Today
+    if (reportType === 'monthly') daysToLookBack = 32; // 1 month+
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToLookBack);
@@ -251,6 +251,7 @@ export async function generateWorkoutPlan({
         userRequest = parts.join('. ');
     }
 
+
     const systemPrompt = `You are an elite fitness coach. Generate a personalized workout plan.
 
 USER PROFILE:
@@ -262,11 +263,8 @@ USER PROFILE:
 RECENT WORKOUTS (last 7 days):
 ${recentWorkoutSummary}
 
-AVAILABLE EXERCISES IN APP:
-${exerciseListString}
-
 RULES:
-1. ONLY use exercise names from the AVAILABLE EXERCISES list above. Match names EXACTLY.
+1. Use standard, commonly known exercise names (e.g., "Barbell Bench Press", "Dumbbell Curl", "Squat").
 2. Generate 4-8 exercises depending on the time available.
 3. Consider what the user trained recently to avoid overtraining the same muscles.
 4. Tailor sets, reps, and rest to the user's stated goal.
@@ -298,8 +296,7 @@ RESPONSE FORMAT (strict JSON):
             ],
             model: "deepseek-v4-pro",
             temperature: 0.7,
-            max_tokens: 1024,
-            response_format: { type: "json_object" }
+            max_tokens: 4000
         });
 
         rawContent = completion.choices[0].message.content || "";
@@ -311,25 +308,27 @@ RESPONSE FORMAT (strict JSON):
         const match = cleanedContent.match(/\{[\s\S]*\}/);
         let jsonString = match ? match[0] : "{}";
 
-        const plan = JSON.parse(jsonString);
+        // Fix potential trailing commas that break JSON.parse
+        jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
+
+        let plan;
+        try {
+            plan = JSON.parse(jsonString);
+        } catch (parseError) {
+            console.error("JSON Parse failed. String:", jsonString);
+            throw new Error(`Parse Error: ${parseError.message}. End of string: ${jsonString.substring(Math.max(0, jsonString.length - 100))}`);
+        }
         
         // Validate structure
         if (!plan.exercises || !Array.isArray(plan.exercises) || plan.exercises.length === 0) {
-            throw new Error(`AI generated an empty workout plan. Raw Content: ${rawContent.substring(0, 200)}`);
+            throw new Error(`AI generated an empty workout plan.`);
         }
 
         return plan;
     } catch (error) {
         console.error("Workout Plan Generation Error:", error);
-        
-        // If JSON parse failed, give a more helpful error
-        if (error instanceof SyntaxError) {
-            console.error("RAW CONTENT FAILED PARSE:", rawContent);
-            throw new Error(`AI returned an invalid format. Raw: ${rawContent.substring(0, 60)}...`);
-        }
-        
         const message = error?.error?.message || error.message || "Unknown Error";
-        throw new Error(`Failed to generate workout plan: ${message}`);
+        throw new Error(message);
     }
 }
 
@@ -347,6 +346,13 @@ export async function analyzeFoodInput(text) {
     The user will provide a text describing what they ate.
     You must estimate the calories, protein (g), carbs (g), and fats (g) for the entire meal described.
     
+    IMPORTANT RULES:
+    1. Be as accurate and realistic as possible. Do not aggressively over-estimate or under-estimate.
+    2. Account for standard hidden calories (normal cooking oils, sauces).
+    3. 1 standard Roti/Chapati is ~100-120 calories.
+    4. A standard homemade bowl of curry (chicken, meat, or paneer) is usually 300-450 calories depending on the oil. A restaurant curry is usually 500-800 calories.
+    5. If the user doesn't specify if it's homemade or restaurant, aim for a balanced middle-ground (e.g., ~500-600 total calories for 2 rotis and curry).
+    
     CRITICAL INSTRUCTION: Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.
     Format required:
     {
@@ -362,16 +368,28 @@ export async function analyzeFoodInput(text) {
 
     try {
         const response = await openai.chat.completions.create({
-            model: "deepseek-v4-flash", // Fast model for simple parsing
+            model: "deepseek-v4-pro", // Pro model for better world knowledge of food macros
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.1,
-            response_format: { type: "json_object" }
+            temperature: 0.2,
+            max_tokens: 2000
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        const match = rawContent.match(/\{[\s\S]*\}/);
-        const jsonContent = match ? match[0] : "{}";
-        const parsed = JSON.parse(jsonContent);
+        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        let jsonContent = match ? match[0] : "{}";
+        
+        // Fix trailing commas
+        jsonContent = jsonContent.replace(/,\s*([\]}])/g, '$1');
+
+        let parsed;
+        try {
+            parsed = JSON.parse(jsonContent);
+        } catch (e) {
+            console.error("Food JSON parse error:", e, jsonContent);
+            parsed = { calories: 0, protein: 0, carbs: 0, fats: 0, food_name: text };
+        }
         // Enforce 4/4/9 strict mathematical accuracy
         parsed.calories = Math.round((parsed.protein * 4) + (parsed.carbs * 4) + (parsed.fats * 9));
         return parsed;
