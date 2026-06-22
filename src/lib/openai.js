@@ -1,16 +1,16 @@
 import OpenAI from 'openai';
 
-const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
 
 const openai = new OpenAI({
     apiKey: apiKey,
-    baseURL: 'https://api.groq.com/openai/v1',
+    baseURL: 'https://api.deepseek.com/v1',
     dangerouslyAllowBrowser: true
 });
 
 export async function generateHealthReport(weightHistory, workoutLogs, previousReport, reportType = 'weekly', userProfile = {}) {
     if (!apiKey) {
-        throw new Error("Missing Groq API Key");
+        throw new Error("Missing DeepSeek API Key");
     }
 
     const { displayName, workoutDays } = userProfile;
@@ -168,14 +168,14 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     try {
         const completion = await openai.chat.completions.create({
             messages: [{ role: "system", content: systemPrompt }],
-            model: "llama-3.3-70b-versatile",
+            model: "deepseek-v4-pro",
         });
 
         return completion.choices[0].message.content;
     } catch (error) {
-        console.error("Groq API Detailed Error:", error);
-        const message = error?.error?.message || error.message || "Unknown Groq Error";
-        throw new Error(`Groq Failed: ${message}`);
+        console.error("DeepSeek API Detailed Error:", error);
+        const message = error?.error?.message || error.message || "Unknown DeepSeek Error";
+        throw new Error(`DeepSeek Failed: ${message}`);
     }
 }
 
@@ -203,7 +203,7 @@ export async function generateWorkoutPlan({
     availableExercises = []
 }) {
     if (!apiKey) {
-        throw new Error("Missing Groq API Key");
+        throw new Error("Missing DeepSeek API Key");
     }
 
     const { displayName, currentWeight, height, targetWeight } = userProfile;
@@ -289,32 +289,33 @@ RESPONSE FORMAT (strict JSON):
   "coachTip": "One motivational or strategic tip for this session"
 }`;
 
+    let rawContent = "";
     try {
         const completion = await openai.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userRequest }
             ],
-            model: "llama-3.3-70b-versatile",
+            model: "deepseek-v4-pro",
             temperature: 0.7,
             max_tokens: 1024,
+            response_format: { type: "json_object" }
         });
 
-        const rawContent = completion.choices[0].message.content;
+        rawContent = completion.choices[0].message.content || "";
+
+        // Remove <think> blocks if DeepSeek added reasoning
+        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
         
-        // Parse JSON from the response (handle potential markdown wrapping)
-        let jsonString = rawContent.trim();
-        
-        // Strip markdown code fences if present
-        if (jsonString.startsWith('```')) {
-            jsonString = jsonString.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
-        }
+        // Extract the JSON object using regex to ignore any conversational text before or after
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        let jsonString = match ? match[0] : "{}";
 
         const plan = JSON.parse(jsonString);
         
         // Validate structure
         if (!plan.exercises || !Array.isArray(plan.exercises) || plan.exercises.length === 0) {
-            throw new Error("AI generated an empty workout plan");
+            throw new Error(`AI generated an empty workout plan. Raw Content: ${rawContent.substring(0, 200)}`);
         }
 
         return plan;
@@ -323,7 +324,8 @@ RESPONSE FORMAT (strict JSON):
         
         // If JSON parse failed, give a more helpful error
         if (error instanceof SyntaxError) {
-            throw new Error("AI returned an invalid response format. Please try again.");
+            console.error("RAW CONTENT FAILED PARSE:", rawContent);
+            throw new Error(`AI returned an invalid format. Raw: ${rawContent.substring(0, 60)}...`);
         }
         
         const message = error?.error?.message || error.message || "Unknown Error";
@@ -338,7 +340,7 @@ RESPONSE FORMAT (strict JSON):
  * Uses Groq to return a strict JSON object.
  */
 export async function analyzeFoodInput(text) {
-    if (!apiKey) throw new Error("Missing Groq API Key");
+    if (!apiKey) throw new Error("Missing DeepSeek API Key");
 
     const prompt = `
     You are a professional sports nutritionist and calorie estimator API.
@@ -360,7 +362,7 @@ export async function analyzeFoodInput(text) {
 
     try {
         const response = await openai.chat.completions.create({
-            model: "llama-3.1-8b-instant", // Fast model for simple parsing
+            model: "deepseek-v4-flash", // Fast model for simple parsing
             messages: [{ role: "user", content: prompt }],
             temperature: 0.1,
             response_format: { type: "json_object" }
@@ -383,7 +385,7 @@ export async function analyzeFoodInput(text) {
  * Generates a full 1-day meal plan based on target macros.
  */
 export async function generateMealPlan(targetMacros, preferences = "") {
-    if (!apiKey) throw new Error("Missing Groq API Key");
+    if (!apiKey) throw new Error("Missing DeepSeek API Key");
 
     const prompt = `
     You are a professional sports nutritionist. Generate a 1-day meal plan that hits these exact daily targets:
@@ -418,7 +420,7 @@ export async function generateMealPlan(targetMacros, preferences = "") {
 
     try {
         const response = await openai.chat.completions.create({
-            model: "llama-3.3-70b-versatile", // Use the smarter model for meal planning
+            model: "deepseek-v4-pro", // Use the smarter model for meal planning
             messages: [{ role: "user", content: prompt }],
             temperature: 0.5,
             response_format: { type: "json_object" }

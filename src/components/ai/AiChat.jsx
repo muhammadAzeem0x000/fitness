@@ -3,6 +3,8 @@ import { Send, Loader2, Bot, User, Sparkles, Trash2, AlertCircle } from 'lucide-
 import { Button } from '../ui/Button';
 import ReactMarkdown from 'react-markdown';
 import { sendChatMessage } from '../../lib/aiChat';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
 import { useWeight } from '../../hooks/useWeight';
@@ -24,7 +26,22 @@ export function AiChat() {
     const { user } = useAuth();
     const { profile } = useProfile(user?.id);
     const { weightHistory } = useWeight(user?.id);
-    const { workoutLogs } = useWorkouts(user?.id);
+    const { workoutLogs, routines } = useWorkouts(user?.id);
+
+    // Fetch all nutrition
+    const { data: allNutrition } = useQuery({
+        queryKey: ['allNutrition', user?.id],
+        queryFn: async () => {
+            if (!user?.id) return [];
+            const { data } = await supabase
+                .from('nutrition_logs')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('date', { ascending: false });
+            return data || [];
+        },
+        enabled: !!user?.id
+    });
     const { isPremium, isLoading: subLoading } = useSubscription();
     const navigate = useNavigate();
 
@@ -46,14 +63,10 @@ export function AiChat() {
             ? weightHistory[weightHistory.length - 1].weight
             : null;
 
-        // Recent workout summary
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - 7);
-        const recentWorkouts = (workoutLogs || []).filter(w => new Date(w.date) >= cutoff);
-
-        let recentWorkoutSummary = "No recent workouts.";
-        if (recentWorkouts.length > 0) {
-            recentWorkoutSummary = recentWorkouts.map(w => {
+        // Full workout history
+        let workoutHistoryStr = "No workout data available.";
+        if (workoutLogs && workoutLogs.length > 0) {
+            workoutHistoryStr = workoutLogs.map(w => {
                 let exerciseNames = [];
                 const exData = w.exercises;
                 if (exData && typeof exData === 'object' && !Array.isArray(exData)) {
@@ -61,7 +74,25 @@ export function AiChat() {
                 } else if (Array.isArray(exData)) {
                     exerciseNames = exData.map(e => e.name || e);
                 }
-                return `- ${w.type || 'Workout'} (${new Date(w.date).toLocaleDateString()}): ${exerciseNames.slice(0, 4).join(', ')}`;
+                return `- ${w.type || 'Workout'} (${new Date(w.date).toLocaleDateString()}): ${exerciseNames.join(', ')}`;
+            }).join('\n');
+        }
+
+        // Full routines
+        let routineListStr = "No saved routines.";
+        if (routines && routines.length > 0) {
+            routineListStr = routines.map(r => {
+                const exData = r.exercises || [];
+                const names = Array.isArray(exData) ? exData.map(e => e.name || e).join(', ') : '';
+                return `- ${r.name}: ${names}`;
+            }).join('\n');
+        }
+
+        // Full nutrition history
+        let nutritionHistoryStr = "No nutrition data available.";
+        if (allNutrition && allNutrition.length > 0) {
+            nutritionHistoryStr = allNutrition.map(n => {
+                return `- ${new Date(n.date).toLocaleDateString()}: ${n.calories || 0}kcal (P:${n.protein || 0}g, C:${n.carbs || 0}g, F:${n.fats || 0}g)`;
             }).join('\n');
         }
 
@@ -89,7 +120,9 @@ export function AiChat() {
             height: profile?.height,
             targetWeight: profile?.goal_weight,
             workoutDays: profile?.workout_days,
-            recentWorkoutSummary,
+            workoutHistory: workoutHistoryStr,
+            routineList: routineListStr,
+            nutritionHistory: nutritionHistoryStr,
             totalWorkouts: workoutLogs?.length || 0,
             currentStreak,
         };

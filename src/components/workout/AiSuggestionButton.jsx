@@ -5,10 +5,10 @@ import { Button } from '../ui/Button';
 // Import the openai client directly for this lightweight call
 import OpenAI from 'openai';
 
-const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
 const openai = apiKey ? new OpenAI({
     apiKey,
-    baseURL: 'https://api.groq.com/openai/v1',
+    baseURL: 'https://api.deepseek.com/v1',
     dangerouslyAllowBrowser: true
 }) : null;
 
@@ -60,15 +60,15 @@ Respond with ONLY valid JSON, no markdown, no code fences:
                         content: `I've done: ${currentExercises.join(', ')}. What else should I add?`
                     }
                 ],
-                model: "llama-3.3-70b-versatile",
+                model: "deepseek-v4-flash",
                 temperature: 0.7,
                 max_tokens: 300,
+                response_format: { type: "json_object" }
             });
 
-            let jsonString = completion.choices[0].message.content.trim();
-            if (jsonString.startsWith('```')) {
-                jsonString = jsonString.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
-            }
+            let cleanedContent = completion.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+            const match = cleanedContent.match(/\{[\s\S]*\}/);
+            const jsonString = match ? match[0] : "{}";
 
             const result = JSON.parse(jsonString);
             setSuggestions(result);

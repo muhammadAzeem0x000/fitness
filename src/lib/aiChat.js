@@ -1,10 +1,10 @@
 import OpenAI from 'openai';
 
-const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
 
 const openai = new OpenAI({
     apiKey: apiKey,
-    baseURL: 'https://api.groq.com/openai/v1',
+    baseURL: 'https://api.deepseek.com/v1',
     dangerouslyAllowBrowser: true
 });
 
@@ -26,12 +26,14 @@ export async function sendChatMessage(messages, userContext = {}, onChunk = null
         height,
         targetWeight,
         workoutDays,
-        recentWorkoutSummary,
+        workoutHistory,
+        routineList,
+        nutritionHistory,
         totalWorkouts,
         currentStreak
     } = userContext;
 
-    const systemPrompt = `You are an elite AI fitness coach embedded in the SmartFit app. You have access to the user's fitness data and help them with workout advice, nutrition tips, motivation, form corrections, and training programming.
+    const systemPrompt = `You are an elite AI fitness coach embedded in the SmartFit app. You have access to the user's comprehensive fitness data and help them with workout advice, nutrition tips, motivation, form corrections, and training programming.
 
 USER PROFILE:
 - Name: ${displayName || "Athlete"}
@@ -42,8 +44,14 @@ USER PROFILE:
 - Total Workouts Logged: ${totalWorkouts || 0}
 - Current Streak: ${currentStreak || 0} days
 
-RECENT ACTIVITY:
-${recentWorkoutSummary || 'No recent workout data available.'}
+ROUTINES:
+${routineList || 'No saved routines.'}
+
+WORKOUT HISTORY:
+${workoutHistory || 'No workout data available.'}
+
+NUTRITION HISTORY:
+${nutritionHistory || 'No nutrition data available.'}
 
 PERSONALITY & RULES:
 1. Be direct, knowledgeable, and motivating. Like a tough but caring coach.
@@ -64,7 +72,7 @@ PERSONALITY & RULES:
             // Streaming mode
             const stream = await openai.chat.completions.create({
                 messages: apiMessages,
-                model: "llama-3.3-70b-versatile",
+                model: "deepseek-v4-flash",
                 temperature: 0.7,
                 max_tokens: 512,
                 stream: true,
@@ -83,7 +91,7 @@ PERSONALITY & RULES:
             // Non-streaming mode
             const completion = await openai.chat.completions.create({
                 messages: apiMessages,
-                model: "llama-3.3-70b-versatile",
+                model: "deepseek-v4-flash",
                 temperature: 0.7,
                 max_tokens: 512,
             });
