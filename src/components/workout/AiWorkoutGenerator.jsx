@@ -11,6 +11,8 @@ import { useProfile } from '../../hooks/useProfile';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { useWeight } from '../../hooks/useWeight';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useHealthMetrics } from '../../hooks/useHealthMetrics';
+import { calculateReadiness } from '../../lib/readiness';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
@@ -54,6 +56,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
     const { profile } = useProfile(user?.id);
     const { workoutLogs, exercises } = useWorkouts(user?.id);
     const { weightHistory } = useWeight(user?.id);
+    const { metrics: healthMetrics } = useHealthMetrics(user?.id, 1); // just need today
     const { isPremium, isLoading: subLoading } = useSubscription();
     const navigate = useNavigate();
 
@@ -108,6 +111,11 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                 ? weightHistory[weightHistory.length - 1].weight
                 : null;
 
+            // Calculate Readiness to pass to AI
+            const today = new Date().toISOString().split('T')[0];
+            const todayMetrics = healthMetrics?.find(m => m.date === today) || { sleep_hours: 0, steps: 0 };
+            const readiness = calculateReadiness({ sleepHours: todayMetrics.sleep_hours, workoutLogs: workoutLogs || [] });
+
             const plan = await generateWorkoutPlan({
                 goal: mode === 'survey' ? selectedGoal : '',
                 targetMuscles: mode === 'survey' ? selectedMuscles : '',
@@ -121,6 +129,8 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                     targetWeight: profile?.goal_weight,
                 },
                 workoutHistory: workoutLogs || [],
+                readinessData: readiness,
+                healthData: todayMetrics
             });
 
             // Map the AI-generated exercises back to our real 1300+ database exercises

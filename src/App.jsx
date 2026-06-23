@@ -43,6 +43,7 @@ const Pricing = lazyWithRetry(() => import('./pages/Pricing').then(module => ({ 
 const Success = lazyWithRetry(() => import('./pages/Success').then(module => ({ default: module.Success })));
 const NutritionPage = lazyWithRetry(() => import('./pages/NutritionPage').then(module => ({ default: module.NutritionPage })));
 const LeaderboardPage = lazyWithRetry(() => import('./pages/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
+const AnalyticsPage = lazyWithRetry(() => import('./pages/AnalyticsPage'));
 
 // Cool Logo Loader Component
 const Loader = () => (
@@ -174,6 +175,7 @@ const AppContent = () => {
           <Route path="/nutrition" element={<NutritionPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/success" element={<Success />} />
         </Route>

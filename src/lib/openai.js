@@ -200,7 +200,9 @@ export async function generateWorkoutPlan({
     freeText = '',
     userProfile = {},
     workoutHistory = [],
-    availableExercises = []
+    availableExercises = [],
+    readinessData = null,
+    healthData = null
 }) {
     if (!apiKey) {
         throw new Error("Missing DeepSeek API Key");
@@ -251,6 +253,20 @@ export async function generateWorkoutPlan({
         userRequest = parts.join('. ');
     }
 
+    let readinessContext = '';
+    if (readinessData && healthData) {
+        readinessContext = `
+HEALTH & READINESS CONTEXT:
+- Readiness Score: ${readinessData.score}/100 (${readinessData.status})
+- Last Night's Sleep: ${healthData.sleep_hours} hours
+- Steps Yesterday: ${healthData.steps.toLocaleString()}
+- AI Recommendation: ${readinessData.recommendation}
+
+CRITICAL ADJUSTMENT: You MUST adapt the workout intensity based on the Readiness Score. 
+If the score is Low (<40), lower the volume/intensity and prioritize active recovery, even if the user asks for heavy training.
+If the score is High (>70), feel free to push them hard.
+        `;
+    }
 
     const systemPrompt = `You are an elite fitness coach. Generate a personalized workout plan.
 
@@ -262,6 +278,7 @@ USER PROFILE:
 
 RECENT WORKOUTS (last 7 days):
 ${recentWorkoutSummary}
+${readinessContext}
 
 RULES:
 1. Use standard, commonly known exercise names (e.g., "Barbell Bench Press", "Dumbbell Curl", "Squat").

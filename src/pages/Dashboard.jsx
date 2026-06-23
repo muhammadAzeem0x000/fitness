@@ -7,6 +7,7 @@ import { PersonalRecords } from '../components/dashboard/PersonalRecords';
 import { StreakCard } from '../components/dashboard/StreakCard';
 import { AiInsightsCard } from '../components/dashboard/AiInsightsCard';
 import { WorkoutCalendar } from '../components/dashboard/WorkoutCalendar';
+import { ReadinessCard } from '../components/dashboard/ReadinessCard';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SkeletonCard, SkeletonChart } from '../components/ui/Skeleton';
@@ -15,6 +16,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
 import { useWorkouts } from '../hooks/useWorkouts';
+import { useHealthSync } from '../hooks/useHealthSync';
+import { useHealthMetrics } from '../hooks/useHealthMetrics';
 import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
 import { Dumbbell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +32,9 @@ export function Dashboard() {
     const { profile, updateHeight, isLoading: profileLoading } = useProfile(user?.id);
     const { weightHistory, addWeightEntry, isLoading: weightLoading } = useWeight(user?.id);
     const { workoutLogs, isLoading: workoutsLoading } = useWorkouts(user?.id);
+    
+    useHealthSync(user?.id);
+    const { metrics: healthMetrics } = useHealthMetrics(user?.id);
 
     const { convertWeightToDb, formatWeightLabel, displayWeight } = useUserPreferences();
     const [inputValue, setInputValue] = useState('');
@@ -49,6 +55,7 @@ export function Dashboard() {
 
     return (
         <div className="grid gap-6 animate-in fade-in duration-500">
+            <ReadinessCard metrics={healthMetrics} workoutLogs={workoutLogs} />
             <StatsOverview stats={userStats} currentBMI={currentBMI} />
 
             {/* Smart AI Insights */}
