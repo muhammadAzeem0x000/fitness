@@ -9,6 +9,7 @@ import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
 import { initNativeFeatures } from './lib/native';
 import { useHardwareBackButton } from './hooks/useHardwareBackButton';
+import appLogo from './assets/logo.png';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -43,13 +44,37 @@ const Success = lazyWithRetry(() => import('./pages/Success').then(module => ({ 
 const NutritionPage = lazyWithRetry(() => import('./pages/NutritionPage').then(module => ({ default: module.NutritionPage })));
 const LeaderboardPage = lazyWithRetry(() => import('./pages/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
 
-// Simple Loader Component
+// Cool Logo Loader Component
 const Loader = () => (
-  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  <div className="relative flex flex-col items-center justify-center">
+    <div className="relative flex items-center justify-center">
+      {/* Outer spinning rings for a high-tech/professional look */}
+      <div 
+        className="absolute w-28 h-28 rounded-full border-4 border-emerald-500/10 border-t-emerald-500 animate-spin"
+        style={{ animationDuration: '1.5s' }}
+      ></div>
+      <div 
+        className="absolute w-32 h-32 rounded-full border-4 border-emerald-500/10 border-b-emerald-400 animate-spin"
+        style={{ animationDuration: '2s', animationDirection: 'reverse' }}
+      ></div>
+      {/* Inner pulsating logo */}
+      <img 
+        src={appLogo} 
+        alt="Loading..." 
+        className="w-16 h-16 object-contain animate-pulse relative z-10"
+        style={{ filter: 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.5))' }}
+      />
+    </div>
+    <div className="mt-8 text-emerald-500/80 text-sm tracking-[0.2em] font-medium animate-pulse">
+      LOADING...
+    </div>
+  </div>
 );
 
 const FullScreenLoader = () => (
-  <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white"><Loader /></div>
+  <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center z-50">
+    <Loader />
+  </div>
 );
 
 // Protected Route Wrapper
