@@ -12,6 +12,7 @@ import { PasswordInput } from '../components/ui/PasswordInput';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
+import { requestHealthPermissions } from '../lib/wearables';
 
 const CollapsibleSection = ({ title, icon: Icon, defaultOpen = false, children, extraHeader }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -71,6 +72,10 @@ export default function ProfilePage() {
     const [uploading, setUploading] = useState(false);
     const [currentWeightInput, setCurrentWeightInput] = useState('');
     const { toast } = useToast();
+
+    // Health Connect State
+    const [isConnectingHealth, setIsConnectingHealth] = useState(false);
+    const [isHealthConnected, setIsHealthConnected] = useState(() => localStorage.getItem('health_connected') === 'true');
 
     // Form State
     const [displayName, setDisplayName] = useState('');
@@ -463,22 +468,49 @@ export default function ProfilePage() {
                             <p className="text-[10px] text-slate-500">Connect to Apple / Google</p>
                         </div>
                     </div>
-                    <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs h-8"
-                        onClick={async () => {
-                            const { requestHealthPermissions } = await import('../lib/wearables');
-                            const success = await requestHealthPermissions();
-                            if(success) {
-                                toast.success("Health sync activated!");
-                            } else {
-                                toast.error("Failed to connect health data.");
-                            }
-                        }}
-                    >
-                        Connect
-                    </Button>
+                    {isHealthConnected ? (
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-emerald-500 font-bold">Connected</span>
+                            <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-xs h-8 text-slate-500"
+                                onClick={() => {
+                                    setIsHealthConnected(false);
+                                    localStorage.removeItem('health_connected');
+                                    toast.success("Health sync disconnected");
+                                }}
+                            >
+                                Disconnect
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-xs h-8 min-w-[80px]"
+                            disabled={isConnectingHealth}
+                            onClick={async () => {
+                                setIsConnectingHealth(true);
+                                try {
+                                    const success = await requestHealthPermissions();
+                                    if(success === true) {
+                                        setIsHealthConnected(true);
+                                        localStorage.setItem('health_connected', 'true');
+                                        toast.success("Health sync activated!");
+                                    } else {
+                                        toast.error("Failed: " + (success?.message || "Ensure Health Connect is installed"));
+                                    }
+                                } catch (err) {
+                                    toast.error("Error: " + err.message);
+                                } finally {
+                                    setIsConnectingHealth(false);
+                                }
+                            }}
+                        >
+                            {isConnectingHealth ? "Connecting..." : "Connect"}
+                        </Button>
+                    )}
                 </div>
             </CollapsibleSection>
 

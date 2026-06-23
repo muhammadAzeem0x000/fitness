@@ -1,5 +1,6 @@
 import { isNativePlatform } from './platform';
 import { supabase } from './supabase';
+import { Health } from '@capgo/capacitor-health';
 
 /**
  * Mock data for web fallback
@@ -21,13 +22,24 @@ export const requestHealthPermissions = async () => {
     }
 
     try {
-        // In a real app, you would use @capacitor-community/healthkit here
-        // const { HealthKit } = await import('@capacitor-community/healthkit');
-        // await HealthKit.requestAuthorization({ ... });
-        return true;
+        const availableResult = await Health.isAvailable();
+        if (!availableResult.available) {
+            console.error('Health Connect is not available on this device:', availableResult.reason);
+            return { message: availableResult.reason || "Health Connect is not available" };
+        }
+
+        try {
+            await Health.requestAuthorization({
+                read: ['steps', 'sleep', 'calories']
+            });
+            return true;
+        } catch(err) {
+            console.error('requestAuthorization error:', err.message);
+            return { message: err.message };
+        }
     } catch (e) {
-        console.error('Failed to request health permissions', e);
-        return false;
+        console.error('Outer error:', e.message);
+        return { message: e.message || "Failed to request health permissions" };
     }
 };
 
@@ -40,12 +52,53 @@ export const fetchDailyHealthData = async () => {
     }
 
     try {
-        // Mock native plugin call
-        // const { HealthKit } = await import('@capacitor-community/healthkit');
-        // const steps = await HealthKit.queryRecord({ sampleType: 'stepCount' ... });
+        const startDate = new Date();
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date();
         
-        // For demonstration, even on native without the actual plugin installed, return mock data
-        return getMockWearableData();
+        let steps = 0;
+        let sleepHours = 0;
+        let activeEnergy = 0;
+
+        try {
+            const stepsResult = await Health.readSamples({
+                dataType: 'steps',
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+            });
+            steps = stepsResult.samples?.reduce((acc, entry) => acc + (entry.value || 0), 0) || 0;
+        } catch(e) { console.warn('Could not read steps', e); }
+
+        try {
+            const sleepResult = await Health.readSamples({
+                dataType: 'sleep',
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+            });
+            // Calculate total sleep duration
+            const totalSleepMs = sleepResult.samples?.reduce((acc, entry) => {
+               const start = new Date(entry.startDate).getTime();
+               const end = new Date(entry.endDate).getTime();
+               return acc + (end - start);
+            }, 0) || 0;
+            sleepHours = (totalSleepMs / (1000 * 60 * 60)).toFixed(1);
+        } catch(e) { console.warn('Could not read sleep', e); }
+
+        try {
+            const energyResult = await Health.readSamples({
+                dataType: 'calories',
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+            });
+            activeEnergy = energyResult.samples?.reduce((acc, entry) => acc + (entry.value || 0), 0) || 0;
+        } catch(e) { console.warn('Could not read active energy', e); }
+
+        return {
+            steps: Math.floor(steps),
+            sleepHours: parseFloat(sleepHours),
+            activeEnergy: Math.floor(activeEnergy),
+            isMock: false
+        };
     } catch (e) {
         console.error('Failed to fetch health data', e);
         return getMockWearableData();
