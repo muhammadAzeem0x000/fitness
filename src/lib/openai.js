@@ -353,7 +353,7 @@ RESPONSE FORMAT (strict JSON):
 
 /**
  * Parses natural language food descriptions into estimated calories and macros.
- * Uses Groq to return a strict JSON object.
+ * Uses DeepSeek to return a strict JSON object.
  */
 export async function analyzeFoodInput(text) {
     if (!apiKey) throw new Error("Missing DeepSeek API Key");

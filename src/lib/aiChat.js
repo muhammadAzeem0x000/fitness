@@ -17,7 +17,7 @@ const openai = new OpenAI({
  */
 export async function sendChatMessage(messages, userContext = {}, onChunk = null) {
     if (!apiKey) {
-        throw new Error("Missing Groq API Key");
+        throw new Error("Missing DeepSeek API Key");
     }
 
     const {
