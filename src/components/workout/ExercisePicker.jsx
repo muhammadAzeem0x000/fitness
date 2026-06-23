@@ -14,6 +14,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
     const [exerciseImageData, setExerciseImageData] = useState(new Map());
     const [detailExercise, setDetailExercise] = useState(null);
     const [visibleCount, setVisibleCount] = useState(50);
+    const [isLoadingLibrary, setIsLoadingLibrary] = useState(true);
 
     useBackInterceptor(() => {
         onBack();
@@ -21,16 +22,19 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
 
     // Load the full exercise library from the service
     useEffect(() => {
+        setIsLoadingLibrary(true);
         getExerciseLibrary().then(data => {
             if (data && data.length > 0) {
                 setLibraryExercises(data);
-                // Also prepopulate the image data map since the library contains it all
                 const map = new Map();
                 data.forEach(ex => {
                     map.set(ex.name, ex);
                 });
                 setExerciseImageData(map);
             }
+            setIsLoadingLibrary(false);
+        }).catch(() => {
+            setIsLoadingLibrary(false);
         });
     }, []);
 
@@ -200,16 +204,22 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {/* Render Custom Inputs ONLY if they match the active category filter (Custom goes to 'All' or 'Core/Default' if we wanted, but let's show them in All or if no categories are filtered) */}
                     {(activeCategory === 'All') && customInputs.map((custom, idx) => (
-                        <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-white shrink-0">
+                        <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-slate-900 dark:text-white shrink-0">
                             <div className="flex items-center gap-3">
                                 <span className="text-xl" aria-hidden="true">{categoryIcons.Default}</span>
-                                <span className="font-medium">{custom} <span className="text-xs text-blue-300 opacity-70 ml-1">(Custom)</span></span>
+                                <span className="font-medium">{custom} <span className="text-xs text-blue-600 dark:text-blue-300 opacity-70 ml-1">(Custom)</span></span>
                             </div>
-                            <Check className="w-5 h-5 text-blue-400" />
+                            <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                     ))}
 
-                    {filtered.slice(0, visibleCount).map(ex => {
+                    {isLoadingLibrary ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-12">
+                            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+                            <p className="text-slate-500 dark:text-zinc-400 text-sm">Loading exercises...</p>
+                        </div>
+                    ) : (
+                        filtered.slice(0, visibleCount).map(ex => {
                         const isSelected = selected.includes(ex.name);
                         const icon = categoryIcons[ex.category] || categoryIcons.Default;
                         const imgData = exerciseImageData.get(ex.name);
@@ -267,11 +277,12 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                 )}
                             </div>
                         );
-                    })}
+                    })
+                    )}
                 </div>
                 
                 {/* Lazy Load More Button */}
-                {visibleCount < filtered.length && (
+                {!isLoadingLibrary && visibleCount < filtered.length && (
                     <div className="mt-6 flex justify-center pb-4">
                         <Button
                             variant="secondary"
