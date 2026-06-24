@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Moon, Footprints, Flame, Activity, Info } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useHealthMetrics } from '../hooks/useHealthMetrics';
+import { useHealthSync } from '../hooks/useHealthSync';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { useAuth } from '../hooks/useAuth';
 import { calculateReadiness } from '../lib/readiness';
@@ -14,7 +15,8 @@ import {
 export default function AnalyticsPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { metrics, isLoading: metricsLoading } = useHealthMetrics(user?.id, 7);
+    const { refreshKey } = useHealthSync(user?.id);
+    const { metrics, isLoading: metricsLoading } = useHealthMetrics(user?.id, 7, refreshKey);
     const { workoutLogs, isLoading: workoutsLoading } = useWorkouts(user?.id);
 
     if (metricsLoading || workoutsLoading) {
@@ -26,8 +28,9 @@ export default function AnalyticsPage() {
         );
     }
 
-    // Prepare data for charts
-    const today = new Date().toISOString().split('T')[0];
+    // Prepare data for charts — use local date (not UTC toISOString)
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const todayMetrics = metrics.find(m => m.date === today) || { sleep_hours: 0, steps: 0, active_calories: 0 };
     
     const { score, status, recommendation, breakdown } = calculateReadiness({

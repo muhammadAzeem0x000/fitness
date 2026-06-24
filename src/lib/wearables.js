@@ -56,15 +56,22 @@ export const fetchDailyHealthData = async () => {
         startDate.setHours(0, 0, 0, 0);
         const endDate = new Date();
         
+        // Sleep sessions typically start the previous evening (e.g. 10 PM → 6 AM).
+        // Query from yesterday 6 PM to capture the full overnight window.
+        const sleepStartDate = new Date();
+        sleepStartDate.setDate(sleepStartDate.getDate() - 1);
+        sleepStartDate.setHours(18, 0, 0, 0);
+
         let steps = 0;
         let sleepHours = 0;
         let activeEnergy = 0;
 
         try {
-            const stepsResult = await Health.readSamples({
+            const stepsResult = await Health.queryAggregated({
                 dataType: 'steps',
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
+                bucket: 'day',
             });
             steps = stepsResult.samples?.reduce((acc, entry) => acc + (entry.value || 0), 0) || 0;
         } catch(e) { console.warn('Could not read steps', e); }
@@ -72,23 +79,32 @@ export const fetchDailyHealthData = async () => {
         try {
             const sleepResult = await Health.readSamples({
                 dataType: 'sleep',
-                startDate: startDate.toISOString(),
+                startDate: sleepStartDate.toISOString(),
                 endDate: endDate.toISOString(),
             });
-            // Calculate total sleep duration
+            // Calculate total sleep duration, only counting sessions that end today
+            const todayStart = startDate.getTime();
             const totalSleepMs = sleepResult.samples?.reduce((acc, entry) => {
+               const entryEnd = new Date(entry.endDate).getTime();
+               // Only count sleep sessions that ended today (not yesterday evening naps)
+               if (entryEnd < todayStart) return acc;
+               
+               // Exclude awake periods if the platform provides stage data
+               if (entry.sleepState === 'awake' || entry.stage === 'awake') return acc;
+               
                const start = new Date(entry.startDate).getTime();
-               const end = new Date(entry.endDate).getTime();
+               const end = entryEnd;
                return acc + (end - start);
             }, 0) || 0;
             sleepHours = (totalSleepMs / (1000 * 60 * 60)).toFixed(1);
         } catch(e) { console.warn('Could not read sleep', e); }
 
         try {
-            const energyResult = await Health.readSamples({
+            const energyResult = await Health.queryAggregated({
                 dataType: 'calories',
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
+                bucket: 'day',
             });
             activeEnergy = energyResult.samples?.reduce((acc, entry) => acc + (entry.value || 0), 0) || 0;
         } catch(e) { console.warn('Could not read active energy', e); }
@@ -102,6 +118,18 @@ export const fetchDailyHealthData = async () => {
     } catch (e) {
         console.error('Failed to fetch health data', e);
         return getMockWearableData();
+    }
+};
+
+/**
+ * Opens the native Health Connect settings screen so users can manage/revoke permissions
+ */
+export const openHealthSettings = async () => {
+    if (!isNativePlatform()) return;
+    try {
+        await Health.openHealthConnectSettings();
+    } catch (e) {
+        console.error('Could not open health settings:', e);
     }
 };
 

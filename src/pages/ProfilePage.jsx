@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles, Trophy, Lock, Activity, Heart, Ruler, Utensils } from 'lucide-react';
+import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles, Trophy, Lock, Activity, Heart, Ruler, Utensils, RefreshCw, Footprints, Moon, Flame, Smartphone, CheckCircle2, WifiOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
 import { useSubscription } from '../hooks/useSubscription';
+import { useHealthSync } from '../hooks/useHealthSync';
+import { useHealthMetrics } from '../hooks/useHealthMetrics';
 import { Button } from '../components/ui/Button';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
@@ -12,7 +14,7 @@ import { PasswordInput } from '../components/ui/PasswordInput';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
-import { requestHealthPermissions } from '../lib/wearables';
+import { requestHealthPermissions, openHealthSettings } from '../lib/wearables';
 
 const CollapsibleSection = ({ title, icon: Icon, defaultOpen = false, children, extraHeader }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -76,6 +78,27 @@ export default function ProfilePage() {
     // Health Connect State
     const [isConnectingHealth, setIsConnectingHealth] = useState(false);
     const [isHealthConnected, setIsHealthConnected] = useState(() => localStorage.getItem('health_connected') === 'true');
+
+    // Health sync hooks
+    const { syncNow, isSyncing, lastSynced, refreshKey } = useHealthSync(user?.id);
+    const { metrics: healthMetrics } = useHealthMetrics(user?.id, 1, refreshKey);
+
+    // Get today's health summary for display
+    const todayNow = new Date();
+    const todayStr = `${todayNow.getFullYear()}-${String(todayNow.getMonth() + 1).padStart(2, '0')}-${String(todayNow.getDate()).padStart(2, '0')}`;
+    const todayHealth = healthMetrics?.find(m => m.date === todayStr) || { steps: 0, sleep_hours: 0, active_calories: 0 };
+
+    // Format "last synced" relative time
+    const getLastSyncedText = () => {
+        if (!lastSynced) return null;
+        const diff = Date.now() - new Date(lastSynced).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'Just now';
+        if (mins < 60) return `${mins}m ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs}h ago`;
+        return `${Math.floor(hrs / 24)}d ago`;
+    };
 
     // Form State
     const [displayName, setDisplayName] = useState('');
@@ -458,59 +481,160 @@ export default function ProfilePage() {
                     ))}
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                            <Heart className="w-4 h-4 text-red-500" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-bold text-slate-900 dark:text-white">Health Sync</p>
-                            <p className="text-[10px] text-slate-500">Connect to Apple / Google</p>
-                        </div>
-                    </div>
-                    {isHealthConnected ? (
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-emerald-500 font-bold">Connected</span>
-                            <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="text-xs h-8 text-slate-500"
-                                onClick={() => {
-                                    setIsHealthConnected(false);
-                                    localStorage.removeItem('health_connected');
-                                    toast.success("Health sync disconnected");
-                                }}
-                            >
-                                Disconnect
-                            </Button>
-                        </div>
-                    ) : (
-                        <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="text-xs h-8 min-w-[80px]"
-                            disabled={isConnectingHealth}
-                            onClick={async () => {
-                                setIsConnectingHealth(true);
-                                try {
-                                    const success = await requestHealthPermissions();
-                                    if(success === true) {
-                                        setIsHealthConnected(true);
-                                        localStorage.setItem('health_connected', 'true');
-                                        toast.success("Health sync activated!");
-                                    } else {
-                                        toast.error("Failed: " + (success?.message || "Ensure Health Connect is installed"));
-                                    }
-                                } catch (err) {
-                                    toast.error("Error: " + err.message);
-                                } finally {
-                                    setIsConnectingHealth(false);
-                                }
-                            }}
-                        >
-                            {isConnectingHealth ? "Connecting..." : "Connect"}
-                        </Button>
+                {/* Redesigned Health Sync Card */}
+                <div className={`relative overflow-hidden rounded-2xl border ${
+                    isHealthConnected 
+                        ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-teal-950/30' 
+                        : 'border-slate-200 dark:border-zinc-700 bg-gradient-to-br from-slate-50 dark:from-zinc-900 to-slate-100 dark:to-zinc-800/50'
+                }`}>
+                    {/* Animated glow for connected state */}
+                    {isHealthConnected && (
+                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl animate-pulse" />
                     )}
+
+                    <div className="relative p-4 space-y-4">
+                        {/* Header Row */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                    isHealthConnected 
+                                        ? 'bg-emerald-500/20' 
+                                        : 'bg-red-100 dark:bg-red-900/30'
+                                }`}>
+                                    {isHealthConnected ? (
+                                        <Activity className="w-5 h-5 text-emerald-400" />
+                                    ) : (
+                                        <Heart className="w-5 h-5 text-red-500" />
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white">Health Sync</p>
+                                    <div className="flex items-center gap-1.5">
+                                        {isHealthConnected ? (
+                                            <>
+                                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                                <span className="text-[11px] text-emerald-400 font-semibold">Connected</span>
+                                                {getLastSyncedText() && (
+                                                    <span className="text-[10px] text-zinc-500 ml-1">· Synced {getLastSyncedText()}</span>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <WifiOff className="w-3 h-3 text-slate-400 dark:text-zinc-500" />
+                                                <span className="text-[11px] text-slate-500 dark:text-zinc-500">Not connected</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Connected state: Live health summary + actions */}
+                        {isHealthConnected ? (
+                            <>
+                                {/* Today's Health Summary */}
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                                        <Footprints className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                                        <p className="text-base font-bold text-white">{todayHealth.steps.toLocaleString()}</p>
+                                        <p className="text-[10px] text-zinc-500">Steps</p>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                                        <Moon className="w-4 h-4 text-indigo-400 mx-auto mb-1" />
+                                        <p className="text-base font-bold text-white">{todayHealth.sleep_hours}h</p>
+                                        <p className="text-[10px] text-zinc-500">Sleep</p>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                                        <Flame className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+                                        <p className="text-base font-bold text-white">{todayHealth.active_calories}</p>
+                                        <p className="text-[10px] text-zinc-500">Calories</p>
+                                    </div>
+                                </div>
+
+                                {/* Action buttons */}
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        className="flex-1 h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+                                        disabled={isSyncing}
+                                        onClick={() => {
+                                            hapticLight();
+                                            syncNow();
+                                        }}
+                                    >
+                                        <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                        {isSyncing ? 'Syncing...' : 'Sync Now'}
+                                    </Button>
+                                    <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="h-9 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                        onClick={() => {
+                                            setIsHealthConnected(false);
+                                            localStorage.removeItem('health_connected');
+                                            localStorage.removeItem('health_last_synced');
+                                            toast.success("Disconnected. Please revoke permissions in the Health Connect settings that just opened.");
+                                            hapticMedium();
+                                            openHealthSettings();
+                                        }}
+                                    >
+                                        Disconnect
+                                    </Button>
+                                </div>
+
+                                {/* Auto-sync info */}
+                                <p className="text-[10px] text-zinc-600 text-center">
+                                    Auto-syncs every 15 min & on app open
+                                </p>
+                            </>
+                        ) : (
+                            /* Disconnected state: Prominent connect CTA */
+                            <>
+                                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+                                    Connect to Google Health Connect or Apple HealthKit to automatically track your steps, sleep, and calories.
+                                </p>
+                                <Button 
+                                    className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg shadow-emerald-900/20"
+                                    disabled={isConnectingHealth}
+                                    onClick={async () => {
+                                        setIsConnectingHealth(true);
+                                        hapticLight();
+                                        try {
+                                            const success = await requestHealthPermissions();
+                                            if(success === true) {
+                                                setIsHealthConnected(true);
+                                                localStorage.setItem('health_connected', 'true');
+                                                toast.success("Health sync activated!");
+                                                hapticSuccess();
+                                                // Trigger initial sync immediately
+                                                syncNow();
+                                            } else {
+                                                toast.error("Failed: " + (success?.message || "Ensure Health Connect is installed"));
+                                                hapticError();
+                                            }
+                                        } catch (err) {
+                                            toast.error("Error: " + err.message);
+                                            hapticError();
+                                        } finally {
+                                            setIsConnectingHealth(false);
+                                        }
+                                    }}
+                                >
+                                    {isConnectingHealth ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Connecting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Smartphone className="w-4 h-4 mr-2" />
+                                            Connect Health Data
+                                        </>
+                                    )}
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </CollapsibleSection>
 

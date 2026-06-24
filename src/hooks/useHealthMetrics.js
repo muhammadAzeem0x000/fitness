@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-export const useHealthMetrics = (userId, days = 7) => {
+export const useHealthMetrics = (userId, days = 7, refreshKey = 0) => {
     const [metrics, setMetrics] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -15,7 +15,11 @@ export const useHealthMetrics = (userId, days = 7) => {
             try {
                 const cutoff = new Date();
                 cutoff.setDate(cutoff.getDate() - days);
-                const cutoffStr = cutoff.toISOString().split('T')[0];
+                // Use local date string to avoid UTC timezone mismatch
+                const year = cutoff.getFullYear();
+                const month = String(cutoff.getMonth() + 1).padStart(2, '0');
+                const day = String(cutoff.getDate()).padStart(2, '0');
+                const cutoffStr = `${year}-${month}-${day}`;
 
                 const { data, error } = await supabase
                     .from('daily_health_metrics')
@@ -35,7 +39,7 @@ export const useHealthMetrics = (userId, days = 7) => {
         };
 
         fetchMetrics();
-    }, [userId, days]);
+    }, [userId, days, refreshKey]);
 
     return { metrics, isLoading };
 };

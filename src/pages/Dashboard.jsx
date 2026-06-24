@@ -33,8 +33,8 @@ export function Dashboard() {
     const { weightHistory, addWeightEntry, isLoading: weightLoading } = useWeight(user?.id);
     const { workoutLogs, isLoading: workoutsLoading } = useWorkouts(user?.id);
     
-    useHealthSync(user?.id);
-    const { metrics: healthMetrics } = useHealthMetrics(user?.id);
+    const { syncNow, isSyncing, lastSynced, refreshKey } = useHealthSync(user?.id);
+    const { metrics: healthMetrics } = useHealthMetrics(user?.id, 7, refreshKey);
 
     const { convertWeightToDb, formatWeightLabel, displayWeight } = useUserPreferences();
     const [inputValue, setInputValue] = useState('');
@@ -55,7 +55,7 @@ export function Dashboard() {
 
     return (
         <div className="grid gap-6 animate-in fade-in duration-500">
-            <ReadinessCard metrics={healthMetrics} workoutLogs={workoutLogs} />
+            <ReadinessCard metrics={healthMetrics} workoutLogs={workoutLogs} syncNow={syncNow} isSyncing={isSyncing} />
             <StatsOverview stats={userStats} currentBMI={currentBMI} />
 
             {/* Smart AI Insights */}

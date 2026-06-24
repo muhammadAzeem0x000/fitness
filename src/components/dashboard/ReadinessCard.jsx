@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { calculateReadiness } from '../../lib/readiness';
-import { Moon, Footprints, Flame, Activity, ChevronRight } from 'lucide-react';
+import { Moon, Footprints, Flame, Activity, ChevronRight, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Simple circular progress ring component
@@ -50,11 +50,12 @@ const ProgressRing = ({ radius, stroke, progress, color }) => {
     );
 };
 
-export const ReadinessCard = ({ metrics = [], workoutLogs = [] }) => {
+export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSyncing }) => {
     const navigate = useNavigate();
     
-    // Get today's metrics
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's metrics using local date (not UTC via toISOString)
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const todayMetrics = metrics.find(m => m.date === today) || {
         sleep_hours: 0,
         steps: 0,
@@ -164,9 +165,23 @@ export const ReadinessCard = ({ metrics = [], workoutLogs = [] }) => {
                 </div>
             )}
             
-            {/* Expand indicator */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ChevronRight className="w-5 h-5 text-slate-400" />
+            {/* Sync / Expand indicators */}
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                {isConnected && syncNow && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            syncNow();
+                        }}
+                        className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                        title="Sync now"
+                    >
+                        <RefreshCw className={`w-4 h-4 text-slate-400 ${isSyncing ? 'animate-spin' : ''}`} />
+                    </button>
+                )}
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                </div>
             </div>
         </div>
     );
