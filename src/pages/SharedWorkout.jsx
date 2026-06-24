@@ -260,7 +260,7 @@ export function SharedWorkout() {
 
                 {/* Footer */}
                 <div className="mt-12 text-center text-zinc-600 text-sm">
-                    <p>Powered by <span className="text-blue-400 font-semibold">SmartFit</span></p>
+                    <p>Powered by <span className="text-blue-400 font-semibold">MuscleBot</span></p>
                     <p className="mt-1">Track your fitness journey with AI-powered insights</p>
                 </div>
             </div>

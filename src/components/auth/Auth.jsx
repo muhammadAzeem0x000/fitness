@@ -36,11 +36,11 @@ export function Auth() {
 
     useEffect(() => {
         if (view === 'login') {
-            document.title = 'Login | SmartFit';
+            document.title = 'Login | MuscleBot';
         } else if (view === 'signup') {
-            document.title = 'Create Account | SmartFit';
+            document.title = 'Create Account | MuscleBot';
         } else if (view === 'forgot-password') {
-            document.title = 'Reset Password | SmartFit';
+            document.title = 'Reset Password | MuscleBot';
         }
     }, [view]);
 

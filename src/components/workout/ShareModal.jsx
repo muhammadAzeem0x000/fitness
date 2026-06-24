@@ -120,7 +120,7 @@ export function ShareModal({ isOpen, onClose, shareUrl, workoutSummary }) {
                         {/* Footer */}
                         <div className="px-6 py-4 bg-zinc-950/30 border-t border-zinc-800 rounded-b-xl">
                             <p className="text-xs text-zinc-600 text-center">
-                                💡 The recipient doesn't need a SmartFit account to view
+                                💡 The recipient doesn't need a MuscleBot account to view
                             </p>
                         </div>
                     </motion.div>

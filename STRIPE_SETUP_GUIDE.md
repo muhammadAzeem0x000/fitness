@@ -1,4 +1,4 @@
-# SmartFit Monetization - Manual Setup Guide
+# MuscleBot Monetization - Manual Setup Guide
 
 This guide covers the manual steps required to complete the subscription system setup.
 
@@ -19,15 +19,15 @@ This guide covers the manual steps required to complete the subscription system 
 2. **Create Products**:
    - Click "Products" → "Add product"
    
-   **Product 1: SmartFit Pro Monthly**
-   - Name: `SmartFit Pro Monthly`
+   **Product 1: MuscleBot Pro Monthly**
+   - Name: `MuscleBot Pro Monthly`
    - Price: `$9.99 USD`
    - Billing period: `Monthly`
    - Click "Save product"
    - **Copy the Price ID** (starts with `price_...`)
    
-   **Product 2: SmartFit Pro Yearly**
-   - Name: `SmartFit Pro Yearly`
+   **Product 2: MuscleBot Pro Yearly**
+   - Name: `MuscleBot Pro Yearly`
    - Price: `$89.99 USD`
    - Billing period: `Yearly`
    - Click "Save product"

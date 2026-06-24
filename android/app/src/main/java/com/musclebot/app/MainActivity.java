@@ -1,4 +1,4 @@
-package com.fitnessgilt.app;
+package com.musclebot.app;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.png'],
       manifest: {
-        name: 'SmartFit - AI Fitness Tracker',
-        short_name: 'SmartFit',
+        name: 'MuscleBot - AI Fitness Tracker',
+        short_name: 'MuscleBot',
         description: 'Your personal AI-powered fitness companion',
         theme_color: '#0f172a',
         background_color: '#0f172a',

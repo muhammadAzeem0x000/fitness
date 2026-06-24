@@ -90,7 +90,7 @@ export function Success() {
 
                 {/* Title */}
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-in slide-in-from-bottom-4 duration-700">
-                    Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">SmartFit Pro</span>!
+                    Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">MuscleBot Pro</span>!
                 </h1>
 
                 {/* Description */}

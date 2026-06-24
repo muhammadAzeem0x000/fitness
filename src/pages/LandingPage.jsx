@@ -13,9 +13,9 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-3">
-                            <img src="/logo.png" alt="SmartFit Logo" className="w-8 h-8 object-cover rounded-full" />
+                            <img src="/logo.png" alt="MuscleBot Logo" className="w-8 h-8 object-cover rounded-full" />
                             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                                SmartFit
+                                MuscleBot
                             </span>
                         </div>
                         <div className="flex items-center gap-4">
@@ -183,7 +183,7 @@ export default function LandingPage() {
                             Ready to Level Up?
                         </h2>
                         <p className="text-blue-100 max-w-2xl mx-auto mb-10 text-lg relative z-10">
-                            Join thousands of lifters pushing their limits with SmartFit. It's free to start.
+                            Join thousands of lifters pushing their limits with MuscleBot. It's free to start.
                         </p>
                         <div className="relative z-10">
                             <Button onClick={() => navigate('/auth', { state: { view: 'signup' } })} size="lg" className="bg-white text-blue-600 hover:bg-blue-50 border-none">
@@ -199,10 +199,10 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-2">
                         <Dumbbell className="w-6 h-6 text-blue-600" />
-                        <span className="font-bold text-lg text-slate-900 dark:text-slate-200">SmartFit</span>
+                        <span className="font-bold text-lg text-slate-900 dark:text-slate-200">MuscleBot</span>
                     </div>
                     <p className="text-slate-500 text-sm">
-                        © {new Date().getFullYear()} SmartFit. All rights reserved.
+                        © {new Date().getFullYear()} MuscleBot. All rights reserved.
                     </p>
                 </div>
             </footer>

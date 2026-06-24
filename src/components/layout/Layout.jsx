@@ -10,14 +10,14 @@ export function Layout({ children }) {
 
     useEffect(() => {
         const path = location.pathname;
-        let title = 'SmartFit';
+        let title = 'MuscleBot';
 
         if (path === '/' || path === '/dashboard') {
-            title = 'Training | SmartFit';
+            title = 'Training | MuscleBot';
         } else if (path === '/log') {
-            title = 'Log Workout | SmartFit';
+            title = 'Log Workout | MuscleBot';
         } else if (path === '/ai-coach') {
-            title = 'AI Coach | SmartFit';
+            title = 'AI Coach | MuscleBot';
         }
 
         document.title = title;

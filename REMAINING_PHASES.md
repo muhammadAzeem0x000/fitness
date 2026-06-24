@@ -1,8 +1,8 @@
-# SmartFit v2.0 - Remaining Phases Roadmap
+# MuscleBot v2.0 - Remaining Phases Roadmap
 
 We have already completed **Phase 1 (3D Body Heatmap)** and **Phase 2 (AI-Driven Nutrition & Meal Planning)**. 
 
-Here is the comprehensive, detailed plan for the remaining phases to elevate SmartFit to the absolute top tier of AI fitness applications.
+Here is the comprehensive, detailed plan for the remaining phases to elevate MuscleBot to the absolute top tier of AI fitness applications.
 
 ---
 

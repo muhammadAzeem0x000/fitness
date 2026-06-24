@@ -142,7 +142,7 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
         specificInstruction = `This user has not logged any workouts yet. Based on their profile data (height, weight, BMI, target weight), provide:
         1. Encouragement to start their fitness journey
         2. Beginner-friendly workout plan recommendations based on their goals
-        3. Tips for getting started with the SmartFit app
+        3. Tips for getting started with the MuscleBot app
         Keep it motivating and actionable. Don't mention lack of data negatively - focus on the exciting journey ahead.`;
     } else if (reportType === 'daily') {
         specificInstruction = "Critique today's session (if any) and the most recent weight fluctuation. Be quick and punchy.";

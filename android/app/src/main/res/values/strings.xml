@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">FitnessGilt</string>
-    <string name="title_activity_main">FitnessGilt</string>
-    <string name="package_name">com.fitnessgilt.app</string>
-    <string name="custom_url_scheme">com.fitnessgilt.app</string>
+    <string name="app_name">MuscleBot</string>
+    <string name="title_activity_main">MuscleBot</string>
+    <string name="package_name">com.musclebot.app</string>
+    <string name="custom_url_scheme">com.musclebot.app</string>
     <string name="health_connect_privacy_policy_url">https://example.com/privacy-policy</string>
 </resources>

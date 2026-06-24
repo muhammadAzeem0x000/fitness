@@ -70,7 +70,7 @@ export function PremiumGate({
 
                 {/* Description */}
                 <p className="text-zinc-400 mb-6 text-center max-w-md text-sm md:text-base">
-                    Unlock <span className="text-blue-400 font-medium">{feature}</span> with SmartFit Pro
+                    Unlock <span className="text-blue-400 font-medium">{feature}</span> with MuscleBot Pro
                 </p>
 
                 {/* Features list */}

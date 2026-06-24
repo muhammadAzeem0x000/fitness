@@ -158,7 +158,7 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                     share_id: shareId,
                     workout_type: routineName,
                     exercises: loggedData,
-                    shared_by_name: user?.user_metadata?.full_name || user?.email || 'SmartFit User',
+                    shared_by_name: user?.user_metadata?.full_name || user?.email || 'MuscleBot User',
                     user_id: user?.id
                 })
                 .select()

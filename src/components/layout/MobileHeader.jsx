@@ -15,7 +15,7 @@ export function MobileHeader() {
     const path = location.pathname;
     
     // Determine title
-    let title = 'SmartFit';
+    let title = 'MuscleBot';
     if (path === '/dashboard' || path === '/') title = 'Training';
     else if (path === '/log') title = 'Workout';
     else if (path === '/ai-coach') title = 'AI Coach';

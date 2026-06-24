@@ -15,7 +15,7 @@ const OnboardingPage = () => {
     const { heightUnit, weightUnit, toggleHeightUnit, toggleWeightUnit, convertHeightToCm, convertWeightToDb } = useUserPreferences();
 
     useEffect(() => {
-        document.title = 'Onboarding | SmartFit';
+        document.title = 'Onboarding | MuscleBot';
     }, []);
 
     // Persistence
@@ -267,7 +267,7 @@ const OnboardingPage = () => {
             <div className="max-w-2xl w-full">
                 <div className="mb-8 text-center">
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent mb-2">
-                        Welcome to SmartFit
+                        Welcome to MuscleBot
                     </h1>
                     <p className="text-zinc-400">Let's set up your profile for success.</p>
                 </div>

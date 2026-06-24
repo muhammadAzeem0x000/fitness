@@ -200,7 +200,7 @@ export function Pricing() {
             name: 'Pro Monthly',
             price: 4.99,
             priceId: monthlyPriceId,
-            description: 'Full access to SmartFit',
+            description: 'Full access to MuscleBot',
             interval: 'month',
             popular: true,
             features: [
