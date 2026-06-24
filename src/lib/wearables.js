@@ -107,6 +107,12 @@ export const fetchDailyHealthData = async () => {
                 bucket: 'day',
             });
             activeEnergy = energyResult.samples?.reduce((acc, entry) => acc + (entry.value || 0), 0) || 0;
+            
+            // Fallback: If Health Connect provides steps but no calorie data (very common with raw phone pedometers),
+            // we estimate the active calories burned based on the step count (~0.04 kcals per step).
+            if (activeEnergy === 0 && steps > 0) {
+                activeEnergy = steps * 0.04;
+            }
         } catch(e) { console.warn('Could not read active energy', e); }
 
         return {

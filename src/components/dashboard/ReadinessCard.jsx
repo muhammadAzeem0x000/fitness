@@ -165,23 +165,9 @@ export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSynci
                 </div>
             )}
             
-            {/* Sync / Expand indicators */}
-            <div className="absolute top-4 right-4 flex items-center gap-2">
-                {isConnected && syncNow && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            syncNow();
-                        }}
-                        className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
-                        title="Sync now"
-                    >
-                        <RefreshCw className={`w-4 h-4 text-slate-400 ${isSyncing ? 'animate-spin' : ''}`} />
-                    </button>
-                )}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ChevronRight className="w-5 h-5 text-slate-400" />
-                </div>
+            {/* Expand indicator */}
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronRight className="w-5 h-5 text-slate-400" />
             </div>
         </div>
     );

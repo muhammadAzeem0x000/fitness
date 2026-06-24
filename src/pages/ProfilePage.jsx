@@ -639,11 +639,10 @@ export default function ProfilePage() {
             </CollapsibleSection>
 
             {/* Subscription Plan Section */}
-            <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900/50">
-                <div className="p-5">
-                    <div className="flex items-center justify-between mb-4">
+            <CollapsibleSection title="Subscription Plan" icon={Crown} defaultOpen={false}>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Crown className={`w-5 h-5 ${isPremium ? 'text-amber-400' : 'text-slate-500 dark:text-zinc-500'}`} />
                             <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">Current Plan</h3>
                         </div>
                         <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isTrialExpired
@@ -715,7 +714,7 @@ export default function ProfilePage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </CollapsibleSection>
 
             {/* Change Password Section */}
             <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900/50">
