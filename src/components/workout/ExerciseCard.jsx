@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '../ui/Card';
-import { History, Trophy, CheckCircle2, Check, Info } from 'lucide-react';
+import { History, Trophy, CheckCircle2, Check, Info, X, Plus, Layers } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useToast } from '../../context/ToastContext';
 import { VideoGuideModal } from './VideoGuideModal';
@@ -8,14 +8,19 @@ import { ExerciseDetailModal } from './ExerciseDetailModal';
 import { PlayCircle } from 'lucide-react';
 import { getExerciseData, formatEquipment, formatTarget } from '../../lib/exerciseImages';
 
-export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps = 12, exerciseHistory = [] }) {
+export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps = 12, exerciseHistory = [], savedSets = null }) {
     const { toast } = useToast();
     const [showConfetti, setShowConfetti] = useState(false);
     const [prSetIndex, setPrSetIndex] = useState(null);
     const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     // Track which sets the user has actually touched/modified
-    const [touchedSets, setTouchedSets] = useState(new Set());
+    const [touchedSets, setTouchedSets] = useState(() => {
+        if (savedSets && savedSets.length > 0) {
+            return new Set(savedSets.map((_, i) => i));
+        }
+        return new Set();
+    });
     const [exerciseImgData, setExerciseImgData] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -35,19 +40,40 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
 
     // Initialize 3 sets by default, pre-filling from history if available
     const [sets, setSets] = useState(() => {
+        if (savedSets && savedSets.length > 0) {
+            return savedSets;
+        }
+
         const initialSets = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             if (actualLastSession && actualLastSession[i]) {
                 initialSets.push({
                     weight: actualLastSession[i].weight || '',
-                    reps: actualLastSession[i].reps || defaultReps
+                    reps: actualLastSession[i].reps || defaultReps,
+                    type: actualLastSession[i].type || 'normal'
                 });
             } else {
-                initialSets.push({ weight: '', reps: defaultReps });
+                initialSets.push({ weight: '', reps: defaultReps, type: 'normal' });
             }
         }
         return initialSets;
     });
+
+    const addSet = (type = 'normal') => {
+        setSets(prev => [...prev, { weight: '', reps: defaultReps, type }]);
+    };
+
+    const removeSet = (indexToRemove) => {
+        setSets(prev => prev.filter((_, i) => i !== indexToRemove));
+        setTouchedSets(prev => {
+            const newTouched = new Set();
+            prev.forEach(i => {
+                if (i < indexToRemove) newTouched.add(i);
+                if (i > indexToRemove) newTouched.add(i - 1);
+            });
+            return newTouched;
+        });
+    };
 
     // Calculate historical max weight and reps for this exercise
     const getHistoricalMaxes = () => {
@@ -167,8 +193,8 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                 />
             )}
 
-            <Card className="mb-4 border-l-4 border-l-blue-500 bg-white dark:bg-zinc-900/50 shadow-sm dark:shadow-none">
-                <CardContent className="pt-4 pb-4">
+            <Card className="mb-4 border-0 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-xl ring-1 ring-slate-200 dark:ring-white/10 rounded-3xl overflow-hidden">
+                <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2.5">
                             {/* Exercise Thumbnail */}
@@ -225,24 +251,29 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {sets.map((set, index) => {
                             const isComplete = set.weight && set.reps && touchedSets.has(index);
                             const hasValues = set.weight && set.reps;
                             const canConfirm = hasValues && !touchedSets.has(index);
 
                             return (
-                                <div key={index} className={`flex gap-2 items-center transition-opacity ${isComplete ? 'opacity-100' : 'opacity-70'}`}>
-                                    <span className="text-xs font-mono text-slate-400 dark:text-zinc-500 w-8 shrink-0">#{index + 1}</span>
+                                <div key={index} className={`flex gap-3 items-center p-2 rounded-xl border ${set.type === 'superset' ? 'bg-orange-500/5 border-orange-500/20' : 'bg-slate-50 dark:bg-zinc-900/40 border-transparent'} transition-all ${isComplete ? 'opacity-100' : 'opacity-80'}`}>
+                                    <div className="flex flex-col items-center justify-center w-8 shrink-0">
+                                        <span className="text-sm font-bold font-mono text-slate-500 dark:text-zinc-400">{index + 1}</span>
+                                        {set.type === 'superset' && <span className="text-[9px] font-bold text-orange-500 uppercase tracking-wider mt-0.5">SS</span>}
+                                    </div>
 
-                                    <div className="relative w-1/2">
+                                    <div className="relative flex-1">
+                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                            <span className="text-xs text-slate-400 font-medium">kg</span>
+                                        </div>
                                         <input
                                             type="number"
-                                            placeholder="kg"
                                             value={set.weight}
                                             onChange={(e) => updateSet(index, 'weight', e.target.value)}
                                             onBlur={() => handleBlur(index)}
-                                            className={`w-full h-9 rounded-md border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-slate-300 dark:border-zinc-800'} bg-slate-50 dark:bg-zinc-950 px-2 text-sm text-center text-slate-900 dark:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow`}
+                                            className={`w-full h-11 rounded-lg border ${prSetIndex === index ? 'border-yellow-500 ring-2 ring-yellow-500/50' : 'border-slate-200 dark:border-zinc-800'} bg-white dark:bg-zinc-950 pl-8 pr-2 text-base text-center font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all`}
                                         />
                                         {prSetIndex === index && set.weight && (
                                             <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg animate-bounce flex items-center gap-1">
@@ -252,33 +283,68 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
                                         )}
                                     </div>
 
-                                    <input
-                                        type="number"
-                                        placeholder="reps"
-                                        value={set.reps}
-                                        onChange={(e) => updateSet(index, 'reps', e.target.value)}
-                                        onBlur={() => handleBlur(index)}
-                                        className="w-1/2 h-9 rounded-md border border-slate-300 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 px-2 text-sm text-center text-slate-900 dark:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 input-glow"
-                                    />
+                                    <div className="relative flex-1">
+                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                            <span className="text-xs text-slate-400 font-medium">reps</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            value={set.reps}
+                                            onChange={(e) => updateSet(index, 'reps', e.target.value)}
+                                            onBlur={() => handleBlur(index)}
+                                            className="w-full h-11 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 pl-9 pr-2 text-base text-center font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all"
+                                        />
+                                    </div>
 
-                                    {/* Confirm button or checkmark */}
-                                    {canConfirm ? (
+                                    <div className="flex items-center gap-1 shrink-0">
                                         <button
-                                            onClick={() => confirmSet(index)}
-                                            className="p-2 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded transition-all border border-slate-300 dark:border-zinc-700 hover:border-green-500/50 dark:hover:border-green-500/50 group"
-                                            title="Confirm set with these values"
+                                            onClick={() => removeSet(index)}
+                                            className="p-2 text-slate-400 hover:text-red-500 dark:text-zinc-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
+                                            title="Remove set"
                                             type="button"
                                         >
-                                            <Check className="w-5 h-5 text-slate-400 dark:text-zinc-500 group-hover:text-green-500 transition-colors" />
+                                            <X className="w-5 h-5" />
                                         </button>
-                                    ) : isComplete ? (
-                                        <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 animate-fade-in" />
-                                    ) : (
-                                        <div className="w-9 h-9" /> // Spacer
-                                    )}
+                                        
+                                        {/* Confirm button or checkmark */}
+                                        {canConfirm ? (
+                                            <button
+                                                onClick={() => confirmSet(index)}
+                                                className="p-2 bg-slate-200 dark:bg-zinc-800 hover:bg-green-500 hover:text-white dark:hover:bg-green-500 text-slate-600 dark:text-zinc-400 rounded-lg transition-all shadow-sm"
+                                                title="Confirm set"
+                                                type="button"
+                                            >
+                                                <Check className="w-5 h-5" />
+                                            </button>
+                                        ) : isComplete ? (
+                                            <div className="p-2 w-9 flex items-center justify-center">
+                                                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 animate-fade-in" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-9 h-9" /> // Spacer
+                                        )}
+                                    </div>
                                 </div>
                             )
                         })}
+                    </div>
+
+                    {/* Add Set Buttons */}
+                    <div className="mt-5 flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => addSet('normal')}
+                            className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold text-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" /> Add Set
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => addSet('superset')}
+                            className="flex-1 flex items-center justify-center gap-2 h-11 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 font-semibold text-sm hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors"
+                        >
+                            <Layers className="w-4 h-4" /> Add Superset
+                        </button>
                     </div>
                 </CardContent>
             </Card>

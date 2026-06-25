@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Share2, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Share2, Plus, Trophy } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ExerciseCard } from './ExerciseCard';
-import { RestTimer } from './RestTimer';
 import { WorkoutDurationTimer } from './WorkoutDurationTimer';
 import { ShareModal } from './ShareModal';
 import { PostWorkoutSummary } from './PostWorkoutSummary';
@@ -17,7 +16,7 @@ import { AchievementUnlockedToast } from '../ui/AchievementUnlockedToast';
 export function ActiveSessionView({ routineName, initialExercises, onBack, onSave, onAddMore, defaultReps = 12, exerciseHistory = [] }) {
     const [activeExercises, setActiveExercises] = useState([]);
     const [loggedData, setLoggedData] = useState({});
-    const [showRestTimer, setShowRestTimer] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
     const [showShareModal, setShowShareModal] = useState(false);
     const [shareUrl, setShareUrl] = useState('');
     const [workoutSummary, setWorkoutSummary] = useState('');
@@ -35,7 +34,6 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     const { toast } = useToast();
     const { user } = useAuth();
 
-    // Hardware Back Button Interceptor
     useBackInterceptor(() => {
         if (showPostSummary) {
             setShowPostSummary(false);
@@ -50,8 +48,9 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
             setShowShareModal(false);
             return;
         }
-        if (showRestTimer) {
-            setShowRestTimer(false);
+        // If they are deep in the workout, maybe go back to previous exercise instead of exiting completely?
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
             return;
         }
         onBack();
@@ -203,92 +202,115 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">{routineName}</h2>
                         </div>
                     </div>
-                    {/* Share Button only here, Finish moved to footer */}
-                    {activeExercises.length > 0 && (
-                        <Button variant="secondary" size="sm" onClick={handleShare} className="h-8">
-                            <Share2 className="w-3.5 h-3.5 mr-1" /> Share
+                    {/* Finish button always visible when active exercises exist */}
+                    {activeExercises.length > 0 && currentIndex < activeExercises.length && (
+                        <Button variant="ghost" size="sm" onClick={() => setCurrentIndex(activeExercises.length)} className="text-emerald-600 dark:text-emerald-400 font-semibold h-8 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
+                            Finish
                         </Button>
                     )}
                 </div>
 
-                {/* Workout Duration Timer */}
+                {/* Workout Duration Timer and Progress */}
                 {activeExercises.length > 0 && (
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center gap-2">
                         <WorkoutDurationTimer />
+                        {currentIndex < activeExercises.length && (
+                            <div className="flex gap-1 w-full max-w-[200px] justify-center mt-1">
+                                {activeExercises.map((_, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className={`h-1.5 flex-1 rounded-full transition-colors ${idx === currentIndex ? 'bg-blue-500' : idx < currentIndex ? 'bg-blue-500/30' : 'bg-slate-200 dark:bg-zinc-800'}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* Active List (Scrollable) */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pb-4 min-h-0 space-y-4">
-                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                    {activeExercises.length === 0 && (
-                        <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-slate-300 dark:border-zinc-800 rounded-xl bg-slate-100 dark:bg-zinc-900/30">
-                            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-                                <Plus className="w-8 h-8 text-blue-500" />
-                            </div>
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Ready to Workout?</h3>
-                            <p className="text-slate-500 dark:text-zinc-500 text-sm mb-6 max-w-[250px]">
-                                Add some exercises to start building your custom routine.
-                            </p>
-                            <Button onClick={onAddMore} className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-base font-semibold shadow-lg shadow-blue-900/20">
-                                <Plus className="w-5 h-5 mr-2" /> Add Exercises
-                            </Button>
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-1 pb-32">
+                {activeExercises.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-slate-300 dark:border-zinc-800 rounded-xl bg-slate-100 dark:bg-zinc-900/30 mt-8">
+                        <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                            <Plus className="w-8 h-8 text-blue-500" />
                         </div>
-                    )}
-
-                    {activeExercises.map(name => {
-                        return (
-                            <ExerciseCard
-                                key={name}
-                                exercise={name}
-                                onUpdateSets={handleUpdateExercise}
-                                defaultReps={defaultReps}
-                                exerciseHistory={exerciseHistory}
-                            />
-                        );
-                    })}
-                </div>
-
-                {/* Add More / AI Suggest Row */}
-                {activeExercises.length > 0 && (
-                    <div className="flex gap-2 justify-center pt-2">
-                        <Button variant="outline" size="sm" onClick={onAddMore} className="border-dashed border-slate-300 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-zinc-500 flex-1 md:flex-none text-xs">
-                            <Plus className="w-3 h-3 mr-2" /> Add More
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Ready to Workout?</h3>
+                        <p className="text-slate-500 dark:text-zinc-500 text-sm mb-6 max-w-[250px]">
+                            Add some exercises to start building your custom routine.
+                        </p>
+                        <Button onClick={onAddMore} className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-base font-semibold shadow-lg shadow-blue-900/20">
+                            <Plus className="w-5 h-5 mr-2" /> Add Exercises
                         </Button>
-                        <AiSuggestionButton
-                            currentExercises={activeExercises}
-                            onAddExercise={(name) => {
-                                if (!activeExercises.includes(name)) {
-                                    setActiveExercises(prev => [...prev, name]);
-                                }
-                            }}
+                    </div>
+                ) : currentIndex < activeExercises.length ? (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <ExerciseCard
+                            key={activeExercises[currentIndex]}
+                            exercise={activeExercises[currentIndex]}
+                            onUpdateSets={handleUpdateExercise}
+                            defaultReps={defaultReps}
+                            exerciseHistory={exerciseHistory}
+                            savedSets={loggedData[activeExercises[currentIndex]]}
                         />
                     </div>
+                ) : (
+                    // Finish Screen
+                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center animate-in fade-in zoom-in-95 duration-500">
+                        <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/20">
+                            <Trophy className="w-12 h-12 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Great Job!</h2>
+                        <p className="text-slate-500 dark:text-zinc-400 mb-8 max-w-[250px]">
+                            You've crushed all your exercises. Ready to wrap it up?
+                        </p>
+                        
+                        <div className="w-full max-w-sm space-y-3">
+                            <Button
+                                onClick={handleFinish}
+                                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-900/20 text-lg font-bold rounded-2xl"
+                            >
+                                <Save className="w-5 h-5 mr-2" /> Save & Finish Workout
+                            </Button>
+                            
+                            <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                    onAddMore();
+                                    // Move index back so when they add, they see the new exercises
+                                    setCurrentIndex(activeExercises.length - 1);
+                                }} 
+                                className="w-full h-14 border-2 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 font-semibold rounded-2xl"
+                            >
+                                <Plus className="w-5 h-5 mr-2" /> Wait, Add More Exercises
+                            </Button>
+
+                            <Button variant="ghost" onClick={handleShare} className="w-full h-12 text-blue-600 dark:text-blue-400 font-semibold mt-4">
+                                <Share2 className="w-4 h-4 mr-2" /> Share Workout Summary
+                            </Button>
+                        </div>
+                    </div>
                 )}
             </div>
 
-            {/* Footer Action (Fixed) */}
-            {activeExercises.length > 0 && (
-                <div className="flex-none pt-3 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-slate-900 mt-auto space-y-2">
-                    <Button
-                        onClick={() => setShowRestTimer(!showRestTimer)}
-                        variant="outline"
-                        className="w-full"
+            {/* Pagination Footer (Sticky) */}
+            {activeExercises.length > 0 && currentIndex < activeExercises.length && (
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white dark:from-slate-900 dark:via-slate-900 to-transparent pt-12 pb-6 flex items-center justify-between gap-3 pointer-events-none">
+                    <button 
+                        onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+                        disabled={currentIndex === 0}
+                        className="flex items-center justify-center h-14 w-20 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 disabled:opacity-30 pointer-events-auto shadow-lg transition-all"
                     >
-                        {showRestTimer ? 'Hide Rest Timer' : 'Start Rest Timer'}
-                    </Button>
-                    <Button
-                        onClick={handleFinish}
-                        className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 text-base font-semibold"
+                        <ArrowLeft className="w-6 h-6 text-slate-700 dark:text-zinc-300" />
+                    </button>
+                    <Button 
+                        onClick={() => setCurrentIndex(prev => prev + 1)}
+                        className="flex-1 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-lg font-bold shadow-xl shadow-blue-900/20 pointer-events-auto"
                     >
-                        <Save className="w-4 h-4 mr-2" /> Finish Workout
+                        {currentIndex === activeExercises.length - 1 ? 'Finish Exercises' : 'Next Exercise'}
                     </Button>
                 </div>
             )}
-
-            {/* Rest Timer */}
-            {showRestTimer && <RestTimer onClose={() => setShowRestTimer(false)} />}
 
             {/* Share Modal */}
             <ShareModal
