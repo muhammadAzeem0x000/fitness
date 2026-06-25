@@ -1,8 +1,12 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState, useDeferredValue } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { BarChart3 } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
+
+const DESKTOP_VISIBLE_NODES = 12;
+const MOBILE_VISIBLE_NODES = 6;
+const MOBILE_BREAKPOINT = 768;
 
 // Custom Premium Tooltip
 const CustomTooltip = ({ active, payload, label, formatWeightLabel }) => {
@@ -62,8 +66,21 @@ export function VolumeChart({ workouts }) {
                 fullDate: new Date(workout.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }),
                 type: workout.type || 'Workout'
             };
-        }).slice(-10);
+        });
     }, [workouts]);
+
+    const visibleNodes = isMobile ? MOBILE_VISIBLE_NODES : DESKTOP_VISIBLE_NODES;
+    const maxIndex = Math.max(0, data.length - visibleNodes);
+    
+    const [sliderValue, setSliderValue] = useState(maxIndex);
+
+    useEffect(() => {
+        setSliderValue(maxIndex);
+    }, [maxIndex]);
+
+    const deferredSliderValue = useDeferredValue(sliderValue);
+    const currentIndex = Math.round(deferredSliderValue);
+    const visibleData = data.slice(currentIndex, currentIndex + visibleNodes);
 
     // Ultimate Focus Killer: browsers draw thick focus rings on elements with tabindex.
     // Recharts forces tabindex="0" on its wrappers. Removing it completely stops the borders.
@@ -96,7 +113,9 @@ export function VolumeChart({ workouts }) {
                     <BarChart3 className="h-4 w-4 text-blue-400" />
                     Volume Load
                 </CardTitle>
-                <span className="text-[10px] text-slate-500 dark:text-zinc-500 font-medium bg-slate-100 dark:bg-zinc-800/50 px-2 py-1 rounded-md">Last 10 Sessions</span>
+                <span className="text-[10px] text-slate-500 dark:text-zinc-500 font-medium bg-slate-100 dark:bg-zinc-800/50 px-2 py-1 rounded-md">
+                    {data.length > visibleNodes ? 'History' : 'Recent'}
+                </span>
             </CardHeader>
             <CardContent className="pl-0 pr-0 sm:pl-2 sm:pr-2 flex-1 relative">
                 <style dangerouslySetInnerHTML={{__html: `
@@ -108,7 +127,7 @@ export function VolumeChart({ workouts }) {
                 <div ref={chartContainerRef} className="h-[260px] w-full mt-2 pointer-events-auto" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart 
-                            data={data} 
+                            data={visibleData} 
                             accessibilityLayer={false}
                             margin={isMobile ? { top: 10, right: 10, left: -5, bottom: 0 } : { top: 10, right: 20, left: 10, bottom: 0 }}
                             onMouseMove={(state) => {
@@ -159,6 +178,26 @@ export function VolumeChart({ workouts }) {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+                
+                {/* Custom History Slider */}
+                {data.length > visibleNodes && (
+                    <div className="px-8 pb-2 mt-4">
+                        <input
+                            type="range"
+                            min="0"
+                            max={maxIndex}
+                            step="any"
+                            value={sliderValue}
+                            onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+                            className="w-full h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer focus:outline-none focus:ring-0 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
+                            style={{ accentColor: '#3b82f6' }}
+                        />
+                        <div className="flex justify-between mt-2 text-[10px] text-slate-500 dark:text-zinc-500 px-1 font-medium">
+                            <span>Older</span>
+                            <span>Newer</span>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
