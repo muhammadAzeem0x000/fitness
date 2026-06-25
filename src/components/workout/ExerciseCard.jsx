@@ -195,59 +195,55 @@ export function ExerciseCard({ exercise, lastSession, onUpdateSets, defaultReps 
 
             <Card className="mb-4 border-0 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-xl ring-1 ring-slate-200 dark:ring-white/10 rounded-3xl overflow-hidden">
                 <CardContent className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2.5">
-                            {/* Exercise Thumbnail */}
-                            {exerciseImgData?.image_url ? (
-                                <div className="w-10 h-10 rounded-lg overflow-hidden flex-none border border-slate-200 dark:border-zinc-700">
-                                    <img
-                                        src={exerciseImgData.image_url}
-                                        alt={exercise}
-                                        className="w-full h-full object-cover hd-image"
-                                        loading="lazy"
-                                    />
-                                </div>
-                            ) : null}
-                            <div>
-                                <div className="flex items-center gap-1.5">
-                                    <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-200">{exercise}</h4>
-                                    <button
-                                        onClick={() => setIsVideoModalOpen(true)}
-                                        className="text-slate-400 dark:text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-1"
-                                        title="Watch Video Guide"
-                                    >
-                                        <PlayCircle className="w-4 h-4" />
-                                    </button>
+                    <div className="flex items-start gap-3 w-full mb-5">
+                        {/* Exercise Thumbnail */}
+                        {exerciseImgData?.image_url ? (
+                            <div className="w-14 h-14 rounded-xl overflow-hidden flex-none border border-slate-200 dark:border-zinc-700 shadow-sm bg-white dark:bg-zinc-900">
+                                <img
+                                    src={exerciseImgData.image_url}
+                                    alt={exercise}
+                                    className="w-full h-full object-cover hd-image"
+                                    loading="lazy"
+                                />
+                            </div>
+                        ) : null}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white leading-tight truncate">{exercise}</h4>
                                     {exerciseImgData && (
-                                        <button
-                                            onClick={() => setIsDetailModalOpen(true)}
-                                            className="text-slate-400 dark:text-zinc-500 hover:text-purple-500 dark:hover:text-purple-400 transition-colors p-1"
-                                            title="View exercise details & form guide"
-                                        >
-                                            <Info className="w-4 h-4" />
-                                        </button>
+                                        <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5 font-medium truncate">
+                                            {formatTarget(exerciseImgData.target)}{exerciseImgData.equipment ? ` • ${formatEquipment(exerciseImgData.equipment)}` : ''}
+                                        </p>
                                     )}
                                 </div>
+                                {/* Info Button - Top Right */}
                                 {exerciseImgData && (
-                                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
-                                        {formatTarget(exerciseImgData.target)}{exerciseImgData.equipment ? ` • ${formatEquipment(exerciseImgData.equipment)}` : ''}
-                                    </p>
+                                    <button
+                                        onClick={() => setIsDetailModalOpen(true)}
+                                        className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors shrink-0"
+                                        title="View exercise details"
+                                    >
+                                        <Info className="w-5 h-5" />
+                                    </button>
                                 )}
                             </div>
-                        </div>
-                        <div className="flex flex-col gap-1 items-end">
-                            {actualLastSession && (
-                                <div className="flex items-center gap-1 text-xs text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded border border-yellow-500/20" title="Last Session Best">
-                                    <History className="h-3 w-3" />
-                                    <span>Last: {getLastBestSet()}</span>
-                                </div>
-                            )}
-                            {historicalMax > 0 && (
-                                <div className="flex items-center gap-1 text-xs text-purple-400 bg-purple-500/10 px-2 py-1 rounded border border-purple-500/20" title="All-Time Best">
-                                    <Trophy className="h-3 w-3" />
-                                    <span>PR: {historicalMax}kg</span>
-                                </div>
-                            )}
+
+                            {/* History Badges */}
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                                {actualLastSession && (
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-yellow-500/20 bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 text-xs font-semibold">
+                                        <History className="h-3.5 w-3.5" />
+                                        <span>Last: {getLastBestSet()}</span>
+                                    </div>
+                                )}
+                                {historicalMax > 0 && (
+                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-purple-500/20 bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-semibold">
+                                        <Trophy className="h-3.5 w-3.5" />
+                                        <span>PR: {historicalMax}kg</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

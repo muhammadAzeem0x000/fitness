@@ -56,9 +56,16 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
         onBack();
     });
 
-    // Initialize State
+    const prevExercisesLength = React.useRef(initialExercises?.length || 0);
+
+    // Initialize State and Handle Navigation for newly added exercises
     useEffect(() => {
         if (initialExercises && initialExercises.length > 0) {
+            const prevLen = prevExercisesLength.current;
+            if (prevLen > 0 && initialExercises.length > prevLen) {
+                setCurrentIndex(prevLen);
+            }
+            prevExercisesLength.current = initialExercises.length;
             setActiveExercises(initialExercises);
         }
     }, [initialExercises]);
@@ -190,8 +197,9 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
     };
 
     return (
-        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-white dark:bg-slate-900 flex flex-col px-3 md:px-6 pb-2 animate-in slide-in-from-right-8 duration-500">
-            {/* Header (Fixed) */}
+        <div className="fixed top-[56px] left-0 right-0 bottom-0 z-[60] bg-white dark:bg-slate-900 flex justify-center animate-in slide-in-from-right-8 duration-500">
+            <div className="w-full max-w-2xl h-full flex flex-col relative px-3 md:px-6 pb-2">
+                {/* Header (Fixed) */}
             <div className="flex-none mb-4 space-y-3 border-b border-slate-200 dark:border-zinc-800/50 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -277,8 +285,6 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                                 variant="outline" 
                                 onClick={() => {
                                     onAddMore();
-                                    // Move index back so when they add, they see the new exercises
-                                    setCurrentIndex(activeExercises.length - 1);
                                 }} 
                                 className="w-full h-14 border-2 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 font-semibold rounded-2xl"
                             >
@@ -299,7 +305,8 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                     <button 
                         onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
                         disabled={currentIndex === 0}
-                        className="flex items-center justify-center h-14 w-20 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 disabled:opacity-30 pointer-events-auto shadow-lg transition-all"
+                        className="flex items-center justify-center h-14 w-16 rounded-2xl bg-slate-100 dark:bg-zinc-800/80 active:bg-slate-200 dark:active:bg-zinc-700 disabled:opacity-30 pointer-events-auto shadow-md transition-colors"
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                         <ArrowLeft className="w-6 h-6 text-slate-700 dark:text-zinc-300" />
                     </button>
@@ -377,6 +384,7 @@ export function ActiveSessionView({ routineName, initialExercises, onBack, onSav
                 achievement={unlockedAchievement} 
                 onClose={() => setUnlockedAchievement(null)} 
             />
+            </div>
         </div>
     );
 }

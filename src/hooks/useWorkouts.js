@@ -162,6 +162,33 @@ export function useWorkouts(userId, type = null) {
         }
     });
 
+    const deleteWorkoutLogMutation = useMutation({
+        mutationFn: async (logId) => {
+            const { error } = await supabase
+                .from('workout_logs')
+                .delete()
+                .eq('id', logId);
+            if (error) throw error;
+        },
+        onMutate: async (deletedId) => {
+            await queryClient.cancelQueries({ queryKey: ['workoutLogs', userId] });
+            const previousWorkouts = queryClient.getQueryData(['workoutLogs', userId]);
+
+            queryClient.setQueryData(['workoutLogs', userId], (old) => {
+                if (!old) return old;
+                return old.filter(w => w.id !== deletedId);
+            });
+
+            return { previousWorkouts };
+        },
+        onError: (err, newRoutine, context) => {
+            queryClient.setQueryData(['workoutLogs', userId], context.previousWorkouts);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['workoutLogs', userId] });
+        }
+    });
+
     return {
         workoutLogs,
         routines,
@@ -169,6 +196,7 @@ export function useWorkouts(userId, type = null) {
         lastWorkoutByType,
         isLoading: loadingLogs || loadingRoutines || loadingExercises || loadingLast,
         addWorkoutLog: addWorkoutLogMutation.mutateAsync,
-        addRoutine: addRoutineMutation.mutateAsync
+        addRoutine: addRoutineMutation.mutateAsync,
+        deleteWorkoutLog: deleteWorkoutLogMutation.mutateAsync
     };
 }

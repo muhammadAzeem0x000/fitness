@@ -1,13 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { History, ChevronRight, Calendar, Dumbbell, Loader2 } from 'lucide-react';
+import { History, ChevronRight, Calendar, Dumbbell, Loader2, X } from 'lucide-react';
 import { WorkoutDetailsDialog } from './WorkoutDetailsDialog';
+import { useWorkouts } from '../../hooks/useWorkouts';
+import { useAuth } from '../../hooks/useAuth';
 
 export function WorkoutHistoryList({ workouts }) {
     const [selectedWorkout, setSelectedWorkout] = useState(null);
     const [displayedCount, setDisplayedCount] = useState(6);
     const scrollContainerRef = useRef(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const { user } = useAuth();
+    const { deleteWorkoutLog } = useWorkouts(user?.id);
 
     // Filter out empty workouts if any
     const validWorkouts = workouts?.filter(w => w.exercises && Object.keys(w.exercises).length > 0) || [];
@@ -79,7 +83,21 @@ export function WorkoutHistoryList({ workouts }) {
                                             </div>
                                         </div>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-zinc-600 group-hover:text-slate-600 dark:group-hover:text-zinc-300 transition-colors" />
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm('Are you sure you want to permanently delete this workout?')) {
+                                                    deleteWorkoutLog(workout.id);
+                                                }
+                                            }}
+                                            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:text-zinc-600 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-full transition-colors z-10"
+                                            title="Delete workout"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-zinc-600 group-hover:text-slate-600 dark:group-hover:text-zinc-300 transition-colors" />
+                                    </div>
                                 </button>
                             ))
                         )}

@@ -106,8 +106,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     }
 
     // --- EXERCISE PICKER MODAL ---
-    if (showPicker) {
-        // Fallback: If DB is empty or failed to seed, use static defaults
+    const renderPicker = () => {
         let availableExercises = exercises;
         if (!availableExercises || availableExercises.length === 0) {
             availableExercises = Object.entries(DEFAULT_EXERCISES).flatMap(([category, names]) =>
@@ -119,31 +118,38 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
             <ExercisePicker
                 availableExercises={availableExercises}
                 initialSelection={selectedExercises}
-                onComplete={(exercises) => {
-                    setSelectedExercises(exercises);
+                onComplete={(newExercises) => {
+                    setSelectedExercises(newExercises);
                     setShowPicker(false);
                 }}
                 onBack={() => setShowPicker(false)}
             />
         );
+    };
+
+    if (showPicker && !isLogging) {
+        return renderPicker();
     }
 
     // --- ACTIVE LOGGING SESSION ---
     if (isLogging && selectedRoutine) {
         return (
-            <ActiveSessionView
-                routineName={selectedRoutine.name}
-                initialExercises={selectedExercises}
-                onBack={() => {
-                    setIsLogging(false);
-                    setSelectedRoutine(null);
-                    setSelectedExercises([]);
-                }}
-                onSave={handleSave}
-                onAddMore={() => setShowPicker(true)}
-                defaultReps={defaultReps}
-                exerciseHistory={workoutLogs}
-            />
+            <>
+                <ActiveSessionView
+                    routineName={selectedRoutine.name}
+                    initialExercises={selectedExercises}
+                    onBack={() => {
+                        setIsLogging(false);
+                        setSelectedRoutine(null);
+                        setSelectedExercises([]);
+                    }}
+                    onSave={handleSave}
+                    onAddMore={() => setShowPicker(true)}
+                    defaultReps={defaultReps}
+                    exerciseHistory={workoutLogs}
+                />
+                {showPicker && renderPicker()}
+            </>
         );
     }
 
