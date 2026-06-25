@@ -9,6 +9,7 @@ import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
 import { initNativeFeatures } from './lib/native';
 import { useHardwareBackButton } from './hooks/useHardwareBackButton';
+import { isNativePlatform } from './lib/platform';
 import appLogo from './assets/logo.png';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
@@ -156,7 +157,7 @@ const AppContent = () => {
         {/* Public Marketing Page */}
         <Route path="/" element={
           <PublicRoute>
-            <LandingPage />
+            {isNativePlatform() ? <Navigate to="/auth" replace /> : <LandingPage />}
           </PublicRoute>
         } />
 

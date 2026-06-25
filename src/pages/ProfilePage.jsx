@@ -324,7 +324,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Body Metrics Section */}
-            <CollapsibleSection title="Body Metrics" icon={Ruler} defaultOpen={true}>
+            <CollapsibleSection title="Body Metrics" icon={Ruler} defaultOpen={false}>
                 <div>
                     <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
                         Log Today's Weight ({formatWeightLabel()})
@@ -484,7 +484,7 @@ export default function ProfilePage() {
                 {/* Redesigned Health Sync Card */}
                 <div className={`relative overflow-hidden rounded-2xl border ${
                     isHealthConnected 
-                        ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-teal-950/30' 
+                        ? 'border-emerald-500/30 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-teal-950/30' 
                         : 'border-slate-200 dark:border-zinc-700 bg-gradient-to-br from-slate-50 dark:from-zinc-900 to-slate-100 dark:to-zinc-800/50'
                 }`}>
                     {/* Animated glow for connected state */}
@@ -534,20 +534,20 @@ export default function ProfilePage() {
                             <>
                                 {/* Today's Health Summary */}
                                 <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                                        <Footprints className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-                                        <p className="text-base font-bold text-white">{todayHealth.steps.toLocaleString()}</p>
-                                        <p className="text-[10px] text-zinc-500">Steps</p>
+                                    <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center">
+                                        <Footprints className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mx-auto mb-1" />
+                                        <p className="text-base font-bold text-slate-900 dark:text-white">{todayHealth.steps.toLocaleString()}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-zinc-500">Steps</p>
                                     </div>
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                                        <Moon className="w-4 h-4 text-indigo-400 mx-auto mb-1" />
-                                        <p className="text-base font-bold text-white">{todayHealth.sleep_hours}h</p>
-                                        <p className="text-[10px] text-zinc-500">Sleep</p>
+                                    <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center">
+                                        <Moon className="w-4 h-4 text-indigo-500 dark:text-indigo-400 mx-auto mb-1" />
+                                        <p className="text-base font-bold text-slate-900 dark:text-white">{todayHealth.sleep_hours}h</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-zinc-500">Sleep</p>
                                     </div>
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                                        <Flame className="w-4 h-4 text-orange-400 mx-auto mb-1" />
-                                        <p className="text-base font-bold text-white">{todayHealth.active_calories}</p>
-                                        <p className="text-[10px] text-zinc-500">Calories</p>
+                                    <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center">
+                                        <Flame className="w-4 h-4 text-orange-500 dark:text-orange-400 mx-auto mb-1" />
+                                        <p className="text-base font-bold text-slate-900 dark:text-white">{todayHealth.active_calories}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-zinc-500">Calories</p>
                                     </div>
                                 </div>
 

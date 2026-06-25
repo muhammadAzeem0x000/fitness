@@ -32,7 +32,7 @@ export function Dashboard() {
     const { profile, updateHeight, isLoading: profileLoading } = useProfile(user?.id);
     const { weightHistory, addWeightEntry, isLoading: weightLoading } = useWeight(user?.id);
     const { workoutLogs, isLoading: workoutsLoading } = useWorkouts(user?.id);
-    
+
     const { syncNow, isSyncing, lastSynced, refreshKey } = useHealthSync(user?.id);
     const { metrics: healthMetrics } = useHealthMetrics(user?.id, 7, refreshKey);
 
