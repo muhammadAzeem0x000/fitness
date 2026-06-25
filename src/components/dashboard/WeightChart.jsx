@@ -161,7 +161,7 @@ export function WeightChart({ data }) {
                                     strokeWidth={3}
                                     fillOpacity={1}
                                     fill="url(#colorWeight)"
-                                    dot={false}
+                                    dot={{ r: 3, strokeWidth: 2, fill: 'white', stroke: '#3b82f6' }}
                                     activeDot={<CustomActiveDot />}
                                     animationDuration={500}
                                     style={{ pointerEvents: 'none' }}
