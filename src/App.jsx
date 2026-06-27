@@ -11,6 +11,8 @@ import { initNativeFeatures } from './lib/native';
 import { useHardwareBackButton } from './hooks/useHardwareBackButton';
 import { isNativePlatform } from './lib/platform';
 import appLogo from './assets/logo.png';
+import { ThemeProvider } from './context/ThemeContext';
+import { initRevenueCat } from './lib/revenuecat';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -41,7 +43,6 @@ const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
 const OnboardingPage = lazyWithRetry(() => import('./pages/OnboardingPage'));
 const SharedWorkout = lazyWithRetry(() => import('./pages/SharedWorkout').then(module => ({ default: module.SharedWorkout })));
 const Pricing = lazyWithRetry(() => import('./pages/Pricing').then(module => ({ default: module.Pricing })));
-const Success = lazyWithRetry(() => import('./pages/Success').then(module => ({ default: module.Success })));
 const NutritionPage = lazyWithRetry(() => import('./pages/NutritionPage').then(module => ({ default: module.NutritionPage })));
 const LeaderboardPage = lazyWithRetry(() => import('./pages/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
 const AnalyticsPage = lazyWithRetry(() => import('./pages/AnalyticsPage'));
@@ -178,7 +179,6 @@ const AppContent = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/success" element={<Success />} />
         </Route>
 
         {/* Onboarding - Separate because it might have different layout or no layout */}
@@ -197,11 +197,10 @@ const AppContent = () => {
   );
 };
 
-import { ThemeProvider } from './context/ThemeContext';
-
 function App() {
   useEffect(() => {
     initNativeFeatures();
+    initRevenueCat(null); // Init anonymously first, Auth will log them in
   }, []);
 
   return (

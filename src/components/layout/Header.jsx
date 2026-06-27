@@ -23,11 +23,7 @@ export function Header() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const hasUsedTrial = isTrialExpired ||
-        subscription?.status === 'canceled' ||
-        subscription?.status === 'past_due' ||
-        subscription?.status === 'active' ||
-        !!subscription?.stripe_subscription_id;
+    const hasUsedTrial = false;
 
     const NavLink = ({ to, icon: Icon, label, description, isPrimary }) => {
         const isActive = location.pathname === to;

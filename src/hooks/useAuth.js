@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '../lib/supabase';
+import { loginRevenueCat, logoutRevenueCat } from '../lib/revenuecat';
 
 const AuthContext = createContext({
     user: null,
@@ -37,6 +38,7 @@ export function AuthProvider({ children }) {
     }, []);
 
     const signOut = async () => {
+        await logoutRevenueCat();
         await supabase.auth.signOut();
     };
 

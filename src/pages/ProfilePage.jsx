@@ -60,11 +60,7 @@ export default function ProfilePage() {
     const { addWeightEntry } = useWeight(user?.id);
     const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
     
-    const hasUsedTrial = isTrialExpired ||
-        subscription?.status === 'canceled' ||
-        subscription?.status === 'past_due' ||
-        subscription?.status === 'active' ||
-        !!subscription?.stripe_subscription_id;
+    const hasUsedTrial = false;
 
     const { convertWeightToDb, displayWeight, formatWeightLabel } = useUserPreferences();
 
@@ -683,24 +679,8 @@ export default function ProfilePage() {
                                 size="sm"
                                 variant="outline"
                                 className="h-9 px-4 text-xs gap-1.5 rounded-xl border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-zinc-800"
-                                disabled={portalLoading}
-                                onClick={async () => {
-                                    try {
-                                        setPortalLoading(true);
-                                        const { supabase } = await import('../lib/supabase');
-                                        const { data, error } = await supabase.functions.invoke('create-portal-session', {
-                                            body: { customerId: subscription?.stripe_customer_id }
-                                        });
-                                        if (error) throw error;
-                                        if (data?.url) window.open(data.url, '_blank');
-                                    } catch (err) {
-                                        toast.error("Failed to open subscription portal");
-                                    } finally {
-                                        setPortalLoading(false);
-                                    }
-                                }}
+                                onClick={() => navigate('/pricing')}
                             >
-                                {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
                                 Manage
                             </Button>
                         ) : (

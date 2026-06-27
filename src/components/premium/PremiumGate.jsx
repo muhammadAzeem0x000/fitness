@@ -23,11 +23,7 @@ export function PremiumGate({
     const { isPremium, isLoading, subscription, isTrialExpired } = useSubscription();
     const navigate = useNavigate();
 
-    const hasUsedTrial = isTrialExpired ||
-        subscription?.status === 'canceled' ||
-        subscription?.status === 'past_due' ||
-        subscription?.status === 'active' ||
-        !!subscription?.stripe_subscription_id;
+    const hasUsedTrial = false;
 
     // Show loading state
     if (isLoading) {

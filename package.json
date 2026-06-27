@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "build:android": "npm run build && npx cap sync android && cd android && java -classpath \"gradle\\wrapper\\gradle-wrapper.jar\" org.gradle.wrapper.GradleWrapperMain assembleRelease",
+    "build:android": "npm run build && npx cap sync android && cd android && java -classpath \"gradle\\wrapper\\gradle-wrapper.jar\" org.gradle.wrapper.GradleWrapperMain assembleDebug",
+    "build:android:release": "npm run build && npx cap sync android && cd android && java -classpath \"gradle\\wrapper\\gradle-wrapper.jar\" org.gradle.wrapper.GradleWrapperMain assembleRelease",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -22,7 +23,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
-    "@stripe/stripe-js": "^8.7.0",
+    "@revenuecat/purchases-capacitor": "^13.2.0",
     "@supabase/supabase-js": "^2.91.1",
     "@tanstack/query-sync-storage-persister": "^5.101.0",
     "@tanstack/react-query": "^5.90.20",
@@ -42,7 +43,6 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
-    "stripe": "^20.3.1",
     "supabase": "^2.76.4",
     "tailwind-merge": "^3.4.0",
     "three": "^0.184.0",

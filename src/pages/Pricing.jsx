@@ -1,421 +1,231 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Check, Sparkles, Zap, TrendingUp, Lock, AlertTriangle, Loader2 } from 'lucide-react';
+import { Check, Sparkles, Zap, TrendingUp, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useSubscription } from '../hooks/useSubscription';
-import { supabase } from '../lib/supabase';
-import { getStripe } from '../lib/stripe';
-
-// Hardcoded fallback price IDs — used when VITE_STRIPE_PRICE_* env vars
-// are not available (e.g., production builds on Vercel where env vars
-// weren't configured in the hosting dashboard).
-const FALLBACK_PRICE_MONTHLY = 'price_1TfEmAESf91DrGyECyyO6c9d';
-const FALLBACK_PRICE_YEARLY = 'price_1TfEnwESf91DrGyE4XWhZzVs';
-
-function getStripePriceId(envKey, fallback) {
-    const envValue = import.meta.env[envKey];
-    if (envValue) return envValue;
-    console.warn(`⚠️ Environment variable ${envKey} is not set, using fallback price ID: ${fallback}`);
-    return fallback;
-}
+import { getOfferings, purchasePackage, restorePurchases } from '../lib/revenuecat';
+import { isNativePlatform } from '../lib/platform';
+import { useToast } from '../context/ToastContext';
 
 export function Pricing() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { subscription, isPremium, isTrialExpired, isTrialing, isLoading: subLoading } = useSubscription();
-    const [loadingPlanId, setLoadingPlanId] = useState(null);
+    const { toast } = useToast();
+
+    const [offerings, setOfferings] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [purchasing, setPurchasing] = useState(null);
     const [error, setError] = useState(null);
 
-    // Determine if user has already used a trial (expired trial, or any non-inactive/non-free subscription)
-    const hasUsedTrial = isTrialExpired ||
-        subscription?.status === 'canceled' ||
-        subscription?.status === 'past_due' ||
-        subscription?.status === 'active' ||
-        !!subscription?.stripe_subscription_id;
+    useEffect(() => {
+        async function fetchOfferings() {
+            if (!isNativePlatform()) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const fetchedOfferings = await getOfferings();
+                if (fetchedOfferings?.current) {
+                    setOfferings(fetchedOfferings.current);
+                } else {
+                    setError("No packages available at this time.");
+                }
+            } catch (err) {
+                console.error("Error fetching offerings:", err);
+                setError("Failed to load subscription plans.");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchOfferings();
+    }, []);
 
-    const handleSubscribe = async (priceId, planName) => {
+    const handlePurchase = async (pkg) => {
         if (!user) {
             navigate('/auth');
             return;
         }
 
-        setLoadingPlanId(planName);
-        setError(null);
-
         try {
-            console.log('🔵 Starting checkout with priceId:', priceId);
-            console.log('🔵 User:', user.email);
+            setPurchasing(pkg.identifier);
+            setError(null);
 
-            // Force refresh the session to get a valid access token
-            // getSession() can return stale/expired tokens from cache
-            const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
-            if (sessionError || !session?.access_token) {
-                console.error('Session refresh failed:', sessionError);
-                throw new Error('Session expired. Please log in again.');
-            }
-            console.log('🔵 Session refreshed, token valid until:', new Date(session.expires_at * 1000).toLocaleString());
-
-            console.log('🔵 Making direct fetch to edge function...');
-
-            // Use direct fetch instead of SDK
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
-                        'Content-Type': 'application/json',
-                        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-                    },
-                    body: JSON.stringify({ priceId })
-                }
-            );
-
-            console.log('🔵 Response status:', response.status);
-
-            const data = await response.json();
-            console.log('🔵 Response data:', data);
-
-            const error = response.ok ? null : data;
-
-            if (error) {
-                console.error('❌ Edge function error:', error);
-                throw new Error(`Edge function failed: ${JSON.stringify(error)}`);
-            }
-
-            if (!data?.url) {
-                console.error('❌ No checkout URL in response:', data);
-                throw new Error('No checkout URL returned');
-            }
-
-            console.log('🔵 Got checkout URL, redirecting to Stripe...');
-
-            // Use direct redirect instead of deprecated stripe.redirectToCheckout
-            window.location.href = data.url;
-        } catch (err) {
-            console.error('💥 Checkout error:', err);
-            setError(err.message || 'Failed to start checkout');
-        } finally {
-            setLoadingPlanId(null);
-        }
-    };
-
-    // For premium users wanting to switch plans, open the Stripe Portal instead
-    const handleManagePlan = async (planName) => {
-        if (!subscription?.stripe_customer_id) {
-            setError('No subscription found. Please contact support.');
-            return;
-        }
-
-        setLoadingPlanId(planName);
-        setError(null);
-
-        try {
-            const { data, error } = await supabase.functions.invoke('create-portal-session', {
-                body: { customerId: subscription.stripe_customer_id }
-            });
-
-            if (error) throw error;
-
-            if (data?.url) {
-                window.location.href = data.url;
+            const customerInfo = await purchasePackage(pkg);
+            if (customerInfo?.entitlements.active['MuscleBot Pro']) {
+                toast.success("Welcome to MuscleBot Pro!");
+                navigate('/dashboard');
             }
         } catch (err) {
-            console.error('💥 Portal error:', err);
-            setError(err.message || 'Failed to open subscription management');
-        } finally {
-            setLoadingPlanId(null);
-        }
-    };
-
-    // Route to the right action based on subscription state
-    const handlePlanAction = (plan) => {
-        if (!plan.priceId) {
-            if (!plan.disabled) {
-                setError('Configuration error: missing price ID. Please contact support.');
+            if (!err.userCancelled) {
+                console.error('Purchase error:', err);
+                setError(err.message || 'Purchase failed');
             }
-            return;
-        }
-
-        if (isPremium && !isProDisabled(plan.interval)) {
-            // Premium user clicking "Switch Plan" — go to portal
-            handleManagePlan(plan.name);
-        } else {
-            // New/returning user — go to checkout
-            handleSubscribe(plan.priceId, plan.name);
+        } finally {
+            setPurchasing(null);
         }
     };
 
-    // Actual price IDs for comparison — use env vars with hardcoded fallbacks
-    const monthlyPriceId = getStripePriceId('VITE_STRIPE_PRICE_MONTHLY', FALLBACK_PRICE_MONTHLY);
-    const yearlyPriceId = getStripePriceId('VITE_STRIPE_PRICE_YEARLY', FALLBACK_PRICE_YEARLY);
-
-    // Determine CTA labels and states based on subscription status
-    const getProCta = (planInterval) => {
-        if (isPremium && isTrialing) return 'Currently Trialing';
-        if (isPremium) {
-            // Check if this is the current plan by comparing actual price IDs
-            const isCurrentPlan = planInterval === 'month'
-                ? subscription?.plan_id === monthlyPriceId
-                : subscription?.plan_id === yearlyPriceId;
-            return isCurrentPlan ? 'Current Plan' : 'Switch Plan';
+    const handleRestore = async () => {
+        try {
+            setLoading(true);
+            const customerInfo = await restorePurchases();
+            if (customerInfo?.entitlements.active['MuscleBot Pro']) {
+                toast.success("Purchases restored successfully!");
+                navigate('/dashboard');
+            } else {
+                toast.error("No active subscriptions found to restore.");
+            }
+        } catch (err) {
+            console.error('Restore error:', err);
+            setError(err.message || 'Failed to restore purchases');
+        } finally {
+            setLoading(false);
         }
-        if (hasUsedTrial) return 'Subscribe Now';
-        return 'Start Free Trial';
     };
 
-    const isProDisabled = (planInterval) => {
-        if (isPremium) {
-            const isCurrentPlan = planInterval === 'month'
-                ? subscription?.plan_id === monthlyPriceId
-                : subscription?.plan_id === yearlyPriceId;
-            return isCurrentPlan; // Disable only if it's their current plan
-        }
-        return false;
-    };
-
-    const plans = [
-        {
-            name: 'Free',
-            price: 0,
-            description: 'Perfect for getting started',
-            features: [
-                'Basic workout logging',
-                'Last 10 workouts only',
-                '1 free AI report per month',
-                'Basic exercise library',
-                'Weight tracking',
-            ],
-            limitations: [
-                'No advanced charts',
-                'No streak tracking',
-                'No personal records',
-                'Limited workout history',
-            ],
-            cta: 'Current Plan',
-            disabled: true,
-        },
-        {
-            name: 'Pro Monthly',
-            price: 4.99,
-            priceId: monthlyPriceId,
-            description: 'Full access to MuscleBot',
-            interval: 'month',
-            popular: true,
-            features: [
-                'Unlimited AI Coach reports',
-                'Advanced progress charts',
-                'Streak tracking & achievements',
-                'Personal records tracking',
-                'Muscle activation heatmap',
-                'Unlimited workout history',
-                'Custom routine builder',
-                'Priority support',
-            ],
-            cta: getProCta('month'),
-            disabled: isProDisabled('month'),
-            badge: 'Most Popular',
-        },
-        {
-            name: 'Pro Yearly',
-            price: 49.99,
-            priceId: yearlyPriceId,
-            description: 'Best value - Save $10',
-            interval: 'year',
-            savings: '$10',
-            features: [
-                'Everything in Pro Monthly',
-                'Save $10 per year (~16% off)',
-                'Annual billing',
-                'Best value option',
-            ],
-            cta: getProCta('year'),
-            disabled: isProDisabled('year'),
-            badge: 'Best Value',
-        },
-    ];
+    // Render Web Fallback
+    if (!isNativePlatform()) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
+                <div className="max-w-md text-center">
+                    <Sparkles className="w-16 h-16 text-blue-400 mx-auto mb-6" />
+                    <h1 className="text-3xl font-bold mb-4">MuscleBot Pro</h1>
+                    <p className="text-zinc-400 mb-8 leading-relaxed">
+                        All premium features are currently free on the web version.
+                        To manage subscriptions or support development, please use our mobile app.
+                    </p>
+                    <Button onClick={() => navigate('/dashboard')} size="lg" className="w-full">
+                        Go to Dashboard
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white">
-            {/* Header */}
-            <div className="border-b border-zinc-800 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-200">
+            <div className="border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        <button onClick={() => navigate('/dashboard')} className="text-zinc-400 hover:text-white">
+                        <button onClick={() => navigate('/dashboard')} className="text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors">
                             ← Back to Dashboard
+                        </button>
+                        <button onClick={handleRestore} className="text-sm font-medium text-blue-400 hover:text-blue-300">
+                            Restore Purchases
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                {/* Header Section */}
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <div className="text-center mb-16">
-                    {/* Show trial expired banner if applicable */}
-                    {isTrialExpired && (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium mb-6">
-                            <AlertTriangle className="w-4 h-4" />
-                            Your free trial has ended — Subscribe to continue using Pro features
-                        </div>
-                    )}
-
-                    {/* Show free trial banner only for users who haven't used a trial yet */}
-                    {!hasUsedTrial && !isPremium && (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
-                            <Sparkles className="w-4 h-4" />
-                            14-Day Free Trial • No Credit Card Required Upfront
-                        </div>
-                    )}
-
-                    {/* Show active trial banner if currently trialing */}
-                    {isTrialing && (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
-                            <Sparkles className="w-4 h-4" />
-                            You're on a free trial — Ends {new Date(subscription?.current_period_end).toLocaleDateString()}
-                        </div>
-                    )}
-
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Fitness Plan</span>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900 dark:text-white">
+                        Unlock <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-400 dark:to-purple-500">Your Potential</span>
                     </h1>
-
-                    <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-                        {isTrialExpired
-                            ? 'Your trial is over — pick a plan to keep unlocking your full potential'
-                            : hasUsedTrial
-                                ? 'Subscribe to unlock AI-powered coaching and advanced analytics'
-                                : 'Start free and upgrade anytime to unlock AI-powered coaching and advanced analytics'
-                        }
+                    <p className="text-xl text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto">
+                        Get AI-powered coaching, advanced analytics, and unlimited workouts.
                     </p>
                 </div>
 
-                {/* Error Display */}
                 {error && (
-                    <div className="max-w-2xl mx-auto mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                        {error}
+                    <div className="max-w-2xl mx-auto mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 shrink-0" />
+                        <p className="text-sm">{error}</p>
                     </div>
                 )}
 
-                {/* Pricing Cards */}
-                <div className="grid md:grid-cols-3 gap-8 mb-16">
-                    {plans.map((plan, index) => (
-                        <div
-                            key={plan.name}
-                            className={`relative rounded-2xl p-8 ${plan.popular
-                                ? 'bg-gradient-to-b from-blue-900/20 to-slate-900 border-2 border-blue-500/50 shadow-2xl shadow-blue-500/20'
-                                : 'bg-slate-900 border border-zinc-800'
-                                }`}
-                        >
-                            {/* Badge */}
-                            {plan.badge && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                                    <div className="px-4 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold shadow-lg">
-                                        {plan.badge}
-                                    </div>
-                                </div>
-                            )}
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-4" />
+                        <p className="text-slate-500 dark:text-zinc-400 font-medium">Loading plans...</p>
+                    </div>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 max-w-4xl mx-auto justify-center">
+                        {offerings?.availablePackages.map((pkg) => {
+                            const isLifetime = pkg.packageType === 'LIFETIME';
+                            const isAnnual = pkg.packageType === 'ANNUAL';
 
-                            {/* Plan Header */}
-                            <div className="mb-6">
-                                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                                <p className="text-zinc-400 text-sm mb-4">{plan.description}</p>
-
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold">${plan.price}</span>
-                                    {plan.interval && (
-                                        <span className="text-zinc-400">/{plan.interval}</span>
+                            return (
+                                <div key={pkg.identifier} className={`relative rounded-2xl p-6 ${isAnnual ? 'bg-gradient-to-b from-blue-50 dark:from-blue-900/20 to-white dark:to-slate-900 border-2 border-blue-500 shadow-xl shadow-blue-500/10 md:scale-105 z-10' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-zinc-800'}`}>
+                                    {isAnnual && (
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                            <div className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[10px] font-bold shadow-lg uppercase tracking-wider">
+                                                Best Value
+                                            </div>
+                                        </div>
                                     )}
-                                </div>
+                                    {isLifetime && (
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                            <div className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold shadow-lg uppercase tracking-wider">
+                                                One-Time
+                                            </div>
+                                        </div>
+                                    )}
 
-                                {plan.savings && (
-                                    <div className="mt-2 text-green-400 text-sm font-medium">
-                                        Save {plan.savings} per year
+                                    <div className="mb-6">
+                                        <h3 className="text-xl font-bold mb-1 text-slate-900 dark:text-white">{pkg.product.title}</h3>
+                                        <p className="text-slate-500 dark:text-zinc-400 text-xs h-10">{pkg.product.description}</p>
+                                        <div className="flex items-baseline gap-1 mt-4 text-slate-900 dark:text-white">
+                                            <span className="text-3xl font-bold">{pkg.product.priceString}</span>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Features */}
-                            <ul className="space-y-3 mb-8">
-                                {plan.features.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-3 text-sm">
-                                        <Check className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-                                        <span className="text-zinc-300">{feature}</span>
-                                    </li>
-                                ))}
+                                    <ul className="space-y-3 mb-8">
+                                        <li className="flex items-start gap-2 text-sm">
+                                            <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
+                                            <span className="text-slate-700 dark:text-zinc-300">Unlimited AI Coach reports</span>
+                                        </li>
+                                        <li className="flex items-start gap-2 text-sm">
+                                            <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
+                                            <span className="text-slate-700 dark:text-zinc-300">Advanced progress charts</span>
+                                        </li>
+                                        <li className="flex items-start gap-2 text-sm">
+                                            <Check className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
+                                            <span className="text-slate-700 dark:text-zinc-300">Streak tracking & achievements</span>
+                                        </li>
+                                    </ul>
 
-                                {plan.limitations?.map((limitation) => (
-                                    <li key={limitation} className="flex items-start gap-3 text-sm opacity-50">
-                                        <Lock className="w-5 h-5 text-zinc-600 shrink-0 mt-0.5" />
-                                        <span className="text-zinc-500 line-through">{limitation}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            {/* CTA Button */}
-                            <Button
-                                onClick={() => handlePlanAction(plan)}
-                                disabled={plan.disabled || !!loadingPlanId || subLoading}
-                                className={`w-full ${plan.disabled
-                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white'
-                                    }`}
-                                size="lg"
-                            >
-                                {loadingPlanId === plan.name ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        Redirecting to Stripe...
-                                    </span>
-                                ) : (
-                                    plan.cta
-                                )}
-                            </Button>
-                        </div>
-                    ))}
-                </div>
+                                    <Button
+                                        onClick={() => handlePurchase(pkg)}
+                                        disabled={!!purchasing}
+                                        className={`w-full ${isAnnual ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-500 dark:hover:to-blue-400 text-white' : 'bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white'}`}
+                                    >
+                                        {purchasing === pkg.identifier ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Subscribe Now'}
+                                    </Button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
                 {/* Feature Comparison */}
-                <div className="bg-slate-900 border border-zinc-800 rounded-2xl p-8">
-                    <h2 className="text-2xl font-bold mb-8 text-center">What You Get with Pro</h2>
-
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-zinc-800 rounded-2xl p-8 max-w-4xl mx-auto mb-12 shadow-sm">
+                    <h2 className="text-2xl font-bold mb-8 text-center text-slate-900 dark:text-white">What You Get with Pro</h2>
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="text-center">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/10 flex items-center justify-center">
-                                <Zap className="w-8 h-8 text-blue-400" />
+                            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
+                                <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <h3 className="font-bold mb-2">AI-Powered Insights</h3>
-                            <p className="text-sm text-zinc-400">
-                                Get personalized coaching reports analyzing your progress, volume, and recovery
-                            </p>
+                            <h3 className="font-bold mb-2 text-slate-900 dark:text-white">AI-Powered Insights</h3>
+                            <p className="text-sm text-slate-600 dark:text-zinc-400">Personalized coaching reports analyzing your progress.</p>
                         </div>
-
                         <div className="text-center">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500/10 flex items-center justify-center">
-                                <TrendingUp className="w-8 h-8 text-purple-400" />
+                            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
+                                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <h3 className="font-bold mb-2">Advanced Analytics</h3>
-                            <p className="text-sm text-zinc-400">
-                                Track strength gains, volume load, and body weight trends with interactive charts
-                            </p>
+                            <h3 className="font-bold mb-2 text-slate-900 dark:text-white">Advanced Analytics</h3>
+                            <p className="text-sm text-slate-600 dark:text-zinc-400">Track strength gains, volume load, and body weight trends.</p>
                         </div>
-
                         <div className="text-center">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
-                                <Sparkles className="w-8 h-8 text-green-400" />
+                            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-green-500/10 flex items-center justify-center">
+                                <Sparkles className="w-6 h-6 text-emerald-600 dark:text-green-400" />
                             </div>
-                            <h3 className="font-bold mb-2">Unlimited Everything</h3>
-                            <p className="text-sm text-zinc-400">
-                                No limits on workouts, routines, or AI reports. Track your entire fitness journey
-                            </p>
+                            <h3 className="font-bold mb-2 text-slate-900 dark:text-white">Unlimited Everything</h3>
+                            <p className="text-sm text-slate-600 dark:text-zinc-400">No limits on workouts, routines, or AI reports.</p>
                         </div>
                     </div>
                 </div>
-
-                {/* FAQ or Testimonials could go here */}
             </div>
         </div>
     );
 }
-
-/**recommiting */

@@ -1,10 +1,17 @@
 import OpenAI from 'openai';
 
 const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
+const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
 
 const openai = new OpenAI({
     apiKey: apiKey,
     baseURL: 'https://api.deepseek.com/v1',
+    dangerouslyAllowBrowser: true
+});
+
+const groqClient = new OpenAI({
+    apiKey: groqApiKey,
+    baseURL: 'https://api.groq.com/openai/v1',
     dangerouslyAllowBrowser: true
 });
 
@@ -353,10 +360,10 @@ RESPONSE FORMAT (strict JSON):
 
 /**
  * Parses natural language food descriptions into estimated calories and macros.
- * Uses DeepSeek to return a strict JSON object.
+ * Uses Groq to return a strict JSON object.
  */
 export async function analyzeFoodInput(text) {
-    if (!apiKey) throw new Error("Missing DeepSeek API Key");
+    if (!groqApiKey) throw new Error("Missing Groq API Key");
 
     const prompt = `
     You are a professional sports nutritionist and calorie estimator API.
@@ -384,11 +391,12 @@ export async function analyzeFoodInput(text) {
     `;
 
     try {
-        const response = await openai.chat.completions.create({
-            model: "deepseek-v4-pro", // Pro model for better world knowledge of food macros
+        const response = await groqClient.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.2,
-            max_tokens: 2000
+            max_tokens: 500,
+            response_format: { type: "json_object" }
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";

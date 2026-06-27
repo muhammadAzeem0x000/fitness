@@ -7,9 +7,9 @@
 create table if not exists public.subscriptions (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
-  stripe_customer_id text unique,
-  stripe_subscription_id text unique,
-  status text not null default 'inactive', 
+  revenuecat_app_user_id text unique,
+  revenuecat_entitlement_id text,
+  status text not null default 'inactive',
   -- Status values: 'active', 'canceled', 'past_due', 'trialing', 'inactive'
   plan_id text, 
   -- Plan IDs: 'pro_monthly', 'pro_yearly', 'free'
@@ -38,7 +38,7 @@ create policy "Users can insert own subscription"
 
 -- Indexes for performance
 create index if not exists subscriptions_user_id_idx on public.subscriptions(user_id);
-create index if not exists subscriptions_stripe_customer_id_idx on public.subscriptions(stripe_customer_id);
+create index if not exists subscriptions_rc_app_user_id_idx on public.subscriptions(revenuecat_app_user_id);
 create index if not exists subscriptions_status_idx on public.subscriptions(status);
 
 -- 2. Add premium fields to profiles table
@@ -112,18 +112,18 @@ where not exists (
 );
 
 -- Comments for documentation
-comment on table public.subscriptions is 'Stores user subscription data from Stripe';
+comment on table public.subscriptions is 'Stores user subscription data from RevenueCat';
 comment on table public.feature_usage is 'Tracks usage of rate-limited features for free users';
-comment on column public.subscriptions.status is 'Stripe subscription status: active, canceled, past_due, trialing, inactive';
-comment on column public.subscriptions.stripe_customer_id is 'Stripe customer ID for payment management';
-comment on column public.subscriptions.stripe_subscription_id is 'Stripe subscription ID for webhook updates';
+comment on column public.subscriptions.status is 'RevenueCat subscription status: active, canceled, past_due, trialing, inactive';
+comment on column public.subscriptions.revenuecat_app_user_id is 'RevenueCat App User ID for payment management';
+comment on column public.subscriptions.revenuecat_entitlement_id is 'RevenueCat entitlement ID for webhook updates';
 
 -- Success message
 do $$
 begin
   raise notice 'Subscription schema created successfully!';
   raise notice 'Next steps:';
-  raise notice '1. Create Stripe account and get API keys';
-  raise notice '2. Add VITE_STRIPE_PUBLIC_KEY and STRIPE_SECRET_KEY to .env.local';
-  raise notice '3. Install Stripe SDK: npm install @stripe/stripe-js';
+  raise notice '1. Create RevenueCat account and get API keys';
+  raise notice '2. Add VITE_REVENUECAT_API_KEY to .env.local';
+  raise notice '3. Install RevenueCat SDK: npm install @revenuecat/purchases-capacitor';
 end $$;
