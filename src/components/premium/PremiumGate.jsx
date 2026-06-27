@@ -25,17 +25,8 @@ export function PremiumGate({
 
     const hasUsedTrial = false;
 
-    // Show loading state
-    if (isLoading) {
-        return (
-            <div className="animate-pulse bg-zinc-900/50 rounded-xl border border-zinc-800 h-64" />
-        );
-    }
-
-    // User has premium access - show content
-    if (isPremium) {
-        return <>{children}</>;
-    }
+    // Temporarily bypass premium lock screen while waiting for Google Play verification
+    return <>{children}</>;
 
     // User needs to upgrade - show gate
     if (fallback) {
