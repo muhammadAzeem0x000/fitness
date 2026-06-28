@@ -455,27 +455,12 @@ export default function ProfilePage() {
                 </div>
             </CollapsibleSection>
 
-            {/* Gamification & Health */}
+            {/* Health Sync */}
             <CollapsibleSection 
-                title="Achievements & Sync" 
-                icon={Trophy} 
+                title="Health & Device Sync" 
+                icon={Activity} 
                 defaultOpen={false} 
-                extraHeader={<span className="text-[10px] text-blue-500 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full">1 / 5</span>}
             >
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                    <div className="aspect-square bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-inner relative group cursor-pointer">
-                        <Trophy className="w-6 h-6 text-white drop-shadow" />
-                        <div className="absolute inset-0 bg-black/80 text-white text-[10px] p-1 flex items-center justify-center text-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
-                            First Step
-                        </div>
-                    </div>
-                    {/* Locked badges */}
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="aspect-square bg-slate-100 dark:bg-zinc-800 rounded-xl flex items-center justify-center opacity-50 relative group cursor-pointer border border-slate-200 dark:border-zinc-700">
-                            <Lock className="w-5 h-5 text-slate-400 dark:text-zinc-600" />
-                        </div>
-                    ))}
-                </div>
 
                 {/* Redesigned Health Sync Card */}
                 <div className={`relative overflow-hidden rounded-2xl border ${
