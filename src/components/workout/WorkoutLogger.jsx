@@ -4,12 +4,14 @@ import { ActiveSessionView } from './ActiveSessionView';
 import { ExercisePicker } from './ExercisePicker';
 import { AiWorkoutGenerator } from './AiWorkoutGenerator';
 import { SplitSelector } from './SplitSelector'; // Restored
+import { RoutineEditor } from './RoutineEditor';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { seedExercises, DEFAULT_EXERCISES } from '../../lib/seeding';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
-import { ArrowLeft, Plus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, Clock, ChevronRight } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     const { user } = useAuth();
@@ -21,12 +23,15 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     // Step 2: Session Exercises
     const [selectedExercises, setSelectedExercises] = useState([]);
     
+    // Template Management
+    const [editingRoutine, setEditingRoutine] = useState(null);
+
     // AI Workout Generator
     const [showAiGenerator, setShowAiGenerator] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
 
     // Data Fetching (no category filter)
-    const { exercises, routines, workoutLogs, isLoading, addRoutine } = useWorkouts(user?.id);
+    const { exercises, routines, workoutLogs, isLoading, addRoutine, deleteRoutine } = useWorkouts(user?.id);
     const { toast } = useToast();
 
     // Seeding Check
@@ -45,7 +50,8 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
             try {
                 // Extract exercise names from data.exercises
                 const templateExercises = Object.keys(data.exercises).map(name => ({ name }));
-                await addRoutine({ name: newTemplateName, exercises: templateExercises });
+                const source = selectedRoutine?.source || 'custom';
+                await addRoutine({ name: newTemplateName, exercises: templateExercises, source });
                 toast.success(`Template "${newTemplateName}" saved!`);
             } catch (err) {
                 console.error("Failed to save template", err);
@@ -73,10 +79,9 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         setShowPicker(false);
     };
 
-    // Handle AI-generated workout plan
     const handleAiWorkoutStart = (aiResult) => {
         setShowAiGenerator(false);
-        setSelectedRoutine({ id: 'ai-generated', name: aiResult.name || 'AI Workout' });
+        setSelectedRoutine({ id: 'ai-generated', name: aiResult.name || 'AI Workout', source: 'ai' });
         setSelectedExercises(aiResult.exercises || []);
         setIsLogging(true);
     };
@@ -95,12 +100,45 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         setIsLogging(true);
     };
 
+    const handleRepeatWorkout = (workout) => {
+        setSelectedRoutine({
+            id: 'custom',
+            name: workout.routineName || workout.type,
+            source: 'custom'
+        });
+        const exerciseNames = Object.keys(workout.exercises || {});
+        setSelectedExercises(exerciseNames);
+        setIsLogging(true);
+    };
+
+    const handleDeleteRoutine = async (id) => {
+        if (window.confirm('Are you sure you want to delete this template?')) {
+            try {
+                await deleteRoutine(id);
+                toast.success('Template deleted');
+            } catch (e) {
+                toast.error('Failed to delete template');
+            }
+        }
+    };
+
     // --- AI WORKOUT GENERATOR ---
     if (showAiGenerator) {
         return (
             <AiWorkoutGenerator
                 onStartWorkout={handleAiWorkoutStart}
                 onClose={() => setShowAiGenerator(false)}
+            />
+        );
+    }
+
+    // --- ROUTINE EDITOR MODAL ---
+    if (editingRoutine) {
+        return (
+            <RoutineEditor
+                routine={editingRoutine}
+                onClose={() => setEditingRoutine(null)}
+                onSaveComplete={() => setEditingRoutine(null)}
             />
         );
     }
@@ -153,53 +191,104 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
         );
     }
 
-
+    const recentWorkouts = workoutLogs?.slice(0, 3) || [];
 
     // --- STEP 1: SELECT ROUTINE OR EMPTY WORKOUT ---
     return (
-        <div className="space-y-6 animate-in fade-in duration-500 pt-6 px-3 md:px-4 pb-20">
+        <div className="space-y-8 animate-in fade-in duration-500 pt-6 px-3 md:px-4 pb-20">
+            {/* Header */}
             <div>
-                <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Log Workout</h2>
-                <p className="text-slate-500 dark:text-zinc-400">Start a blank session or pick a saved template.</p>
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Workout</h2>
+                <p className="text-slate-500 dark:text-zinc-400">Log a session or create a new template.</p>
             </div>
 
-            <button
-                onClick={handleStartEmpty}
-                className="w-full p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 transition-all text-left flex items-center justify-between group"
-            >
-                <div>
-                    <h3 className="text-slate-900 dark:text-white font-medium text-lg">Start Empty Workout</h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-200/70">Build your session from scratch</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Plus className="w-5 h-5 text-white" />
-                </div>
-            </button>
+            {/* Hero Actions Grid */}
+            <div className="grid grid-cols-2 gap-4">
+                <button
+                    onClick={handleStartEmpty}
+                    className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all text-left group active:scale-95 touch-manipulation"
+                >
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
+                    <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                        <Plus className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-1">Start Empty</h3>
+                    <p className="text-sm text-blue-600 dark:text-blue-300/80 leading-tight">Blank session</p>
+                </button>
 
-            {/* AI Generate Button */}
-            <button
-                onClick={() => setShowAiGenerator(true)}
-                className="w-full p-4 rounded-xl border border-violet-500/30 bg-gradient-to-r from-violet-500/10 to-blue-500/10 hover:from-violet-500/20 hover:to-blue-500/20 transition-all text-left flex items-center justify-between group"
-            >
-                <div>
-                    <h3 className="text-slate-900 dark:text-white font-medium text-lg flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-violet-500 dark:text-violet-400" />
-                        AI Generate Workout
-                    </h3>
-                    <p className="text-sm text-violet-600 dark:text-violet-200/60">Describe what you need or answer quick questions</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-violet-500/20">
-                    <Sparkles className="w-5 h-5 text-white" />
-                </div>
-            </button>
+                <button
+                    onClick={() => setShowAiGenerator(true)}
+                    className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20 hover:border-violet-500/40 transition-all text-left group active:scale-95 touch-manipulation"
+                >
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-violet-500/10 rounded-full blur-2xl group-hover:bg-violet-500/20 transition-all" />
+                    <div className="w-12 h-12 rounded-xl bg-violet-600 flex items-center justify-center mb-4 shadow-lg shadow-violet-500/30 group-hover:scale-110 transition-transform">
+                        <Sparkles className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-1">AI Generate</h3>
+                    <p className="text-sm text-violet-600 dark:text-violet-300/80 leading-tight">Smart plan</p>
+                </button>
+            </div>
 
-            <div className="pt-4 border-t border-slate-200 dark:border-zinc-800">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Your Templates</h3>
+            {/* Templates */}
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">My Templates</h3>
+                </div>
                 <SplitSelector
                     routines={routines}
                     selectedRoutine={selectedRoutine}
                     onSelect={handleSelectRoutine}
+                    onEdit={setEditingRoutine}
+                    onDelete={handleDeleteRoutine}
+                    workoutLogs={workoutLogs}
                 />
+            </div>
+
+            {/* Recent Workouts */}
+            <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Recent Workouts</h3>
+                <div className="space-y-3">
+                    {recentWorkouts.length === 0 ? (
+                        <div className="p-6 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl text-center text-slate-500 dark:text-zinc-500">
+                            No workout history yet.
+                        </div>
+                    ) : (
+                        recentWorkouts.map(log => {
+                            const dateStr = formatDistanceToNow(new Date(log.date), { addSuffix: true });
+                            let totalSets = 0;
+                            Object.values(log.exercises || {}).forEach(sets => {
+                                totalSets += Array.isArray(sets) ? sets.length : 0;
+                            });
+
+                            return (
+                                <button
+                                    key={log.id}
+                                    onClick={() => handleRepeatWorkout(log)}
+                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-zinc-800/80 transition-colors active:scale-95 touch-manipulation text-left"
+                                >
+                                    <div>
+                                        <h4 className="font-bold text-slate-900 dark:text-white text-lg">
+                                            {log.routineName || log.type || 'Workout'}
+                                        </h4>
+                                        <div className="flex items-center gap-3 mt-1 text-sm text-slate-500 dark:text-zinc-400">
+                                            <span className="flex items-center gap-1">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                {dateStr}
+                                            </span>
+                                            <span>·</span>
+                                            <span>{Object.keys(log.exercises || {}).length} exercises</span>
+                                            <span>·</span>
+                                            <span>{totalSets} sets</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-400">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </div>
+                                </button>
+                            );
+                        })
+                    )}
+                </div>
             </div>
         </div>
     );

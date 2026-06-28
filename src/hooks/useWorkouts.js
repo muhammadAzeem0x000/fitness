@@ -127,13 +127,14 @@ export function useWorkouts(userId, type = null) {
 
     const addRoutineMutation = useMutation({
         mutationFn: async (routineData) => {
-            const { name, exercises } = routineData;
+            const { name, exercises, source = 'custom' } = routineData;
             const { error } = await supabase
                 .from('routines')
                 .insert({
                     user_id: userId,
                     name,
-                    exercises
+                    exercises,
+                    source
                 });
             if (error) throw error;
         },
@@ -147,6 +148,7 @@ export function useWorkouts(userId, type = null) {
                     user_id: userId,
                     name: newRoutine.name,
                     exercises: newRoutine.exercises,
+                    source: newRoutine.source || 'custom',
                     created_at: new Date().toISOString()
                 };
                 return old ? [...old, optimisticRoutine] : [optimisticRoutine];
@@ -155,6 +157,61 @@ export function useWorkouts(userId, type = null) {
             return { previousRoutines };
         },
         onError: (err, newRoutine, context) => {
+            queryClient.setQueryData(['routines', userId], context.previousRoutines);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['routines', userId] });
+        }
+    });
+
+    const updateRoutineMutation = useMutation({
+        mutationFn: async (routineData) => {
+            const { id, name, exercises } = routineData;
+            const { error } = await supabase
+                .from('routines')
+                .update({ name, exercises })
+                .eq('id', id);
+            if (error) throw error;
+        },
+        onMutate: async (updatedRoutine) => {
+            await queryClient.cancelQueries({ queryKey: ['routines', userId] });
+            const previousRoutines = queryClient.getQueryData(['routines', userId]);
+
+            queryClient.setQueryData(['routines', userId], (old) => {
+                if (!old) return old;
+                return old.map(r => r.id === updatedRoutine.id ? { ...r, ...updatedRoutine } : r);
+            });
+
+            return { previousRoutines };
+        },
+        onError: (err, updatedRoutine, context) => {
+            queryClient.setQueryData(['routines', userId], context.previousRoutines);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['routines', userId] });
+        }
+    });
+
+    const deleteRoutineMutation = useMutation({
+        mutationFn: async (routineId) => {
+            const { error } = await supabase
+                .from('routines')
+                .delete()
+                .eq('id', routineId);
+            if (error) throw error;
+        },
+        onMutate: async (deletedId) => {
+            await queryClient.cancelQueries({ queryKey: ['routines', userId] });
+            const previousRoutines = queryClient.getQueryData(['routines', userId]);
+
+            queryClient.setQueryData(['routines', userId], (old) => {
+                if (!old) return old;
+                return old.filter(r => r.id !== deletedId);
+            });
+
+            return { previousRoutines };
+        },
+        onError: (err, deletedId, context) => {
             queryClient.setQueryData(['routines', userId], context.previousRoutines);
         },
         onSettled: () => {
@@ -197,6 +254,8 @@ export function useWorkouts(userId, type = null) {
         isLoading: loadingLogs || loadingRoutines || loadingExercises || loadingLast,
         addWorkoutLog: addWorkoutLogMutation.mutateAsync,
         addRoutine: addRoutineMutation.mutateAsync,
+        updateRoutine: updateRoutineMutation.mutateAsync,
+        deleteRoutine: deleteRoutineMutation.mutateAsync,
         deleteWorkoutLog: deleteWorkoutLogMutation.mutateAsync
     };
 }
