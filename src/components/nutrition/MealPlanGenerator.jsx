@@ -1,20 +1,43 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Bot, Loader2, ListOrdered } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { generateMealPlan } from '../../lib/openai';
+import { hapticLight, hapticSuccess } from '../../lib/haptics';
 
-export function MealPlanGenerator({ targets }) {
-    const [plan, setPlan] = useState(null);
+export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
     const [isGenerating, setIsGenerating] = useState(false);
-    const [preferences, setPreferences] = useState('');
+    
+    // Form state
+    const [days, setDays] = useState(1);
+    const [diet, setDiet] = useState('Standard');
+    const [exclusions, setExclusions] = useState([]);
+    const [mealsPerDay, setMealsPerDay] = useState(4);
+    const [cuisine, setCuisine] = useState('Any');
+
+    const toggleExclusion = (item) => {
+        hapticLight();
+        setExclusions(prev => 
+            prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+        );
+    };
 
     const handleGenerate = async () => {
         if (!targets) return;
         setIsGenerating(true);
+        hapticLight();
+        
         try {
-            const result = await generateMealPlan(targets, preferences);
-            setPlan(result);
+            const result = await generateMealPlan({
+                targets,
+                diet,
+                exclusions,
+                mealsPerDay,
+                cuisine,
+                days
+            });
+            hapticSuccess();
+            onGenerated(result); // Pass back up to save or display
+            onClose();
         } catch (error) {
             console.error(error);
             alert("Failed to generate meal plan. Please try again.");
@@ -23,80 +46,133 @@ export function MealPlanGenerator({ targets }) {
         }
     };
 
-    if (!targets) return null;
+    if (!isOpen) return null;
+
+    const ALLERGIES = ['Nuts', 'Dairy', 'Gluten', 'Shellfish', 'Eggs', 'Soy'];
+    const DIETS = ['Standard', 'Vegetarian', 'Vegan', 'Keto', 'Paleo'];
 
     return (
-        <Card className="border border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5 shadow-violet-500/5 mt-6">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
-                    <Bot className="w-5 h-5" />
-                    AI Meal Planner
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                {!plan ? (
-                    <div className="space-y-4">
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                            Let AI generate a perfect 1-day meal plan tailored to your target macros ({targets.calories} kcal).
-                        </p>
-                        <input
-                            type="text"
-                            placeholder="Optional: e.g. Vegetarian, no nuts, high protein breakfast..."
-                            value={preferences}
-                            onChange={(e) => setPreferences(e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm"
-                        />
-                        <Button 
-                            onClick={handleGenerate} 
-                            disabled={isGenerating}
-                            className="w-full bg-violet-600 hover:bg-violet-700 text-white"
-                        >
-                            {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ListOrdered className="w-4 h-4 mr-2" />}
-                            {isGenerating ? 'Generating Plan...' : 'Generate Meal Plan'}
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-4 gap-2 text-center text-sm font-medium">
-                            <div className="bg-slate-100 dark:bg-zinc-800 p-2 rounded-lg text-emerald-600 dark:text-emerald-400">
-                                {plan.total_calories} kcal
-                            </div>
-                            <div className="bg-slate-100 dark:bg-zinc-800 p-2 rounded-lg text-blue-600 dark:text-blue-400">
-                                {plan.total_protein}g P
-                            </div>
-                            <div className="bg-slate-100 dark:bg-zinc-800 p-2 rounded-lg text-amber-600 dark:text-amber-400">
-                                {plan.total_carbs}g C
-                            </div>
-                            <div className="bg-slate-100 dark:bg-zinc-800 p-2 rounded-lg text-rose-600 dark:text-rose-400">
-                                {plan.total_fats}g F
-                            </div>
-                        </div>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm transition-opacity animate-in fade-in">
+            {/* Click outside to close */}
+            <div className="absolute inset-0" onClick={onClose} />
+            
+            {/* Bottom Sheet */}
+            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom duration-300">
+                <div className="flex justify-center mb-6">
+                    <div className="w-12 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                </div>
+                
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <span className="text-xl">✨</span> Generate Meal Plan
+                    </h2>
+                    <button onClick={onClose} className="p-2 bg-slate-100 dark:bg-zinc-800 rounded-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
 
-                        <div className="space-y-4">
-                            {plan.meals.map((meal, idx) => (
-                                <div key={idx} className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-semibold text-slate-800 dark:text-slate-200">{meal.type}: {meal.name}</h4>
-                                        <span className="text-xs font-bold bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded text-slate-600 dark:text-slate-400">
-                                            {meal.calories} kcal
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{meal.description}</p>
-                                    <div className="flex gap-4 text-xs font-medium text-slate-500">
-                                        <span>Protein: {meal.protein}g</span>
-                                        <span>Carbs: {meal.carbs}g</span>
-                                        <span>Fats: {meal.fats}g</span>
-                                    </div>
-                                </div>
+                <div className="space-y-6 max-h-[60vh] overflow-y-auto hide-scrollbar pb-6">
+                    {/* Duration */}
+                    <div>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Duration</label>
+                        <div className="flex gap-2 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl">
+                            {[1, 7, 14].map(num => (
+                                <button
+                                    key={num}
+                                    onClick={() => { hapticLight(); setDays(num); }}
+                                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                        days === num 
+                                            ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm' 
+                                            : 'text-slate-500 dark:text-zinc-400'
+                                    }`}
+                                >
+                                    {num === 1 ? '1 Day' : num === 7 ? '1 Week' : '2 Weeks'}
+                                </button>
                             ))}
                         </div>
-
-                        <Button variant="outline" className="w-full" onClick={() => setPlan(null)}>
-                            Generate Another Plan
-                        </Button>
                     </div>
-                )}
-            </CardContent>
-        </Card>
+
+                    {/* Diet Type */}
+                    <div>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Diet Type</label>
+                        <div className="flex flex-wrap gap-2">
+                            {DIETS.map(d => (
+                                <button
+                                    key={d}
+                                    onClick={() => { hapticLight(); setDiet(d); }}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                                        diet === d
+                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                                            : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
+                                    }`}
+                                >
+                                    {d}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Exclusions */}
+                    <div>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Exclude (Allergies)</label>
+                        <div className="flex flex-wrap gap-2">
+                            {ALLERGIES.map(item => (
+                                <button
+                                    key={item}
+                                    onClick={() => toggleExclusion(item)}
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center gap-1 ${
+                                        exclusions.includes(item)
+                                            ? 'border-red-500 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300'
+                                            : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
+                                    }`}
+                                >
+                                    {exclusions.includes(item) && <X className="w-3 h-3" />}
+                                    {item}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Meals Per Day */}
+                    <div>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Meals per day</label>
+                        <div className="flex gap-2">
+                            {[3, 4, 5].map(num => (
+                                <button
+                                    key={num}
+                                    onClick={() => { hapticLight(); setMealsPerDay(num); }}
+                                    className={`flex-1 py-2 text-sm font-medium border rounded-xl transition-colors ${
+                                        mealsPerDay === num
+                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                                            : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
+                                    }`}
+                                >
+                                    {num} Meals
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-zinc-800">
+                    <Button 
+                        onClick={handleGenerate} 
+                        disabled={isGenerating}
+                        className="w-full bg-violet-600 hover:bg-violet-700 text-white h-14 rounded-xl text-lg font-semibold shadow-lg shadow-violet-500/20"
+                    >
+                        {isGenerating ? (
+                            <>
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                Generating...
+                            </>
+                        ) : (
+                            <>
+                                ✨ Generate {days === 1 ? 'Day' : days === 7 ? 'Week' : '14-Day'} Plan
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </div>
+        </div>
     );
 }

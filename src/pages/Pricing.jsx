@@ -27,8 +27,11 @@ export function Pricing() {
                 const fetchedOfferings = await getOfferings();
                 if (fetchedOfferings?.current) {
                     setOfferings(fetchedOfferings.current);
+                    if (fetchedOfferings.current.availablePackages.length === 0) {
+                        setError("DEBUG: RevenueCat found the 'default' offering, but Google Play blocked the products. (This confirms you are waiting on Google's 36-hour propagation or Tester Account sync).");
+                    }
                 } else {
-                    setError("No packages available at this time.");
+                    setError("DEBUG: RevenueCat returned no offerings at all. Double check your VITE_REVENUECAT_API_KEY.");
                 }
             } catch (err) {
                 console.error("Error fetching offerings:", err);

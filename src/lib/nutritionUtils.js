@@ -63,3 +63,76 @@ export function calculateTargetMacros(tdee, weightKg, goalType) {
         carbs
     };
 }
+
+/**
+ * Calculates an adaptive TDEE based on 14-day weight trends and average calorie intake.
+ * If there isn't enough data, it falls back to the formula-based TDEE.
+ */
+export function calculateAdaptiveTDEE(weightLogs = [], nutritionLogs = [], currentTDEE) {
+    if (weightLogs.length < 3 || nutritionLogs.length < 5) return currentTDEE;
+
+    // Filter to last 14 days
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 14);
+    
+    const recentWeights = weightLogs.filter(w => new Date(w.date) >= cutoff).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const recentNutrition = nutritionLogs.filter(n => new Date(n.date) >= cutoff);
+    
+    if (recentWeights.length < 2 || recentNutrition.length < 5) return currentTDEE;
+
+    // Average daily intake
+    const totalCals = recentNutrition.reduce((sum, log) => sum + (log.calories || 0), 0);
+    // Unique days tracked
+    const uniqueDays = new Set(recentNutrition.map(n => n.date)).size;
+    if (uniqueDays === 0) return currentTDEE;
+    
+    const avgIntake = totalCals / uniqueDays;
+
+    // Weight trend (first vs last in the 14 day period)
+    const firstWeight = recentWeights[0].weight;
+    const lastWeight = recentWeights[recentWeights.length - 1].weight;
+    const weightChangeKg = lastWeight - firstWeight;
+
+    // 1 kg of body tissue is roughly 7700 calories
+    const totalCaloricDeficitOrSurplus = weightChangeKg * 7700;
+    
+    // Average daily deficit/surplus over 14 days
+    const dailyBalance = totalCaloricDeficitOrSurplus / 14;
+
+    // TDEE = intake - balance
+    let adaptiveTDEE = Math.round(avgIntake - dailyBalance);
+    
+    // Sanity check: cap it to within 30% of the formula TDEE
+    const maxDiff = currentTDEE * 0.3;
+    if (adaptiveTDEE > currentTDEE + maxDiff) adaptiveTDEE = currentTDEE + maxDiff;
+    if (adaptiveTDEE < currentTDEE - maxDiff) adaptiveTDEE = currentTDEE - maxDiff;
+
+    return Math.round(adaptiveTDEE);
+}
+
+/**
+ * Adjusts calorie and macro targets based on whether the given date is a training day.
+ */
+export function getAdjustedTargets(baseTargets, workoutDays = [], dateString) {
+    if (!baseTargets) return null;
+    
+    // Get day name (e.g., 'monday', 'tuesday')
+    const dateObj = dateString ? new Date(dateString) : new Date();
+    // Adjust for timezone issues if dateString is YYYY-MM-DD
+    const localDate = dateString ? new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60000) : dateObj;
+    
+    const dayName = localDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    const isTrainingDay = workoutDays.map(d => d.toLowerCase()).includes(dayName);
+    
+    if (!isTrainingDay) return { ...baseTargets, isTrainingDay: false };
+
+    // On training days, bump calories by 250, mostly from carbs and a little protein
+    const adjusted = { ...baseTargets };
+    adjusted.calories += 250;
+    adjusted.carbs += 45; // 45g carbs = 180 cal
+    adjusted.protein += 17; // 17g protein = 68 cal
+    
+    adjusted.isTrainingDay = true;
+    return adjusted;
+}

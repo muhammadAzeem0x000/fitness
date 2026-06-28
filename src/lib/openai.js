@@ -425,72 +425,105 @@ export async function analyzeFoodInput(text) {
 }
 
 /**
- * Generates a full 1-day meal plan based on target macros.
+ * Generates a meal plan (1, 7, or 14 days) based on target macros and preferences.
  */
-export async function generateMealPlan(targetMacros, preferences = "") {
-    if (!apiKey) throw new Error("Missing DeepSeek API Key");
+export async function generateMealPlan({ targets, diet, exclusions, mealsPerDay, cuisine, days }) {
+    if (!groqApiKey) throw new Error("Missing Groq API Key");
 
     const prompt = `
-    You are a professional sports nutritionist. Generate a 1-day meal plan that hits these exact daily targets:
-    Calories: ${targetMacros.calories} kcal
-    Protein: ${targetMacros.protein}g
-    Carbs: ${targetMacros.carbs}g
-    Fats: ${targetMacros.fats}g
+    You are a professional sports nutritionist. Generate a 1-day meal template that hits these approximate daily targets (within +/- 50 kcal):
+    Calories: ${targets.calories} kcal
+    Protein: ${targets.protein}g
+    Carbs: ${targets.carbs}g
+    Fats: ${targets.fats}g
 
-    Additional User Preferences/Allergies: ${preferences || "None"}
+    User Preferences:
+    - Diet Type: ${diet || 'Standard'}
+    - Exclusions/Allergies: ${exclusions?.length ? exclusions.join(', ') : 'None'}
+    - Meals Per Day: ${mealsPerDay || 4}
+    - Cuisine Preference: ${cuisine || 'Any'}
 
     CRITICAL INSTRUCTION: Return ONLY a valid JSON object representing the meal plan. Do not include markdown formatting.
     Format required:
     {
       "meals": [
         {
-          "type": "Breakfast",
+          "type": "Breakfast", // or Lunch, Dinner, Snack
           "name": "Meal name",
           "description": "Short description of ingredients",
           "calories": number,
           "protein": number,
           "carbs": number,
           "fats": number
-        },
-        // repeat for Lunch, Dinner, Snack
-      ],
-      "total_calories": number,
-      "total_protein": number,
-      "total_carbs": number,
-      "total_fats": number
+        }
+      ]
     }
     `;
 
     try {
-        const response = await openai.chat.completions.create({
-            model: "deepseek-v4-pro", // Use the smarter model for meal planning
+        // Generate a single day template
+        const response = await groqClient.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.5,
+            temperature: 0.4,
+            max_tokens: 1500,
             response_format: { type: "json_object" }
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        const match = rawContent.match(/\{[\s\S]*\}/);
+        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
         const jsonContent = match ? match[0] : "{}";
-        const parsed = JSON.parse(jsonContent);
+        const parsedDay = JSON.parse(jsonContent);
         
         // Enforce 4/4/9 strict mathematical accuracy on all meals
-        if (parsed.meals && Array.isArray(parsed.meals)) {
-            parsed.total_calories = 0;
-            parsed.total_protein = 0;
-            parsed.total_carbs = 0;
-            parsed.total_fats = 0;
-
-            parsed.meals.forEach(meal => {
+        if (parsedDay.meals && Array.isArray(parsedDay.meals)) {
+            parsedDay.meals.forEach(meal => {
                 meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
-                parsed.total_calories += meal.calories;
-                parsed.total_protein += meal.protein;
-                parsed.total_carbs += meal.carbs;
-                parsed.total_fats += meal.fats;
             });
         }
         
-        return parsed;
+        // If they just asked for 1 day, return it
+        if (days === 1) {
+            return {
+                days: [parsedDay]
+            };
+        }
+
+        // For multi-day, generate a second template for variety
+        const prompt2 = prompt + "\nProvide a DIFFERENT meal template than you usually would for variety.";
+        const response2 = await groqClient.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: prompt2 }],
+            temperature: 0.6,
+            max_tokens: 1500,
+            response_format: { type: "json_object" }
+        });
+        
+        const rawContent2 = response2.choices[0]?.message?.content || "{}";
+        const jsonContent2 = (rawContent2.match(/\{[\s\S]*\}/) || ["{}"])[0];
+        const parsedDay2 = JSON.parse(jsonContent2);
+        
+        if (parsedDay2.meals && Array.isArray(parsedDay2.meals)) {
+            parsedDay2.meals.forEach(meal => {
+                meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
+            });
+        }
+
+        const generatedDays = [];
+        for (let i = 0; i < days; i++) {
+            // Alternate between template 1 and template 2
+            const template = (i % 2 === 0) ? parsedDay : parsedDay2;
+            
+            // Deep copy the template so modifications don't leak
+            const dayCopy = JSON.parse(JSON.stringify(template));
+            generatedDays.push(dayCopy);
+        }
+
+        return {
+            days: generatedDays
+        };
+
     } catch (error) {
         console.error("Error generating meal plan:", error);
         throw error;
