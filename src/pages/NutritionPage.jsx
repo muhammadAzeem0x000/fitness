@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Loader2, Plus, Sparkles, Target, Trash2, Utensils, CalendarDays, LineChart, CheckCircle2 } from 'lucide-react';
+import { Loader2, Plus, Sparkles, Target, Trash2, Utensils, CalendarDays, LineChart, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useNutrition } from '../hooks/useNutrition';
@@ -15,6 +15,7 @@ import { MealPlanView } from '../components/nutrition/MealPlanView';
 import { PlannedMealBanner } from '../components/nutrition/PlannedMealBanner';
 import { QuickAddFavorites } from '../components/nutrition/QuickAddFavorites';
 import { NutritionInsights } from '../components/nutrition/NutritionInsights';
+import { DatePickerModal } from '../components/ui/DatePickerModal';
 import { hapticLight, hapticSuccess } from '../lib/haptics';
 
 export function NutritionPage() {
@@ -27,11 +28,13 @@ export function NutritionPage() {
     const { plannedMeals, markMealAsLogged } = useMealPlan(user?.id, selectedDate);
     const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
     const [generatedPlan, setGeneratedPlan] = useState(null);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     // Form state
     const [foodInput, setFoodInput] = useState('');
     const [isParsing, setIsParsing] = useState(false);
     const [mealType, setMealType] = useState('Snack');
+    const [isMealDropdownOpen, setIsMealDropdownOpen] = useState(false);
     
     // Tab state
     const [activeTab, setActiveTab] = useState('track'); // track, plan, insights
@@ -152,13 +155,21 @@ export function NutritionPage() {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <Utensils className="w-6 h-6 text-violet-500" /> Nutrition
                     </h1>
-                    <input 
-                        type="date" 
-                        value={selectedDate}
-                        onChange={(e) => { hapticLight(); setSelectedDate(e.target.value); }}
-                        className="px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 border-none rounded-lg text-sm font-medium focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-slate-100"
-                    />
+                    <button 
+                        onClick={() => { hapticLight(); setIsDatePickerOpen(true); }}
+                        className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-lg text-sm font-medium text-slate-900 dark:text-slate-100 transition-colors active:scale-95 border border-transparent focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                    >
+                        <CalendarDays className="w-4 h-4 text-violet-500" />
+                        {new Date(selectedDate + 'T12:00:00').toLocaleDateString('default', { month: 'short', day: 'numeric', year: new Date().getFullYear() !== new Date(selectedDate).getFullYear() ? 'numeric' : undefined })}
+                    </button>
                 </div>
+
+                <DatePickerModal 
+                    isOpen={isDatePickerOpen}
+                    onClose={() => setIsDatePickerOpen(false)}
+                    selectedDate={selectedDate}
+                    onSelectDate={(dateStr) => setSelectedDate(dateStr)}
+                />
 
                 {/* Tabs */}
                 <div className="flex bg-slate-100 dark:bg-zinc-800/50 p-1 rounded-xl">
@@ -233,8 +244,8 @@ export function NutritionPage() {
                         <PremiumGate feature="AI Food Logging">
                             <div className="space-y-6">
                                 {/* AI Logger */}
-                                <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-zinc-800 relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-transparent rounded-bl-full pointer-events-none" />
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-zinc-800 relative">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-transparent rounded-bl-full rounded-tr-2xl pointer-events-none" />
                                     
                                     <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
                                         <Sparkles className="w-4 h-4 text-violet-500" /> Log Food
@@ -244,16 +255,37 @@ export function NutritionPage() {
 
                                     <form onSubmit={handleLogFood} className="space-y-3 relative z-10">
                                         <div className="flex gap-2">
-                                            <select 
-                                                value={mealType} 
-                                                onChange={(e) => setMealType(e.target.value)}
-                                                className="w-1/3 px-3 py-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-violet-500 outline-none"
-                                            >
-                                                <option value="Breakfast">Breakfast</option>
-                                                <option value="Lunch">Lunch</option>
-                                                <option value="Dinner">Dinner</option>
-                                                <option value="Snack">Snack</option>
-                                            </select>
+                                            <div className="relative w-1/3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { hapticLight(); setIsMealDropdownOpen(!isMealDropdownOpen); }}
+                                                    className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-violet-500 outline-none"
+                                                >
+                                                    {mealType}
+                                                    <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isMealDropdownOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+                                                {isMealDropdownOpen && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-40" onClick={() => setIsMealDropdownOpen(false)} />
+                                                        <div className="absolute top-full left-0 mt-1 w-32 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                                            {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map(type => (
+                                                                <button
+                                                                    key={type}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        hapticLight();
+                                                                        setMealType(type);
+                                                                        setIsMealDropdownOpen(false);
+                                                                    }}
+                                                                    className={`w-full text-left px-3 py-2.5 text-sm font-medium transition-colors ${mealType === type ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-700'}`}
+                                                                >
+                                                                    {type}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
                                             <input
                                                 type="text"
                                                 value={foodInput}

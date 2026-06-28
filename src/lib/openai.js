@@ -427,23 +427,32 @@ export async function analyzeFoodInput(text) {
 /**
  * Generates a meal plan (1, 7, or 14 days) based on target macros and preferences.
  */
-export async function generateMealPlan({ targets, diet, exclusions, mealsPerDay, cuisine, days }) {
+export async function generateMealPlan(params) {
+    const { targets, goal, diet, exclusions, mealsPerDay, cuisine, days } = params;
     if (!groqApiKey) throw new Error("Missing Groq API Key");
 
-    const prompt = `
-    You are a professional sports nutritionist. Generate a 1-day meal template that hits these approximate daily targets (within +/- 50 kcal):
-    Calories: ${targets.calories} kcal
-    Protein: ${targets.protein}g
-    Carbs: ${targets.carbs}g
-    Fats: ${targets.fats}g
+    const prompt = `You are a world-class AI Sports Nutritionist. 
+Your task is to generate a structured, multi-day meal plan for the user.
 
-    User Preferences:
-    - Diet Type: ${diet || 'Standard'}
-    - Exclusions/Allergies: ${exclusions?.length ? exclusions.join(', ') : 'None'}
-    - Meals Per Day: ${mealsPerDay || 4}
-    - Cuisine Preference: ${cuisine || 'Any'}
+USER PROFILE & CONSTRAINTS:
+- Daily Calorie Target: ~${targets.calories} kcal
+- Daily Macros: ${targets.protein}g Protein, ${targets.carbs}g Carbs, ${targets.fats}g Fats
+- Primary Goal: ${goal || 'Balance'}
+- Diet Type: ${diet}
+- Exclusions/Allergies: ${exclusions && exclusions.length > 0 ? exclusions.join(', ') : 'None'}
+- Meals per day: ${mealsPerDay}
+- Cuisine preference: ${cuisine}
+- Duration: ${days} days
 
-    CRITICAL INSTRUCTION: Return ONLY a valid JSON object representing the meal plan. Do not include markdown formatting.
+INSTRUCTIONS:
+1. Create exactly ${days} unique daily templates.
+2. For the Primary Goal ("${goal || 'Balance'}"), select appropriate food volumes and meal distributions (e.g., higher volume/lower cal density for fat loss, nutrient-dense/higher carb for muscle gain).
+3. The total calories and macros for EACH day MUST be within +/- 5% of the Daily Targets.
+4. Distribute the food across exactly ${mealsPerDay} meals per day.
+5. Provide realistic, tasty meals that fit the cuisine preference and diet type.
+6. NO hallucinatory foods. Keep it practical.
+
+You MUST respond ONLY with a valid JSON object representing the meal plan. Do not include markdown formatting.
     Format required:
     {
       "meals": [

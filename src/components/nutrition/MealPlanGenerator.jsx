@@ -6,9 +6,10 @@ import { hapticLight, hapticSuccess } from '../../lib/haptics';
 
 export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
     const [isGenerating, setIsGenerating] = useState(false);
-    
+
     // Form state
     const [days, setDays] = useState(1);
+    const [goal, setGoal] = useState('Balance');
     const [diet, setDiet] = useState('Standard');
     const [exclusions, setExclusions] = useState([]);
     const [mealsPerDay, setMealsPerDay] = useState(4);
@@ -16,7 +17,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
 
     const toggleExclusion = (item) => {
         hapticLight();
-        setExclusions(prev => 
+        setExclusions(prev =>
             prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
         );
     };
@@ -25,10 +26,11 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
         if (!targets) return;
         setIsGenerating(true);
         hapticLight();
-        
+
         try {
             const result = await generateMealPlan({
                 targets,
+                goal,
                 diet,
                 exclusions,
                 mealsPerDay,
@@ -55,13 +57,13 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm transition-opacity animate-in fade-in">
             {/* Click outside to close */}
             <div className="absolute inset-0" onClick={onClose} />
-            
+
             {/* Bottom Sheet */}
             <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-center mb-6">
                     <div className="w-12 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
                 </div>
-                
+
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <span className="text-xl">✨</span> Generate Meal Plan
@@ -80,13 +82,31 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                                 <button
                                     key={num}
                                     onClick={() => { hapticLight(); setDays(num); }}
-                                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                        days === num 
-                                            ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm' 
+                                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${days === num
+                                            ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
                                             : 'text-slate-500 dark:text-zinc-400'
-                                    }`}
+                                        }`}
                                 >
                                     {num === 1 ? '1 Day' : num === 7 ? '1 Week' : '2 Weeks'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Target Goal */}
+                    <div>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Target</label>
+                        <div className="flex flex-wrap gap-2">
+                            {['Weight Loss', 'Fat Loss', 'Balance', 'Muscle Gain', 'Weight Gain'].map(g => (
+                                <button
+                                    key={g}
+                                    onClick={() => { hapticLight(); setGoal(g); }}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${goal === g
+                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                                            : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
+                                        }`}
+                                >
+                                    {g}
                                 </button>
                             ))}
                         </div>
@@ -100,11 +120,10 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                                 <button
                                     key={d}
                                     onClick={() => { hapticLight(); setDiet(d); }}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                                        diet === d
+                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${diet === d
                                             ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
                                             : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
-                                    }`}
+                                        }`}
                                 >
                                     {d}
                                 </button>
@@ -120,11 +139,10 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                                 <button
                                     key={item}
                                     onClick={() => toggleExclusion(item)}
-                                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center gap-1 ${
-                                        exclusions.includes(item)
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors flex items-center gap-1 ${exclusions.includes(item)
                                             ? 'border-red-500 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300'
                                             : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
-                                    }`}
+                                        }`}
                                 >
                                     {exclusions.includes(item) && <X className="w-3 h-3" />}
                                     {item}
@@ -137,15 +155,14 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                     <div>
                         <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Meals per day</label>
                         <div className="flex gap-2">
-                            {[3, 4, 5].map(num => (
+                            {[2, 3, 4, 5].map(num => (
                                 <button
                                     key={num}
                                     onClick={() => { hapticLight(); setMealsPerDay(num); }}
-                                    className={`flex-1 py-2 text-sm font-medium border rounded-xl transition-colors ${
-                                        mealsPerDay === num
+                                    className={`flex-1 py-2 text-sm font-medium border rounded-xl transition-colors ${mealsPerDay === num
                                             ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
                                             : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
-                                    }`}
+                                        }`}
                                 >
                                     {num} Meals
                                 </button>
@@ -155,8 +172,8 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-100 dark:border-zinc-800">
-                    <Button 
-                        onClick={handleGenerate} 
+                    <Button
+                        onClick={handleGenerate}
                         disabled={isGenerating}
                         className="w-full bg-violet-600 hover:bg-violet-700 text-white h-14 rounded-xl text-lg font-semibold shadow-lg shadow-violet-500/20"
                     >
