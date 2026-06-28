@@ -5,12 +5,13 @@ import { ExercisePicker } from './ExercisePicker';
 import { AiWorkoutGenerator } from './AiWorkoutGenerator';
 import { SplitSelector } from './SplitSelector'; // Restored
 import { RoutineEditor } from './RoutineEditor';
+import { PostWorkoutSummary } from './PostWorkoutSummary';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { seedExercises, DEFAULT_EXERCISES } from '../../lib/seeding';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/Button';
-import { ArrowLeft, Plus, Sparkles, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, Clock, ChevronRight, Play, Info, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
@@ -25,6 +26,10 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
     
     // Template Management
     const [editingRoutine, setEditingRoutine] = useState(null);
+
+    // Recent Workouts Actions
+    const [selectedRecentWorkout, setSelectedRecentWorkout] = useState(null);
+    const [viewWorkoutDetails, setViewWorkoutDetails] = useState(null);
 
     // AI Workout Generator
     const [showAiGenerator, setShowAiGenerator] = useState(false);
@@ -263,7 +268,7 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                             return (
                                 <button
                                     key={log.id}
-                                    onClick={() => handleRepeatWorkout(log)}
+                                    onClick={() => setSelectedRecentWorkout(log)}
                                     className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-zinc-800/80 transition-colors active:scale-95 touch-manipulation text-left"
                                 >
                                     <div>
@@ -290,6 +295,67 @@ export function WorkoutLogger({ onSaveLog, defaultReps = 12 }) {
                     )}
                 </div>
             </div>
+
+            {/* Recent Workout Action Drawer */}
+            {selectedRecentWorkout && (
+                <div className="fixed inset-0 z-[160] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                     onClick={() => setSelectedRecentWorkout(null)}
+                >
+                    <div className="bg-white dark:bg-zinc-900 w-full sm:w-96 rounded-t-3xl sm:rounded-3xl p-6 pb-safe animate-in slide-in-from-bottom duration-300"
+                         onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                                    {selectedRecentWorkout.routineName || selectedRecentWorkout.type || 'Workout'}
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-zinc-400">
+                                    {formatDistanceToNow(new Date(selectedRecentWorkout.date), { addSuffix: true })}
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setSelectedRecentWorkout(null)}
+                                className="p-2 -mr-2 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <button 
+                                onClick={() => {
+                                    handleRepeatWorkout(selectedRecentWorkout);
+                                    setSelectedRecentWorkout(null);
+                                }}
+                                className="w-full flex items-center justify-center gap-2 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all active:scale-95 touch-manipulation"
+                            >
+                                <Play className="w-5 h-5" />
+                                Repeat Workout
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setViewWorkoutDetails(selectedRecentWorkout);
+                                    setSelectedRecentWorkout(null);
+                                }}
+                                className="w-full flex items-center justify-center gap-2 p-4 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl font-semibold transition-all active:scale-95 touch-manipulation"
+                            >
+                                <Info className="w-5 h-5" />
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Post Workout Summary (Used as View Details here) */}
+            {viewWorkoutDetails && (
+                <PostWorkoutSummary
+                    isOpen={!!viewWorkoutDetails}
+                    onClose={() => setViewWorkoutDetails(null)}
+                    workoutData={viewWorkoutDetails}
+                    exerciseHistory={workoutLogs}
+                />
+            )}
         </div>
     );
 }
