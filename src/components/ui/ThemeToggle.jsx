@@ -1,31 +1,18 @@
 import React from 'react';
 import { useTheme } from '../../hooks/useTheme';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 
 export const ThemeToggle = ({ className = '' }) => {
     const { theme, setTheme } = useTheme();
 
     const toggleTheme = () => {
-        if (theme === 'light') {
-            setTheme('dark');
-        } else if (theme === 'dark') {
-            setTheme('system');
-        } else {
-            setTheme('light');
-        }
+        setTheme(theme === 'dark' ? 'light' : 'dark');
     };
 
     const renderIcon = () => {
-        switch (theme) {
-            case 'light':
-                return <Sun className="w-5 h-5 text-amber-500" />;
-            case 'dark':
-                return <Moon className="w-5 h-5 text-indigo-400" />;
-            case 'system':
-                return <Monitor className="w-5 h-5 text-slate-500 dark:text-slate-400" />;
-            default:
-                return <Sun className="w-5 h-5" />;
-        }
+        return theme === 'dark' 
+            ? <Moon className="w-5 h-5 text-indigo-400" /> 
+            : <Sun className="w-5 h-5 text-amber-500" />;
     };
 
     return (
