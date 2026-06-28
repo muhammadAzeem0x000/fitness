@@ -25,17 +25,24 @@ export function Pricing() {
             }
             try {
                 const fetchedOfferings = await getOfferings();
-                if (fetchedOfferings?.current) {
-                    setOfferings(fetchedOfferings.current);
-                    if (fetchedOfferings.current.availablePackages.length === 0) {
-                        setError("DEBUG: RevenueCat found the 'default' offering, but Google Play blocked the products. (This confirms you are waiting on Google's 36-hour propagation or Tester Account sync).");
+                if (fetchedOfferings && typeof fetchedOfferings === 'object') {
+                    if (fetchedOfferings.current) {
+                        setOfferings(fetchedOfferings.current);
+                        if (fetchedOfferings.current.availablePackages.length === 0) {
+                            setError("DEBUG: RevenueCat found the 'default' offering, but Google Play blocked the products.");
+                        }
+                    } else if (Object.keys(fetchedOfferings.all || {}).length > 0) {
+                        setError("DEBUG: Offerings exist in RevenueCat but none is set as 'Current'.");
+                    } else {
+                        setError("DEBUG: Google Play is blocking the products. 1) Clear Play Store Cache 2) Accept the Web Opt-In Link 3) Check License Testers list.");
                     }
                 } else {
-                    setError("DEBUG: RevenueCat returned no offerings at all. Double check your VITE_REVENUECAT_API_KEY.");
+                    setError(`DEBUG: SDK returned falsy or empty. Value: ${JSON.stringify(fetchedOfferings)}`);
                 }
             } catch (err) {
                 console.error("Error fetching offerings:", err);
-                setError("Failed to load subscription plans.");
+                const errorMessage = err?.message || JSON.stringify(err);
+                setError(`NATIVE SDK ERROR: ${errorMessage}`);
             } finally {
                 setLoading(false);
             }
