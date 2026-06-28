@@ -55,7 +55,7 @@ export function MobileBottomNav() {
             style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
             <div className="flex flex-row justify-around items-center h-16 px-1">
-                <NavItem to="/dashboard" icon={LayoutDashboard} label="Training" />
+                <NavItem to="/dashboard" icon={LayoutDashboard} label="Insights" />
                 <NavItem to="/log" icon={PlusCircle} label="Workout" />
                 <NavItem to="/nutrition" icon={Utensils} label="Nutrition" />
                 <NavItem to="/leaderboard" icon={Trophy} label="Ranks" />

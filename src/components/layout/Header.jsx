@@ -91,7 +91,7 @@ export function Header() {
                     <NavLink
                         to="/dashboard"
                         icon={LayoutDashboard}
-                        label="Dashboard"
+                        label="Insights"
                         description="View your progress, stats, and workout history"
                     />
                     <NavLink
@@ -184,7 +184,7 @@ export function Header() {
                     <MobileNavLink
                         to="/dashboard"
                         icon={LayoutDashboard}
-                        label="Dashboard"
+                        label="Insights"
                     />
                     <MobileNavLink
                         to="/log"

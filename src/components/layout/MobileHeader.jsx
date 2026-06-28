@@ -16,8 +16,10 @@ export function MobileHeader() {
     
     // Determine title
     let title = 'MuscleBot';
-    if (path === '/dashboard' || path === '/') title = 'Training';
+    if (path === '/dashboard' || path === '/') title = 'Insights';
     else if (path === '/log') title = 'Workout';
+    else if (path === '/nutrition') title = 'Nutrition';
+    else if (path === '/leaderboard') title = 'Ranks';
     else if (path === '/ai-coach') title = 'AI Coach';
     else if (path === '/profile') title = 'Profile';
     else if (path === '/pricing') title = 'Upgrade';
