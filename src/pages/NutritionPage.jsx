@@ -447,6 +447,7 @@ export function NutritionPage() {
                                 onClose={() => setIsGeneratorOpen(false)} 
                                 onGenerated={(plan) => setGeneratedPlan(plan)}
                                 targets={targets} 
+                                foodHistory={nutritionLogs}
                             />
                         </PremiumGate>
                     </div>

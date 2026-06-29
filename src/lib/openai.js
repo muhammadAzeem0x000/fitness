@@ -15,12 +15,12 @@ const groqClient = new OpenAI({
     dangerouslyAllowBrowser: true
 });
 
-export async function generateHealthReport(weightHistory, workoutLogs, previousReport, reportType = 'weekly', userProfile = {}) {
+export async function generateHealthReport(weightHistory, workoutLogs, nutritionLogs, previousReport, reportType = 'weekly', userProfile = {}) {
     if (!apiKey) {
         throw new Error("Missing DeepSeek API Key");
     }
 
-    const { displayName, workoutDays } = userProfile;
+    const { displayName, workoutDays, targetWeight } = userProfile;
 
     // Filter Data based on Type
     let daysToLookBack = 8; // Weekly report (7-8 days)
@@ -34,6 +34,7 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
 
     const relevantWeights = weightHistory.filter(w => new Date(w.date) >= cutoffDate);
     const relevantWorkouts = workoutLogs.filter(w => new Date(w.date) >= cutoffDate);
+    const relevantNutrition = nutritionLogs?.filter(n => new Date(n.date) >= cutoffDate) || [];
 
     // --- Data Aggregation ---
     let totalVolume = 0;
@@ -94,8 +95,20 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     const frequencyString = Object.entries(typeCount).map(([type, count]) => `${type}: ${count}`).join(', ') || "None";
     const keyLiftsString = Object.entries(keyLifts).map(([name, weight]) => `${name} (${weight}kg)`).join(', ') || "None detected";
 
+    // --- Nutrition Aggregation ---
+    let totalCals = 0;
+    let totalProtein = 0;
+    let daysTracked = new Set();
+    relevantNutrition.forEach(n => {
+        totalCals += n.calories || 0;
+        totalProtein += n.protein || 0;
+        daysTracked.add(new Date(n.date).toLocaleDateString());
+    });
+    const avgCals = daysTracked.size > 0 ? Math.round(totalCals / daysTracked.size) : 0;
+    const avgProtein = daysTracked.size > 0 ? Math.round(totalProtein / daysTracked.size) : 0;
+
     // Check if this is a fresh account (no workout data)
-    const isFreshAccount = relevantWorkouts.length === 0;
+    const isFreshAccount = relevantWorkouts.length === 0 && relevantNutrition.length === 0;
 
     // Build data string based on available data
     let dataString = `
@@ -141,22 +154,27 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     Weight Entries (in ${daysToLookBack} days): ${relevantWeights.length}
     Latest Weight: ${mostRecentWeight ? `${mostRecentWeight.weight}kg (recorded ${new Date(mostRecentWeight.date).toLocaleDateString()})` : 'No data'}
     Weight Change (period): ${weightChange > 0 ? '+' : ''}${weightChange}kg
+    
+    --- NUTRITION ---
+    Days Tracked (in ${daysToLookBack} days): ${daysTracked.size}
+    Average Daily Calories: ${avgCals > 0 ? avgCals + ' kcal' : 'No data'}
+    Average Daily Protein: ${avgProtein > 0 ? avgProtein + ' g' : 'No data'}
         `;
     }
 
     let specificInstruction = "";
     if (isFreshAccount) {
-        specificInstruction = `This user has not logged any workouts yet. Based on their profile data (height, weight, BMI, target weight), provide:
+        specificInstruction = `This user has not logged any workouts or nutrition yet. Based on their profile data, provide:
         1. Encouragement to start their fitness journey
-        2. Beginner-friendly workout plan recommendations based on their goals
+        2. Beginner-friendly workout plan and nutrition recommendations based on their goals
         3. Tips for getting started with the MuscleBot app
         Keep it motivating and actionable. Don't mention lack of data negatively - focus on the exciting journey ahead.`;
     } else if (reportType === 'daily') {
-        specificInstruction = "Critique today's session (if any) and the most recent weight fluctuation. Be quick and punchy.";
+        specificInstruction = "Critique today's session (if any), recent nutrition habits, and the most recent weight fluctuation. Be quick and punchy.";
     } else if (reportType === 'weekly') {
-        specificInstruction = "Analyze volume trends and consistency over the last week. Give 3 actionable tips for next week.";
+        specificInstruction = "Analyze volume trends, nutrition consistency (e.g., protein intake vs goals), and weight trend over the last week. Give 3 actionable tips for next week.";
     } else {
-        specificInstruction = "Analyze hypertrophy progress and weight trend over the month. Look for long-term consistency issues or wins.";
+        specificInstruction = "Analyze hypertrophy progress, adherence to nutrition, and weight trend over the month. Look for long-term consistency issues or wins.";
     }
 
     const systemPrompt = `You are an elite fitness coach addressing ${displayName || "the athlete"}. Analyze their data for a ${reportType} check-in.
@@ -175,7 +193,7 @@ export async function generateHealthReport(weightHistory, workoutLogs, previousR
     try {
         const completion = await openai.chat.completions.create({
             messages: [{ role: "system", content: systemPrompt }],
-            model: "deepseek-v4-pro",
+            model: "deepseek-v4-flash",
         });
 
         return completion.choices[0].message.content;
@@ -211,30 +229,55 @@ export async function generateWorkoutPlan({
     readinessData = null,
     healthData = null
 }) {
-    if (!apiKey) {
-        throw new Error("Missing DeepSeek API Key");
+    if (!groqApiKey) {
+        throw new Error("Missing Groq API Key");
     }
 
     const { displayName, currentWeight, height, targetWeight } = userProfile;
 
-    // Build recent workout context (last 7 days)
+    // Build recent workout context (last 7 days) and extract strength profile
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 7);
     const recentWorkouts = workoutHistory.filter(w => new Date(w.date) >= cutoff);
     
+    let strengthProfile = {}; // Store max weight/reps per exercise
+
     let recentWorkoutSummary = "No recent workouts.";
     if (recentWorkouts.length > 0) {
         recentWorkoutSummary = recentWorkouts.map(w => {
             let exerciseNames = [];
             const exData = w.exercises;
+            
+            let exArray = [];
             if (exData && typeof exData === 'object' && !Array.isArray(exData)) {
-                exerciseNames = Object.keys(exData);
+                // Object format
+                exArray = Object.entries(exData).map(([name, sets]) => ({ name, sets }));
             } else if (Array.isArray(exData)) {
-                exerciseNames = exData.map(e => e.name || e);
+                exArray = exData;
             }
+
+            exArray.forEach(ex => {
+                const name = ex.name || ex;
+                exerciseNames.push(name);
+                
+                // Track max weight
+                if (ex.sets && Array.isArray(ex.sets)) {
+                    ex.sets.forEach(set => {
+                        const weight = parseFloat(set.weight) || 0;
+                        const reps = parseInt(set.reps) || 0;
+                        if (!strengthProfile[name] || weight > (strengthProfile[name].weight || 0)) {
+                            strengthProfile[name] = { weight, reps, date: w.date };
+                        }
+                    });
+                }
+            });
             return `- ${w.type || 'Workout'} (${new Date(w.date).toLocaleDateString()}): ${exerciseNames.slice(0, 5).join(', ')}`;
-        }).join('\n');
+        }).join('\\n');
     }
+
+    let strengthString = Object.keys(strengthProfile).length > 0 
+        ? Object.entries(strengthProfile).map(([name, data]) => `- ${name}: ${data.weight}kg x ${data.reps} reps (last done ${new Date(data.date).toLocaleDateString()})`).join('\\n')
+        : "No strength data available.";
 
     // Build available exercises list for the AI to reference
     const exercisesByCategory = {};
@@ -245,7 +288,7 @@ export async function generateWorkoutPlan({
     });
     const exerciseListString = Object.entries(exercisesByCategory)
         .map(([cat, names]) => `${cat}: ${names.join(', ')}`)
-        .join('\n');
+        .join('\\n');
 
     // Build user request
     let userRequest = '';
@@ -265,8 +308,7 @@ export async function generateWorkoutPlan({
         readinessContext = `
 HEALTH & READINESS CONTEXT:
 - Readiness Score: ${readinessData.score}/100 (${readinessData.status})
-- Last Night's Sleep: ${healthData.sleep_hours} hours
-- Steps Yesterday: ${healthData.steps.toLocaleString()}
+- Last Night's Sleep: ${healthData.sleep_hours || 0} hours
 - AI Recommendation: ${readinessData.recommendation}
 
 CRITICAL ADJUSTMENT: You MUST adapt the workout intensity based on the Readiness Score. 
@@ -285,14 +327,21 @@ USER PROFILE:
 
 RECENT WORKOUTS (last 7 days):
 ${recentWorkoutSummary}
+
+STRENGTH PROFILE (Max weights used recently):
+${strengthString}
 ${readinessContext}
 
+AVAILABLE EXERCISES:
+${exerciseListString}
+
 RULES:
-1. Use standard, commonly known exercise names (e.g., "Barbell Bench Press", "Dumbbell Curl", "Squat").
+1. Use ONLY exact exercise names from the AVAILABLE EXERCISES list above.
 2. Generate 4-8 exercises depending on the time available.
-3. Consider what the user trained recently to avoid overtraining the same muscles.
-4. Tailor sets, reps, and rest to the user's stated goal.
-5. You MUST respond with ONLY valid JSON, no markdown, no code fences, no explanation text.
+3. PROGRESSIVE OVERLOAD: If the user did an exercise recently (check STRENGTH PROFILE), suggest increasing the weight by 2.5kg or increasing the reps by 1-2.
+4. Consider what the user trained recently to avoid overtraining the same muscles.
+5. Tailor sets, reps, and rest to the user's stated goal.
+6. You MUST respond with ONLY valid JSON, no markdown, no code fences, no explanation text.
 
 RESPONSE FORMAT (strict JSON):
 {
@@ -303,7 +352,7 @@ RESPONSE FORMAT (strict JSON):
       "sets": 3,
       "reps": 10,
       "restSeconds": 90,
-      "notes": "Brief coaching cue"
+      "notes": "Brief coaching cue + progressive overload target if applicable (e.g., 'Aim for 82.5kg today')"
     }
   ],
   "summary": "1-2 sentence description of the workout",
@@ -311,41 +360,41 @@ RESPONSE FORMAT (strict JSON):
   "coachTip": "One motivational or strategic tip for this session"
 }`;
 
-    let rawContent = "";
     try {
-        const completion = await openai.chat.completions.create({
+        const completion = await groqClient.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userRequest }
             ],
-            model: "deepseek-v4-pro",
-            temperature: 0.7,
-            max_tokens: 4000
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.5,
+            max_tokens: 3000,
+            response_format: { type: "json_object" }
         });
 
-        rawContent = completion.choices[0].message.content || "";
+        let rawContent = completion.choices[0].message.content || "{}";
 
-        // Remove <think> blocks if DeepSeek added reasoning
-        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        // Remove <think> blocks just in case
+        let cleanedContent = rawContent.replace(/<think>[\\s\\S]*?<\\/think>\\n?/g, '').trim();
         
-        // Extract the JSON object using regex to ignore any conversational text before or after
-        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        // Extract the JSON object using regex
+        const match = cleanedContent.match(/\\{[\\s\\S]*\\}/);
         let jsonString = match ? match[0] : "{}";
 
-        // Fix potential trailing commas that break JSON.parse
-        jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
+        // Fix potential trailing commas
+        jsonString = jsonString.replace(/,\\s*([\\]}])/g, '$1');
 
         let plan;
         try {
             plan = JSON.parse(jsonString);
         } catch (parseError) {
             console.error("JSON Parse failed. String:", jsonString);
-            throw new Error(`Parse Error: ${parseError.message}. End of string: ${jsonString.substring(Math.max(0, jsonString.length - 100))}`);
+            throw new Error(\`Parse Error: \${parseError.message}\`);
         }
         
         // Validate structure
         if (!plan.exercises || !Array.isArray(plan.exercises) || plan.exercises.length === 0) {
-            throw new Error(`AI generated an empty workout plan.`);
+            throw new Error(\`AI generated an empty workout plan.\`);
         }
 
         return plan;
@@ -357,6 +406,52 @@ RESPONSE FORMAT (strict JSON):
 }
 
 // --- NEW: Phase 2 Nutrition AI Functions ---
+
+export async function getInSessionAdvice(currentExercises) {
+    if (!groqApiKey) {
+        throw new Error("Missing Groq API Key");
+    }
+
+    const systemPrompt = `You are a fitness coach. The user is in the middle of a workout and wants exercise suggestions.
+
+CURRENT EXERCISES IN SESSION: ${currentExercises.join(', ')}
+
+Based on what they've already done, suggest 3 complementary exercises that would:
+1. Complete the muscle group coverage for this session
+2. Target synergistic muscles that were already engaged
+3. Avoid overworking the same exact movement patterns
+
+Respond with ONLY valid JSON, no markdown, no code fences:
+{
+  "suggestions": [
+    {
+      "name": "Exercise Name",
+      "reason": "Brief 1-line reason why this complements the session"
+    }
+  ],
+  "analysis": "Brief 1-line analysis of what they've covered so far"
+}`;
+
+    try {
+        const completion = await groqClient.chat.completions.create({
+            messages: [{ role: "system", content: systemPrompt }],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.7,
+            max_tokens: 500,
+            response_format: { type: "json_object" }
+        });
+
+        let cleanedContent = completion.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        let jsonString = match ? match[0] : "{}";
+        jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
+
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error("In-Session Advice Error:", error);
+        throw new Error("Failed to get suggestions.");
+    }
+}
 
 /**
  * Parses natural language food descriptions into estimated calories and macros.
@@ -373,9 +468,13 @@ export async function analyzeFoodInput(text) {
     IMPORTANT RULES:
     1. Be as accurate and realistic as possible. Do not aggressively over-estimate or under-estimate.
     2. Account for standard hidden calories (normal cooking oils, sauces).
-    3. 1 standard Roti/Chapati is ~100-120 calories.
-    4. A standard homemade bowl of curry (chicken, meat, or paneer) is usually 300-450 calories depending on the oil. A restaurant curry is usually 500-800 calories.
-    5. If the user doesn't specify if it's homemade or restaurant, aim for a balanced middle-ground (e.g., ~500-600 total calories for 2 rotis and curry).
+    3. If the user doesn't specify portion size, assume a standard adult serving.
+    4. Enforce strict macro-calorie math: (Protein*4) + (Carbs*4) + (Fats*9) = Calories.
+    
+    FEW-SHOT CALIBRATION EXAMPLES:
+    - "200g chicken breast": {"calories": 311, "protein": 62, "carbs": 0, "fats": 7, "food_name": "Chicken Breast (200g)"}
+    - "1 cup cooked white rice": {"calories": 206, "protein": 4, "carbs": 45, "fats": 0, "food_name": "White Rice (1 cup)"}
+    - "2 roti with chicken curry": {"calories": 510, "protein": 35, "carbs": 52, "fats": 18, "food_name": "2 Roti & Chicken Curry"}
     
     CRITICAL INSTRUCTION: Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.
     Format required:
@@ -394,7 +493,7 @@ export async function analyzeFoodInput(text) {
         const response = await groqClient.chat.completions.create({
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.2,
+            temperature: 0.1, // Lower temperature for consistency
             max_tokens: 500,
             response_format: { type: "json_object" }
         });
@@ -415,6 +514,12 @@ export async function analyzeFoodInput(text) {
             console.error("Food JSON parse error:", e, jsonContent);
             parsed = { calories: 0, protein: 0, carbs: 0, fats: 0, food_name: text };
         }
+        
+        // Validation bounds
+        if (parsed.protein > 300) parsed.protein = 300;
+        if (parsed.carbs > 500) parsed.carbs = 500;
+        if (parsed.fats > 200) parsed.fats = 200;
+
         // Enforce 4/4/9 strict mathematical accuracy
         parsed.calories = Math.round((parsed.protein * 4) + (parsed.carbs * 4) + (parsed.fats * 9));
         return parsed;
@@ -428,8 +533,12 @@ export async function analyzeFoodInput(text) {
  * Generates a meal plan (1, 7, or 14 days) based on target macros and preferences.
  */
 export async function generateMealPlan(params) {
-    const { targets, goal, diet, exclusions, mealsPerDay, cuisine, days } = params;
+    const { targets, goal, diet, exclusions, mealsPerDay, cuisine, days, foodHistory = [], complexity = 'Quick & Easy' } = params;
     if (!groqApiKey) throw new Error("Missing Groq API Key");
+
+    const recentMealsStr = foodHistory.length > 0 
+        ? foodHistory.slice(0, 20).map(f => `- ${f.food_text || f.name} (${f.calories} kcal)`).join('\\n')
+        : "No recent logged meals.";
 
     const prompt = `You are a world-class AI Sports Nutritionist. 
 Your task is to generate a structured, multi-day meal plan for the user.
@@ -442,96 +551,74 @@ USER PROFILE & CONSTRAINTS:
 - Exclusions/Allergies: ${exclusions && exclusions.length > 0 ? exclusions.join(', ') : 'None'}
 - Meals per day: ${mealsPerDay}
 - Cuisine preference: ${cuisine}
+- Cooking Complexity: ${complexity}
 - Duration: ${days} days
 
+RECENT LOGGED MEALS (For Inspiration & Grounding):
+${recentMealsStr}
+
 INSTRUCTIONS:
-1. Create exactly ${days} unique daily templates.
-2. For the Primary Goal ("${goal || 'Balance'}"), select appropriate food volumes and meal distributions (e.g., higher volume/lower cal density for fat loss, nutrient-dense/higher carb for muscle gain).
+1. Create exactly ${days} unique daily templates. The output JSON must contain a "days" array with ${days} objects.
+2. For the Primary Goal ("${goal || 'Balance'}"), select appropriate food volumes.
 3. The total calories and macros for EACH day MUST be within +/- 5% of the Daily Targets.
 4. Distribute the food across exactly ${mealsPerDay} meals per day.
-5. Provide realistic, tasty meals that fit the cuisine preference and diet type.
+5. Provide realistic, tasty meals that fit the cuisine preference, diet type, and cooking complexity.
 6. NO hallucinatory foods. Keep it practical.
+7. DO NOT REPEAT the same meals across days unless it's a staple like oatmeal or a protein shake.
 
-You MUST respond ONLY with a valid JSON object representing the meal plan. Do not include markdown formatting.
+FEW-SHOT EXAMPLES (What a GOOD meal looks like vs BAD meal):
+GOOD (Quick & Easy): "Chicken breast with microwave rice and mixed greens"
+BAD: "Pan-seared quinoa-crusted salmon with a balsamic reduction" (Too complex/fancy)
+
+You MUST respond ONLY with a valid JSON object. Do not include markdown formatting.
     Format required:
     {
-      "meals": [
+      "days": [
         {
-          "type": "Breakfast", // or Lunch, Dinner, Snack
-          "name": "Meal name",
-          "description": "Short description of ingredients",
-          "calories": number,
-          "protein": number,
-          "carbs": number,
-          "fats": number
+          "day": 1,
+          "meals": [
+            {
+              "type": "Breakfast", // or Lunch, Dinner, Snack
+              "name": "Meal name",
+              "description": "Short description of ingredients",
+              "calories": number,
+              "protein": number,
+              "carbs": number,
+              "fats": number
+            }
+          ]
         }
       ]
     }
     `;
 
     try {
-        // Generate a single day template
         const response = await groqClient.chat.completions.create({
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.4,
-            max_tokens: 1500,
+            temperature: 0.3,
+            max_tokens: 4000,
             response_format: { type: "json_object" }
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
-        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        let cleanedContent = rawContent.replace(/<think>[\\s\\S]*?<\\/think>\\n?/g, '').trim();
+        const match = cleanedContent.match(/\\{[\\s\\S]*\\}/);
         const jsonContent = match ? match[0] : "{}";
-        const parsedDay = JSON.parse(jsonContent);
+        const parsedPlan = JSON.parse(jsonContent);
         
-        // Enforce 4/4/9 strict mathematical accuracy on all meals
-        if (parsedDay.meals && Array.isArray(parsedDay.meals)) {
-            parsedDay.meals.forEach(meal => {
-                meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
+        // Enforce 4/4/9 strict mathematical accuracy on all meals across all days
+        if (parsedPlan.days && Array.isArray(parsedPlan.days)) {
+            parsedPlan.days.forEach(day => {
+                if (day.meals && Array.isArray(day.meals)) {
+                    day.meals.forEach(meal => {
+                        meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
+                    });
+                }
             });
         }
         
-        // If they just asked for 1 day, return it
-        if (days === 1) {
-            return {
-                days: [parsedDay]
-            };
-        }
-
-        // For multi-day, generate a second template for variety
-        const prompt2 = prompt + "\nProvide a DIFFERENT meal template than you usually would for variety.";
-        const response2 = await groqClient.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
-            messages: [{ role: "user", content: prompt2 }],
-            temperature: 0.6,
-            max_tokens: 1500,
-            response_format: { type: "json_object" }
-        });
-        
-        const rawContent2 = response2.choices[0]?.message?.content || "{}";
-        const jsonContent2 = (rawContent2.match(/\{[\s\S]*\}/) || ["{}"])[0];
-        const parsedDay2 = JSON.parse(jsonContent2);
-        
-        if (parsedDay2.meals && Array.isArray(parsedDay2.meals)) {
-            parsedDay2.meals.forEach(meal => {
-                meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
-            });
-        }
-
-        const generatedDays = [];
-        for (let i = 0; i < days; i++) {
-            // Alternate between template 1 and template 2
-            const template = (i % 2 === 0) ? parsedDay : parsedDay2;
-            
-            // Deep copy the template so modifications don't leak
-            const dayCopy = JSON.parse(JSON.stringify(template));
-            generatedDays.push(dayCopy);
-        }
-
-        return {
-            days: generatedDays
-        };
+        return parsedPlan;
 
     } catch (error) {
         console.error("Error generating meal plan:", error);

@@ -50,12 +50,12 @@ ${routineList || 'No saved routines.'}
 WORKOUT HISTORY:
 ${workoutHistory || 'No workout data available.'}
 
-NUTRITION HISTORY:
+NUTRITION HISTORY (Specific meals logged):
 ${nutritionHistory || 'No nutrition data available.'}
 
 PERSONALITY & RULES:
 1. Be direct, knowledgeable, and motivating. Like a tough but caring coach.
-2. Reference the user's actual data when relevant — don't make up stats.
+2. GROUNDING: You MUST reference the user's actual logged data when relevant. Don't make up stats.
 3. Keep responses concise (under 150 words unless the user asks for detail).
 4. Use markdown formatting: **bold** for emphasis, bullet points for lists.
 5. If asked about injuries or medical conditions, always recommend consulting a doctor first.
@@ -74,7 +74,7 @@ PERSONALITY & RULES:
                 messages: apiMessages,
                 model: "deepseek-v4-flash",
                 temperature: 0.7,
-                max_tokens: 512,
+                max_tokens: 1024,
                 stream: true,
             });
 
@@ -93,7 +93,7 @@ PERSONALITY & RULES:
                 messages: apiMessages,
                 model: "deepseek-v4-flash",
                 temperature: 0.7,
-                max_tokens: 512,
+                max_tokens: 1024,
             });
             return completion.choices[0].message.content;
         }

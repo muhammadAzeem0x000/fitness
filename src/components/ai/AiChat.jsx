@@ -97,9 +97,20 @@ export function AiChat() {
         let nutritionHistoryStr = "No recent nutrition data.";
         const recentNutrition = allNutrition?.filter(n => new Date(n.date) >= fourteenDaysAgo) || [];
         if (recentNutrition.length > 0) {
-            nutritionHistoryStr = recentNutrition.map(n => {
-                return `- ${new Date(n.date).toLocaleDateString()}: ${n.calories || 0}kcal (P:${n.protein || 0}g, C:${n.carbs || 0}g, F:${n.fats || 0}g)`;
-            }).join('\n');
+            const groupedByDate = {};
+            recentNutrition.forEach(n => {
+                const d = new Date(n.date).toLocaleDateString();
+                if (!groupedByDate[d]) groupedByDate[d] = { meals: [], totalCals: 0, totalP: 0, totalC: 0, totalF: 0 };
+                groupedByDate[d].meals.push(`${n.food_text || n.meal_type} (${n.calories}kcal)`);
+                groupedByDate[d].totalCals += n.calories || 0;
+                groupedByDate[d].totalP += n.protein || 0;
+                groupedByDate[d].totalC += n.carbs || 0;
+                groupedByDate[d].totalF += n.fats || 0;
+            });
+            
+            nutritionHistoryStr = Object.entries(groupedByDate).map(([date, data]) => {
+                return `- ${date}: ${data.meals.join(', ')} — Total: ${data.totalCals}kcal (P:${data.totalP}g, C:${data.totalC}g, F:${data.totalF}g)`;
+            }).join('\\n');
         }
 
         // Simple streak calculation

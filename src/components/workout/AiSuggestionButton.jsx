@@ -2,15 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Loader2, X, Plus, Brain } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-// Import the openai client directly for this lightweight call
-import OpenAI from 'openai';
-
-const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY;
-const openai = apiKey ? new OpenAI({
-    apiKey,
-    baseURL: 'https://api.deepseek.com/v1',
-    dangerouslyAllowBrowser: true
-}) : null;
+import { getInSessionAdvice } from '../../lib/openai';
 
 /**
  * AI Exercise Suggestion Button + Popover
@@ -23,7 +15,7 @@ export function AiSuggestionButton({ currentExercises = [], onAddExercise }) {
     const [error, setError] = useState(null);
 
     const handleGetSuggestions = async () => {
-        if (!openai || currentExercises.length === 0) return;
+        if (currentExercises.length === 0) return;
 
         setIsOpen(true);
         setLoading(true);
@@ -31,48 +23,7 @@ export function AiSuggestionButton({ currentExercises = [], onAddExercise }) {
         setSuggestions(null);
 
         try {
-            const completion = await openai.chat.completions.create({
-                messages: [
-                    {
-                        role: "system",
-                        content: `You are a fitness coach. The user is in the middle of a workout and wants exercise suggestions.
-
-CURRENT EXERCISES IN SESSION: ${currentExercises.join(', ')}
-
-Based on what they've already done, suggest 3 complementary exercises that would:
-1. Complete the muscle group coverage for this session
-2. Target synergistic muscles that were already engaged
-3. Avoid overworking the same exact movement patterns
-
-Respond with ONLY valid JSON, no markdown, no code fences:
-{
-  "suggestions": [
-    {
-      "name": "Exercise Name",
-      "reason": "Brief 1-line reason why this complements the session"
-    }
-  ],
-  "analysis": "Brief 1-line analysis of what they've covered so far"
-}`
-                    },
-                    {
-                        role: "user",
-                        content: `I've done: ${currentExercises.join(', ')}. What else should I add?`
-                    }
-                ],
-                model: "deepseek-v4-flash",
-                temperature: 0.7,
-                max_tokens: 300
-            });
-
-            let cleanedContent = completion.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
-            const match = cleanedContent.match(/\{[\s\S]*\}/);
-            let jsonString = match ? match[0] : "{}";
-            
-            // Fix trailing commas
-            jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
-
-            const result = JSON.parse(jsonString);
+            const result = await getInSessionAdvice(currentExercises);
             setSuggestions(result);
         } catch (err) {
             console.error('Suggestion error:', err);

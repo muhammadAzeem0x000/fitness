@@ -129,6 +129,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                     targetWeight: profile?.goal_weight,
                 },
                 workoutHistory: workoutLogs || [],
+                availableExercises: exercises || [],
                 readinessData: readiness,
                 healthData: todayMetrics
             });

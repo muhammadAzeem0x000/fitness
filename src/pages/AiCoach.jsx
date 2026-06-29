@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useWeight } from '../hooks/useWeight';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { useProfile } from '../hooks/useProfile';
+import { useNutrition } from '../hooks/useNutrition';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SAMPLE_DAILY_REPORT, SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
 import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
@@ -23,6 +24,7 @@ export function AiCoach() {
     const { user } = useAuth();
     const { weightHistory } = useWeight(user?.id);
     const { workoutLogs } = useWorkouts(user?.id);
+    const { allNutrition } = useNutrition(user?.id);
     const { profile } = useProfile(user?.id);
     const queryClient = useQueryClient();
     const { isPremium, isLoading: subLoading } = useSubscription();
@@ -102,7 +104,7 @@ export function AiCoach() {
             const latestWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : null;
 
             // Pass activeTab as reportType with complete profile data
-            const reportText = await generateHealthReport(weightHistory, workoutLogs, previousReport, activeTab, {
+            const reportText = await generateHealthReport(weightHistory, workoutLogs, allNutrition || [], previousReport, activeTab, {
                 displayName: profile?.display_name,
                 workoutDays: profile?.workout_days,
                 height: profile?.height,

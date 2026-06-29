@@ -4,7 +4,7 @@ import { Loader2, X } from 'lucide-react';
 import { generateMealPlan } from '../../lib/openai';
 import { hapticLight, hapticSuccess } from '../../lib/haptics';
 
-export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
+export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodHistory }) {
     const [isGenerating, setIsGenerating] = useState(false);
 
     // Form state
@@ -14,6 +14,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
     const [exclusions, setExclusions] = useState([]);
     const [mealsPerDay, setMealsPerDay] = useState(4);
     const [cuisine, setCuisine] = useState('Any');
+    const [complexity, setComplexity] = useState('Quick & Easy');
 
     const toggleExclusion = (item) => {
         hapticLight();
@@ -35,7 +36,9 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                 exclusions,
                 mealsPerDay,
                 cuisine,
-                days
+                complexity,
+                days,
+                foodHistory
             });
             hapticSuccess();
             onGenerated(result); // Pass back up to save or display
@@ -165,6 +168,25 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets }) {
                                         }`}
                                 >
                                     {num} Meals
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Cooking Complexity */}
+                    <div>
+                        <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Cooking Complexity</label>
+                        <div className="flex gap-2">
+                            {['Quick & Easy', 'Moderate', 'Chef Mode'].map(c => (
+                                <button
+                                    key={c}
+                                    onClick={() => { hapticLight(); setComplexity(c); }}
+                                    className={`flex-1 py-2 text-xs font-medium border rounded-xl transition-colors ${complexity === c
+                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                                            : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-white dark:bg-zinc-800'
+                                        }`}
+                                >
+                                    {c}
                                 </button>
                             ))}
                         </div>
