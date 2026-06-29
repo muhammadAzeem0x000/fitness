@@ -5,4 +5,5 @@
     <string name="package_name">com.musclebot.app</string>
     <string name="custom_url_scheme">com.musclebot.app</string>
     <string name="health_connect_privacy_policy_url">https://example.com/privacy-policy</string>
+    <string name="server_client_id">85405116052-14s783er0vlucgn6mjckbj6oid8p5hqr.apps.googleusercontent.com</string>
 </resources>

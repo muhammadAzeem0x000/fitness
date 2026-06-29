@@ -88,7 +88,7 @@ const RequireAuth = ({ children }) => {
   if (loading) return <FullScreenLoader />;
 
   if (!user) {
-    return <Navigate to="/auth" replace state={{ from: location }} />;
+    return <Navigate to="/auth" replace state={{ from: location, view: 'login' }} />;
   }
 
   return children;
@@ -158,7 +158,7 @@ const AppContent = () => {
         {/* Public Marketing Page */}
         <Route path="/" element={
           <PublicRoute>
-            {isNativePlatform() ? <Navigate to="/auth" replace /> : <LandingPage />}
+            {isNativePlatform() ? <Navigate to="/auth" state={{ view: 'login' }} replace /> : <LandingPage />}
           </PublicRoute>
         } />
 

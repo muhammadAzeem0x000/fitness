@@ -19,6 +19,7 @@
     "@capacitor/keyboard": "^8.0.5",
     "@capacitor/status-bar": "^8.0.2",
     "@capgo/capacitor-health": "^8.6.8",
+    "@capgo/capacitor-social-login": "^8.3.30",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.7",
