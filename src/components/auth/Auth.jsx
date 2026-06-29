@@ -14,7 +14,15 @@ import authBg from '../../assets/auth-bg.jpg';
 export function Auth() {
     const location = useLocation();
     const [loading, setLoading] = useState(false);
-    const [view, setView] = useState(location.state?.view || 'login'); // 'login' | 'signup' | 'forgot-password'
+    const [view, setView] = useState(() => {
+        if (location.state?.view) return location.state.view;
+        const hasLaunchedBefore = localStorage.getItem('has_launched_before');
+        if (!hasLaunchedBefore) {
+            localStorage.setItem('has_launched_before', 'true');
+            return 'signup';
+        }
+        return 'login';
+    });
     const { toast } = useToast();
 
     // Login Form
