@@ -25,7 +25,7 @@ export async function initRevenueCat(appUserId) {
     const apiKey = import.meta.env.VITE_REVENUECAT_API_KEY;
     if (!apiKey) {
       console.error('Missing VITE_REVENUECAT_API_KEY');
-      return;
+      throw new Error('Missing VITE_REVENUECAT_API_KEY');
     }
     
     

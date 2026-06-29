@@ -13,7 +13,12 @@ export function useSubscription() {
 
     const refreshSubscription = async () => {
         try {
-            const hasPro = await checkEntitlement();
+            // Race the entitlement check against a 5-second timeout
+            // This prevents the app from hanging if RevenueCat fails to initialize or respond
+            const hasPro = await Promise.race([
+                checkEntitlement(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('RevenueCat timeout')), 5000))
+            ]);
             setIsPremium(hasPro);
         } catch (error) {
             console.error('Failed to check RevenueCat entitlement', error);
