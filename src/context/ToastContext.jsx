@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { X } from 'lucide-react';
+import { X, CheckCircle2, XCircle, Info } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 const ToastContext = createContext(null);
@@ -16,9 +16,14 @@ export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
 
     const addToast = useCallback((message, type = 'info', duration = 4000, action = null) => {
-        console.log("Toast Triggered:", message, type);
         const id = Date.now().toString() + Math.random().toString();
-        setToasts((prev) => [...prev, { id, message, type, duration, action }]);
+        // Remove emoji if it's already in the message (since we use Lucide icons now)
+        // This is a quick cleanup in case messages have hardcoded emojis at the start
+        const cleanMessage = typeof message === 'string' 
+            ? message.replace(/^(\u2705|\u274C|\u2139\uFE0F|\u26A0\uFE0F|\uD83C\uDFDF\uFE0F|\uD83C\uDFC6|\uD83D\uDE80|\uD83D\uDD25)\s*/, '')
+            : message;
+
+        setToasts((prev) => [...prev, { id, message: cleanMessage, type, duration, action }]);
 
         if (duration > 0) {
             setTimeout(() => {
@@ -50,19 +55,22 @@ const Toaster = ({ toasts, removeToast }) => {
         <div
             style={{
                 position: 'fixed',
-                bottom: '20px',
-                right: '20px',
+                bottom: 'max(90px, env(safe-area-inset-bottom, 90px))',
+                left: '50%',
+                transform: 'translateX(-50%)',
                 zIndex: 2147483647,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px',
-                maxWidth: '420px',
-                width: '100%',
-                padding: '0 16px'
+                gap: '8px',
+                maxWidth: '400px',
+                width: 'calc(100% - 32px)',
+                pointerEvents: 'none'
             }}
         >
             {toasts.map((toast) => (
-                <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
+                <div key={toast.id} style={{ pointerEvents: 'auto' }}>
+                    <Toast {...toast} onClose={() => removeToast(toast.id)} />
+                </div>
             ))}
         </div>,
         document.body
@@ -79,45 +87,43 @@ const Toast = ({ id, message, type, onClose, action }) => {
 
     const typeStyles = {
         success: {
-            icon: '✅',
-            bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            border: '#10b981',
+            Icon: CheckCircle2,
+            iconColor: '#10b981', // emerald-500
         },
         error: {
-            icon: '❌',
-            bg: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-            border: '#ef4444',
+            Icon: XCircle,
+            iconColor: '#ef4444', // red-500
         },
         info: {
-            icon: 'ℹ️',
-            bg: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-            border: '#3b82f6',
+            Icon: Info,
+            iconColor: '#3b82f6', // blue-500
         },
     };
 
     const style = typeStyles[type] || typeStyles.info;
+    const IconComponent = style.Icon;
 
     return (
         <div
             style={{
-                background: style.bg,
-                color: 'white',
-                padding: '16px 20px',
-                borderRadius: '12px',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                background: '#18181b', // zinc-900 (Sleek dark theme)
+                color: '#f4f4f5', // zinc-50
+                padding: '12px 16px',
+                borderRadius: '10px',
+                border: '1px solid #27272a', // zinc-800
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: '500',
-                minHeight: '60px',
-                animation: isExiting ? 'slideOut 0.2s ease-out' : 'slideIn 0.3s ease-out',
-                transform: isExiting ? 'translateX(100%)' : 'translateX(0)',
-                opacity: isExiting ? 0 : 1,
-                transition: 'transform 0.2s, opacity 0.2s'
+                minHeight: '48px',
+                animation: isExiting ? 'toastSlideOut 0.2s ease-out forwards' : 'toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                transformOrigin: 'bottom center'
             }}
         >
-            <span style={{ fontSize: '20px', flexShrink: 0 }}>{style.icon}</span>
+            <IconComponent size={18} color={style.iconColor} style={{ flexShrink: 0 }} />
+            
             <span style={{ flex: 1, lineHeight: '1.4' }}>{message}</span>
 
             {action && (
@@ -127,22 +133,23 @@ const Toast = ({ id, message, type, onClose, action }) => {
                         handleClose();
                     }}
                     style={{
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        background: '#27272a',
+                        border: '1px solid #3f3f46',
                         color: 'white',
                         padding: '6px 12px',
                         borderRadius: '6px',
                         fontSize: '12px',
                         fontWeight: '600',
                         cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        whiteSpace: 'nowrap'
+                        transition: 'background 0.2s',
+                        whiteSpace: 'nowrap',
+                        marginLeft: '4px'
                     }}
                     onMouseEnter={(e) => {
-                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                        e.target.style.background = '#3f3f46';
                     }}
                     onMouseLeave={(e) => {
-                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                        e.target.style.background = '#27272a';
                     }}
                 >
                     {action.label}
@@ -152,47 +159,50 @@ const Toast = ({ id, message, type, onClose, action }) => {
             <button
                 onClick={handleClose}
                 style={{
-                    background: 'rgba(255, 255, 255, 0.15)',
+                    background: 'transparent',
                     border: 'none',
-                    color: 'white',
+                    color: '#a1a1aa', // zinc-400
                     width: '24px',
                     height: '24px',
-                    borderRadius: '50%',
+                    borderRadius: '4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
                     flexShrink: 0,
-                    transition: 'background 0.2s'
+                    transition: 'color 0.2s, background 0.2s',
+                    marginLeft: '-4px'
                 }}
                 onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.25)';
+                    e.target.style.color = '#f4f4f5';
+                    e.target.style.background = '#27272a';
                 }}
                 onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                    e.target.style.color = '#a1a1aa';
+                    e.target.style.background = 'transparent';
                 }}
             >
-                <X size={14} />
+                <X size={14} strokeWidth={2.5} />
             </button>
 
             <style>{`
-                @keyframes slideIn {
+                @keyframes toastSlideIn {
                     from {
-                        transform: translateX(100%);
+                        transform: translateY(100%) scale(0.9);
                         opacity: 0;
                     }
                     to {
-                        transform: translateX(0);
+                        transform: translateY(0) scale(1);
                         opacity: 1;
                     }
                 }
-                @keyframes slideOut {
+                @keyframes toastSlideOut {
                     from {
-                        transform: translateX(0);
+                        transform: scale(1);
                         opacity: 1;
                     }
                     to {
-                        transform: translateX(100%);
+                        transform: scale(0.9);
                         opacity: 0;
                     }
                 }

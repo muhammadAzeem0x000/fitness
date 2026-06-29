@@ -162,6 +162,7 @@ export function Auth() {
                                             className={`flex h-10 w-full rounded-md border ${loginErrors.email ? 'border-red-500' : 'border-slate-700/50'} bg-slate-900/50 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors`}
                                             type="email"
                                             placeholder="Email"
+                                            autoComplete="email"
                                         />
                                         {loginErrors.email && <p className="text-xs text-red-500 mt-1">{loginErrors.email.message}</p>}
                                     </div>
@@ -170,6 +171,7 @@ export function Auth() {
                                             {...registerLogin('password')}
                                             className={`flex h-10 w-full rounded-md border ${loginErrors.password ? 'border-red-500' : 'border-slate-700/50'} bg-slate-900/50 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors`}
                                             placeholder="Password"
+                                            autoComplete="current-password"
                                         />
                                         {loginErrors.password && <p className="text-xs text-red-500 mt-1">{loginErrors.password.message}</p>}
                                     </div>
@@ -213,6 +215,7 @@ export function Auth() {
                                         className={`flex h-10 w-full rounded-md border ${signupErrors.email ? 'border-red-500' : 'border-slate-700/50'} bg-slate-900/50 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors`}
                                         type="email"
                                         placeholder="Email"
+                                        autoComplete="email"
                                     />
                                     {signupErrors.email && <p className="text-xs text-red-500 mt-1">{signupErrors.email.message}</p>}
                                 </div>
@@ -221,6 +224,7 @@ export function Auth() {
                                         {...registerSignup('password')}
                                         className={`flex h-10 w-full rounded-md border ${signupErrors.password ? 'border-red-500' : 'border-slate-700/50'} bg-slate-900/50 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors`}
                                         placeholder="Password (min 6 chars)"
+                                        autoComplete="new-password"
                                     />
                                     {signupErrors.password && <p className="text-xs text-red-500 mt-1">{signupErrors.password.message}</p>}
                                 </div>
@@ -229,6 +233,7 @@ export function Auth() {
                                         {...registerSignup('confirmPassword')}
                                         className={`flex h-10 w-full rounded-md border ${signupErrors.confirmPassword ? 'border-red-500' : 'border-slate-700/50'} bg-slate-900/50 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-colors`}
                                         placeholder="Confirm Password"
+                                        autoComplete="new-password"
                                     />
                                     {signupErrors.confirmPassword && <p className="text-xs text-red-500 mt-1">{signupErrors.confirmPassword.message}</p>}
                                 </div>
