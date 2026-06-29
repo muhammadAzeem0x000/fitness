@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Plus, Check, Info } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { MuscleIcon } from '../ui/MuscleIcon';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
-import { getExerciseDataBatch, getCategoryFallbackIcon, formatEquipment, formatTarget, getExerciseLibrary } from '../../lib/exerciseImages';
+import { getExerciseDataBatch, formatEquipment, formatTarget, getExerciseLibrary } from '../../lib/exerciseImages';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
 
 export function ExercisePicker({ availableExercises, onComplete, onBack, initialSelection = [] }) {
@@ -49,28 +50,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
     // Sort logic: if we had frequency data, we'd sort here. 
     // For now, assume availableExercises is the full list.
 
-    const categoryIcons = {
-        // App categories
-        Chest: '👕',
-        Back: '🎒',
-        Shoulders: '🏋️',
-        Arms: '💪',
-        Legs: '🦵',
-        Cardio: '🏃',
-        Core: '🔥',
-        // Dataset original body parts
-        'waist': '🔥',
-        'upper legs': '🦵',
-        'lower legs': '🦵',
-        'chest': '👕',
-        'back': '🎒',
-        'shoulders': '🏋️',
-        'upper arms': '💪',
-        'lower arms': '💪',
-        'cardio': '🏃',
-        'neck': '🎯',
-        Default: '🎯'
-    };
+    // Category icons are now handled by MuscleIcon component
 
     // Extract unique categories for filter tabs
     const categories = useMemo(() => {
@@ -177,7 +157,6 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                 {/* Category Filters */}
                 <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
                     {categories.map(cat => {
-                        const icon = categoryIcons[cat] || (cat === 'All' ? '🔍' : categoryIcons.Default);
                         return (
                             <button
                                 key={cat}
@@ -185,13 +164,13 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                     setActiveCategory(cat);
                                     setVisibleCount(50); // Reset pagination on filter change
                                 }}
-                                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
                                     activeCategory === cat
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-300 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-300 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
                                 }`}
                             >
-                                <span aria-hidden="true">{icon}</span>
+                                <MuscleIcon category={cat} active={activeCategory === cat} className="w-5 h-5 opacity-90" />
                                 <span className="capitalize">{cat}</span>
                             </button>
                         );
@@ -206,7 +185,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                     {(activeCategory === 'All') && customInputs.map((custom, idx) => (
                         <div key={`custom-${idx}`} className="flex items-center justify-between p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-slate-900 dark:text-white shrink-0">
                             <div className="flex items-center gap-3">
-                                <span className="text-xl" aria-hidden="true">{categoryIcons.Default}</span>
+                                <MuscleIcon category="All" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 <span className="font-medium">{custom} <span className="text-xs text-blue-600 dark:text-blue-300 opacity-70 ml-1">(Custom)</span></span>
                             </div>
                             <Check className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -221,9 +200,8 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                     ) : (
                         filtered.slice(0, visibleCount).map(ex => {
                         const isSelected = selected.includes(ex.name);
-                        const icon = categoryIcons[ex.category] || categoryIcons.Default;
                         const imgData = exerciseImageData.get(ex.name);
-                        const thumbnailUrl = imgData?.image_url;
+                        const thumbnailUrl = imgData?.image_url || imgData?.gif_url;
                         return (
                             <div key={ex.id} className="relative shrink-0">
                                 <button
@@ -235,7 +213,7 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                 >
                                     {/* Thumbnail or Fallback Icon */}
                                     {thumbnailUrl ? (
-                                        <div className={`w-12 h-12 rounded-lg overflow-hidden flex-none border ${isSelected ? 'border-blue-400/50' : 'border-slate-200 dark:border-zinc-700'}`}>
+                                        <div className={`w-12 h-12 rounded-full overflow-hidden flex-none border ${isSelected ? 'border-blue-400/50' : 'border-slate-200 dark:border-zinc-700'}`}>
                                             <img
                                                 src={thumbnailUrl}
                                                 alt={ex.name}
@@ -244,8 +222,8 @@ export function ExercisePicker({ availableExercises, onComplete, onBack, initial
                                             />
                                         </div>
                                     ) : (
-                                        <div className={`w-12 h-12 rounded-lg flex-none flex items-center justify-center text-xl ${isSelected ? 'bg-blue-500/30' : 'bg-slate-100 dark:bg-zinc-800'}`}>
-                                            {icon}
+                                        <div className={`w-12 h-12 rounded-full flex-none flex items-center justify-center text-xl overflow-hidden ${isSelected ? 'bg-blue-500/30 text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'}`}>
+                                            <MuscleIcon category={ex.category} active={isSelected} className="w-full h-full" />
                                         </div>
                                     )}
 
