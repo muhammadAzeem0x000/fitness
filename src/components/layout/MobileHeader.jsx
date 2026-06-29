@@ -1,9 +1,10 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, WifiOff } from 'lucide-react';
+import { ArrowLeft, WifiOff, Sparkles } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { hapticLight } from '../../lib/haptics';
 import { useNetwork } from '../../hooks/useNetwork';
+import { useSubscription } from '../../hooks/useSubscription';
 import { ThemeToggle } from '../ui/ThemeToggle';
 
 export function MobileHeader() {
@@ -11,6 +12,7 @@ export function MobileHeader() {
     const navigate = useNavigate();
     const { preferences, toggleWeightUnit } = useUserPreferences();
     const { isOffline } = useNetwork();
+    const { isPremium, isLoading: subLoading } = useSubscription();
 
     const path = location.pathname;
     
@@ -73,6 +75,18 @@ export function MobileHeader() {
 
                 {/* Right: Actions */}
                 <div className="flex justify-end items-center gap-2">
+                    {!isPremium && !subLoading && !isOffline && (
+                        <button
+                            onClick={() => {
+                                hapticLight();
+                                navigate('/pricing');
+                            }}
+                            className="flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white w-7 h-7 active:scale-95 transition-transform shadow-sm"
+                            title="Upgrade to Pro"
+                        >
+                            <Sparkles className="w-3.5 h-3.5" />
+                        </button>
+                    )}
                     <ThemeToggle className="h-7 w-7 !p-1" />
                     <button
                         onClick={() => {

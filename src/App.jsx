@@ -13,6 +13,7 @@ import { isNativePlatform } from './lib/platform';
 import appLogo from './assets/logo.png';
 import { ThemeProvider } from './context/ThemeContext';
 import { initRevenueCat } from './lib/revenuecat';
+import { PremiumPromoPopup } from './components/premium/PremiumPromoPopup';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -117,6 +118,7 @@ const ProtectedLayout = () => {
         <PageTransition key={location.pathname} className="h-full w-full">
           <Outlet />
         </PageTransition>
+        <PremiumPromoPopup />
       </Layout>
     </RequireAuth>
   );
