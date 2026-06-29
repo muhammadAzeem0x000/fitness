@@ -12,6 +12,7 @@ import { useWorkouts } from '../../hooks/useWorkouts';
 import { useWeight } from '../../hooks/useWeight';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useHealthMetrics } from '../../hooks/useHealthMetrics';
+import { usePricing } from '../../context/PricingContext';
 import { calculateReadiness } from '../../lib/readiness';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
@@ -58,6 +59,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
     const { weightHistory } = useWeight(user?.id);
     const { metrics: healthMetrics } = useHealthMetrics(user?.id, 1); // just need today
     const { isPremium, isLoading: subLoading } = useSubscription();
+    const { openPricing } = usePricing();
     const navigate = useNavigate();
 
     // Mode: 'survey' or 'freetext'
@@ -381,7 +383,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                             <p className="text-sm">{error}</p>
                             {error.includes('Upgrade') && (
                                 <button
-                                    onClick={() => navigate('/pricing')}
+                                    onClick={() => openPricing()}
                                     className="mt-2 text-xs text-blue-400 hover:text-blue-300 underline"
                                 >
                                     View Pro Plans →
@@ -546,7 +548,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                     <div className="text-xs text-slate-500 dark:text-zinc-500 text-center px-2 py-3 bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800">
                         Free tier: 2 AI workout plans/month
                         <button
-                            onClick={() => navigate('/pricing')}
+                            onClick={() => openPricing()}
                             className="ml-2 text-violet-400 hover:text-violet-300 underline"
                         >
                             Upgrade for unlimited

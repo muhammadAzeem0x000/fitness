@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SAMPLE_DAILY_REPORT, SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
 import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
 import { useSubscription } from '../hooks/useSubscription';
+import { usePricing } from '../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
 import { useBackInterceptor } from '../hooks/useHardwareBackButton';
@@ -28,6 +29,7 @@ export function AiCoach() {
     const { profile } = useProfile(user?.id);
     const queryClient = useQueryClient();
     const { isPremium, isLoading: subLoading } = useSubscription();
+    const { openPricing } = usePricing();
     const navigate = useNavigate();
     const { isOffline } = useNetwork();
 
@@ -278,7 +280,7 @@ export function AiCoach() {
                         <div className="flex-none text-xs text-zinc-500 text-center px-2 py-2 bg-zinc-900/50 rounded border border-zinc-800">
                             Free tier: 1 report/month
                             <button
-                                onClick={() => navigate('/pricing')}
+                                onClick={() => openPricing()}
                                 className="ml-2 text-blue-400 hover:text-blue-300 underline"
                             >
                                 Upgrade for unlimited

@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
 import { PasswordInput } from '../components/ui/PasswordInput';
 import { useUserPreferences } from '../context/UserPreferencesContext';
+import { usePricing } from '../context/PricingContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
 import { requestHealthPermissions, openHealthSettings } from '../lib/wearables';
@@ -58,6 +59,7 @@ export default function ProfilePage() {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
     const { addWeightEntry } = useWeight(user?.id);
+    const { openPricing } = usePricing();
     const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
     
     const hasUsedTrial = false;
@@ -664,7 +666,7 @@ export default function ProfilePage() {
                                 size="sm"
                                 variant="outline"
                                 className="h-9 px-4 text-xs gap-1.5 rounded-xl border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-zinc-800"
-                                onClick={() => navigate('/pricing')}
+                                onClick={() => openPricing()}
                             >
                                 Manage
                             </Button>
@@ -672,7 +674,7 @@ export default function ProfilePage() {
                             <Button
                                 size="sm"
                                 className={`h-9 px-4 text-xs gap-1.5 rounded-xl ${isTrialExpired ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}
-                                onClick={() => navigate('/pricing')}
+                                onClick={() => openPricing()}
                             >
                                 {isTrialExpired ? 'Subscribe' : hasUsedTrial ? 'Upgrade' : 'Try Free'} <Sparkles className="w-3 h-3" />
                             </Button>

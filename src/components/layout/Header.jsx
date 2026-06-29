@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useAuth } from '../../hooks/useAuth';
+import { usePricing } from '../../context/PricingContext';
 import { useProfile } from '../../hooks/useProfile';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserProfileDialog } from '../profile/UserProfileDialog';
@@ -18,6 +19,7 @@ export function Header() {
     const { profile } = useProfile(user?.id);
     const location = useLocation();
     const navigate = useNavigate();
+    const { openPricing } = usePricing();
     const { isPremium, isLoading: subLoading, subscription, isTrialExpired } = useSubscription();
     const { isOffline } = useNetwork();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -134,7 +136,7 @@ export function Header() {
                     {/* Upgrade Button (Free Users Only) */}
                     {!isPremium && !subLoading && !isOffline && (
                         <button
-                            onClick={() => navigate('/pricing')}
+                            onClick={() => openPricing()}
                             className="hidden md:flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all"
                         >
                             <Sparkles className="w-4 h-4" />
@@ -217,7 +219,7 @@ export function Header() {
                     {!isPremium && !subLoading && (
                         <div className="pt-2 mt-2 border-t border-slate-200 dark:border-zinc-800">
                             <button
-                                onClick={() => { setIsMobileMenuOpen(false); navigate('/pricing'); }}
+                                onClick={() => { setIsMobileMenuOpen(false); openPricing(); }}
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium text-sm shadow-lg"
                             >
                                 <Sparkles className="w-4 h-4" />

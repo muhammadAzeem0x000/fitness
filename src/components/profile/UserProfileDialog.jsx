@@ -13,6 +13,7 @@ import { useToast } from '../../context/ToastContext';
 import { PasswordInput } from '../ui/PasswordInput';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
+import { usePricing } from '../../context/PricingContext';
 
 export function UserProfileDialog({ isOpen, onClose }) {
     useBackInterceptor(() => {
@@ -22,6 +23,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const { profile, updateProfile } = useProfile(user?.id);
     const { addWeightEntry } = useWeight(user?.id);
     const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
+    const { openPricing } = usePricing();
     
     const hasUsedTrial = false;
 
@@ -505,7 +507,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                                 className="h-8 text-xs gap-1.5"
                                                 onClick={() => {
                                                     onClose();
-                                                    navigate('/pricing');
+                                                    openPricing();
                                                 }}
                                             >
                                                 Manage
@@ -516,7 +518,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                                 className={`h-8 text-xs gap-1.5 ${isTrialExpired ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}
                                                 onClick={() => {
                                                     onClose();
-                                                    navigate('/pricing');
+                                                    openPricing();
                                                 }}
                                             >
                                                 {isTrialExpired ? 'Subscribe Now' : hasUsedTrial ? 'Upgrade to Pro' : 'Start Free Trial'} <Sparkles className="w-3 h-3" />

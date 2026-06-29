@@ -10,6 +10,7 @@ import { useProfile } from '../../hooks/useProfile';
 import { useWeight } from '../../hooks/useWeight';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { useSubscription } from '../../hooks/useSubscription';
+import { usePricing } from '../../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
 
@@ -43,6 +44,7 @@ export function AiChat() {
         enabled: !!user?.id
     });
     const { isPremium, isLoading: subLoading } = useSubscription();
+    const { openPricing } = usePricing();
     const navigate = useNavigate();
 
     const [messages, setMessages] = useState([]);
@@ -270,7 +272,7 @@ export function AiChat() {
                             <div className="mt-6 text-xs text-slate-500 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-lg px-4 py-2">
                                 Free tier: 5 messages/month
                                 <button
-                                    onClick={() => navigate('/pricing')}
+                                    onClick={() => openPricing()}
                                     className="ml-2 text-violet-400 hover:text-violet-300 underline"
                                 >
                                     Upgrade
@@ -331,7 +333,7 @@ export function AiChat() {
                         {error}
                         {error.includes('Upgrade') && (
                             <button
-                                onClick={() => navigate('/pricing')}
+                                onClick={() => openPricing()}
                                 className="ml-2 text-blue-400 hover:text-blue-300 underline text-xs"
                             >
                                 View Pro Plans

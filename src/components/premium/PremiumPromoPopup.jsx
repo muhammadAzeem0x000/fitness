@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Sparkles, X, CheckCircle2, TrendingUp, Zap } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
+import { usePricing } from '../../context/PricingContext';
 
 const MAX_TOTAL_DISPLAYS = 10;
 const SESSION_INTERVAL = 3;
 
 export function PremiumPromoPopup() {
     const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate();
     const { isPremium, isLoading } = useSubscription();
+    const { openPricing } = usePricing();
 
     useEffect(() => {
         if (isLoading || isPremium) return;
@@ -122,7 +122,7 @@ export function PremiumPromoPopup() {
                     <button
                         onClick={() => {
                             setIsOpen(false);
-                            navigate('/pricing');
+                            openPricing();
                         }}
                         className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-95 flex items-center justify-center gap-2"
                     >

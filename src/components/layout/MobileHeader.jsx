@@ -5,6 +5,7 @@ import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { hapticLight } from '../../lib/haptics';
 import { useNetwork } from '../../hooks/useNetwork';
 import { useSubscription } from '../../hooks/useSubscription';
+import { usePricing } from '../../context/PricingContext';
 import { ThemeToggle } from '../ui/ThemeToggle';
 
 export function MobileHeader() {
@@ -13,6 +14,7 @@ export function MobileHeader() {
     const { preferences, toggleWeightUnit } = useUserPreferences();
     const { isOffline } = useNetwork();
     const { isPremium, isLoading: subLoading } = useSubscription();
+    const { openPricing } = usePricing();
 
     const path = location.pathname;
     
@@ -79,7 +81,7 @@ export function MobileHeader() {
                         <button
                             onClick={() => {
                                 hapticLight();
-                                navigate('/pricing');
+                                openPricing();
                             }}
                             className="flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white w-7 h-7 active:scale-95 transition-transform shadow-sm"
                             title="Upgrade to Pro"

@@ -3,6 +3,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
 import { Lock, Sparkles, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePricing } from '../../context/PricingContext';
 
 /**
  * Premium Gate Component
@@ -21,6 +22,7 @@ export function PremiumGate({
     showPreview = false
 }) {
     const { isPremium, isLoading, subscription, isTrialExpired } = useSubscription();
+    const { openPricing } = usePricing();
     const navigate = useNavigate();
 
     const hasUsedTrial = false;
@@ -84,7 +86,7 @@ export function PremiumGate({
                 <Button
                     size="lg"
                     className="gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5"
-                    onClick={() => navigate('/pricing')}
+                    onClick={() => openPricing()}
                 >
                     <Sparkles className="w-5 h-5" />
                     {hasUsedTrial ? 'Upgrade to Pro - $4.99/mo' : 'Start 14-Day Free Trial'}
