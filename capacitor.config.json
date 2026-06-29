@@ -2,10 +2,6 @@
   "appId": "com.musclebot.app",
   "appName": "MuscleBot",
   "webDir": "dist",
-  "server": {
-    "url": "http://192.168.100.16:5173/",
-    "cleartext": true
-  },
   "plugins": {
     "GoogleAuth": {
       "scopes": [

@@ -272,11 +272,11 @@ export async function generateWorkoutPlan({
                 }
             });
             return `- ${w.type || 'Workout'} (${new Date(w.date).toLocaleDateString()}): ${exerciseNames.slice(0, 5).join(', ')}`;
-        }).join('\\n');
+        }).join('\n');
     }
 
     let strengthString = Object.keys(strengthProfile).length > 0 
-        ? Object.entries(strengthProfile).map(([name, data]) => `- ${name}: ${data.weight}kg x ${data.reps} reps (last done ${new Date(data.date).toLocaleDateString()})`).join('\\n')
+        ? Object.entries(strengthProfile).map(([name, data]) => `- ${name}: ${data.weight}kg x ${data.reps} reps (last done ${new Date(data.date).toLocaleDateString()})`).join('\n')
         : "No strength data available.";
 
     // Build available exercises list for the AI to reference
@@ -288,7 +288,7 @@ export async function generateWorkoutPlan({
     });
     const exerciseListString = Object.entries(exercisesByCategory)
         .map(([cat, names]) => `${cat}: ${names.join(', ')}`)
-        .join('\\n');
+        .join('\n');
 
     // Build user request
     let userRequest = '';
@@ -375,26 +375,26 @@ RESPONSE FORMAT (strict JSON):
         let rawContent = completion.choices[0].message.content || "{}";
 
         // Remove <think> blocks just in case
-        let cleanedContent = rawContent.replace(/<think>[\\s\\S]*?<\\/think>\\n?/g, '').trim();
+        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
         
         // Extract the JSON object using regex
-        const match = cleanedContent.match(/\\{[\\s\\S]*\\}/);
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
         let jsonString = match ? match[0] : "{}";
 
         // Fix potential trailing commas
-        jsonString = jsonString.replace(/,\\s*([\\]}])/g, '$1');
+        jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
 
         let plan;
         try {
             plan = JSON.parse(jsonString);
         } catch (parseError) {
             console.error("JSON Parse failed. String:", jsonString);
-            throw new Error(\`Parse Error: \${parseError.message}\`);
+            throw new Error(`Parse Error: ${parseError.message}`);
         }
         
         // Validate structure
         if (!plan.exercises || !Array.isArray(plan.exercises) || plan.exercises.length === 0) {
-            throw new Error(\`AI generated an empty workout plan.\`);
+            throw new Error(`AI generated an empty workout plan.`);
         }
 
         return plan;
@@ -537,7 +537,7 @@ export async function generateMealPlan(params) {
     if (!groqApiKey) throw new Error("Missing Groq API Key");
 
     const recentMealsStr = foodHistory.length > 0 
-        ? foodHistory.slice(0, 20).map(f => `- ${f.food_text || f.name} (${f.calories} kcal)`).join('\\n')
+        ? foodHistory.slice(0, 20).map(f => `- ${f.food_text || f.name} (${f.calories} kcal)`).join('\n')
         : "No recent logged meals.";
 
     const prompt = `You are a world-class AI Sports Nutritionist. 
@@ -602,8 +602,8 @@ You MUST respond ONLY with a valid JSON object. Do not include markdown formatti
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        let cleanedContent = rawContent.replace(/<think>[\\s\\S]*?<\\/think>\\n?/g, '').trim();
-        const match = cleanedContent.match(/\\{[\\s\\S]*\\}/);
+        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
         const jsonContent = match ? match[0] : "{}";
         const parsedPlan = JSON.parse(jsonContent);
         

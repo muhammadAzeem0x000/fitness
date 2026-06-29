@@ -23,7 +23,7 @@ export const BADGE_DEFINITIONS = [
 
 export function useGamification() {
     const { user } = useAuth();
-    const { workoutLogs = [], routines = [] } = useWorkouts();
+    const { workoutLogs = [], routines = [] } = useWorkouts(user?.id);
     const [unlockedBadgesStorage, setUnlockedBadgesStorage] = useLocalStorage('unlocked_badges', []);
     const [newlyUnlocked, setNewlyUnlocked] = useLocalStorage('newly_unlocked_badges', []);
 
