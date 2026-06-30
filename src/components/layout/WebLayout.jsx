@@ -1,6 +1,5 @@
 import { Header } from './Header';
 import { useLocation } from 'react-router-dom';
-import { ElasticScroll } from '../ui/ElasticScroll';
 
 export function WebLayout({ children, mainRef }) {
     const location = useLocation();
@@ -12,17 +11,13 @@ export function WebLayout({ children, mainRef }) {
                 <Header />
             </div>
 
-            <main ref={mainRef} className={`flex-1 overflow-hidden ${isFixedLayout ? 'p-0' : ''}`}>
+            <main ref={mainRef} className={`flex-1 ${isFixedLayout ? 'overflow-hidden p-0' : 'overflow-y-auto custom-scrollbar pt-4 pb-4 px-3 md:px-4 md:pb-8 overscroll-y-auto'}`}>
                 {isFixedLayout ? (
                     children
                 ) : (
-                    <ElasticScroll>
-                        <div className="pt-4 pb-4 px-3 md:px-4 md:pb-8">
-                            <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-8">
-                                {children}
-                            </div>
-                        </div>
-                    </ElasticScroll>
+                    <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-8">
+                        {children}
+                    </div>
                 )}
             </main>
         </div>

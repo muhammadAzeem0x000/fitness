@@ -2,7 +2,6 @@ import React from 'react';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useLocation } from 'react-router-dom';
-import { ElasticScroll } from '../ui/ElasticScroll';
 
 export function MobileLayout({ children, mainRef }) {
     const location = useLocation();
@@ -16,19 +15,11 @@ export function MobileLayout({ children, mainRef }) {
 
             <main 
                 ref={mainRef} 
-                className="flex-1 w-full relative overflow-hidden"
+                className={`flex-1 w-full relative ${isFixedLayout ? 'overflow-hidden' : 'overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overscroll-y-auto'}`}
             >
-                {isFixedLayout ? (
-                    <div className="w-full h-full">
-                        {children}
-                    </div>
-                ) : (
-                    <ElasticScroll>
-                        <div className="w-full min-h-full pb-6 px-3 pt-4">
-                            {children}
-                        </div>
-                    </ElasticScroll>
-                )}
+                <div className={`w-full ${isFixedLayout ? 'h-full' : 'min-h-full pb-6 px-3 pt-4'}`}>
+                    {children}
+                </div>
             </main>
 
             <MobileBottomNav />
