@@ -375,7 +375,7 @@ RESPONSE FORMAT (strict JSON):
         let rawContent = completion.choices[0].message.content || "{}";
 
         // Remove <think> blocks just in case
-        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        let cleanedContent = rawContent.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
         
         // Extract the JSON object using regex
         const match = cleanedContent.match(/\{[\s\S]*\}/);
@@ -441,7 +441,7 @@ Respond with ONLY valid JSON, no markdown, no code fences:
             response_format: { type: "json_object" }
         });
 
-        let cleanedContent = completion.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        let cleanedContent = completion.choices[0].message.content.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
         const match = cleanedContent.match(/\{[\s\S]*\}/);
         let jsonString = match ? match[0] : "{}";
         jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
@@ -499,7 +499,7 @@ export async function analyzeFoodInput(text) {
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        let cleanedContent = rawContent.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
         
         const match = cleanedContent.match(/\{[\s\S]*\}/);
         let jsonContent = match ? match[0] : "{}";
@@ -602,7 +602,7 @@ You MUST respond ONLY with a valid JSON object. Do not include markdown formatti
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        let cleanedContent = rawContent.replace(/<think>[\s\S]*?<\/think>\n?/g, '').trim();
+        let cleanedContent = rawContent.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
         const match = cleanedContent.match(/\{[\s\S]*\}/);
         const jsonContent = match ? match[0] : "{}";
         const parsedPlan = JSON.parse(jsonContent);

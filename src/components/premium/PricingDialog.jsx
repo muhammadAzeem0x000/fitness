@@ -6,6 +6,8 @@ import { Button } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { getOfferings, purchasePackage, restorePurchases } from '../../lib/revenuecat';
 import { isNativePlatform } from '../../lib/platform';
+import { usePricing } from '../../context/PricingContext';
+import { ElasticScroll } from '../ui/ElasticScroll';
 import { useToast } from '../../context/ToastContext';
 import { useSubscription } from '../../hooks/useSubscription';
 
@@ -181,7 +183,7 @@ export function PricingDialog({ isOpen, onClose }) {
                         </div>
 
                         {/* Scrollable Body */}
-                        <div className="relative z-10 overflow-y-auto custom-scrollbar px-6 pb-6 flex-1">
+                        <ElasticScroll className="relative z-10 px-6 pb-6 flex-1 custom-scrollbar">
                             
                             {error && (
                                 <div className="mb-6 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400 flex items-start gap-3 text-sm">
@@ -277,7 +279,7 @@ export function PricingDialog({ isOpen, onClose }) {
                                     Recurring billing, cancel anytime. By subscribing you agree to our Terms of Service and Privacy Policy.
                                 </p>
                             </div>
-                        </div>
+                        </ElasticScroll>
                     </motion.div>
                 </div>
             )}

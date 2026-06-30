@@ -14,6 +14,7 @@ import { PasswordInput } from '../ui/PasswordInput';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 import { usePricing } from '../../context/PricingContext';
+import { ElasticScroll } from '../ui/ElasticScroll';
 
 export function UserProfileDialog({ isOpen, onClose }) {
     useBackInterceptor(() => {
@@ -259,7 +260,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                         </div>
 
                         {/* Body - Scrollable */}
-                        <div className="p-4 space-y-5 overflow-y-auto custom-scrollbar">
+                        <ElasticScroll className="p-4 space-y-5 custom-scrollbar">
 
                             {/* Top Section: Avatar + Name Side-by-Side */}
                             <div className="flex items-center gap-4">
@@ -553,7 +554,7 @@ export function UserProfileDialog({ isOpen, onClose }) {
                                 </div>
                             </div>
 
-                        </div>
+                        </ElasticScroll>
 
                         {/* Footer - Compact */}
                         <div className="bg-slate-50 dark:bg-zinc-900/50 border-t border-slate-200 dark:border-zinc-800 p-6 flex flex-col gap-3">

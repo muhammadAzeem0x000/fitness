@@ -13,6 +13,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { usePricing } from '../../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
+import { ElasticScroll } from '../ui/ElasticScroll';
 
 const QUICK_PROMPTS = [
     "Am I overtraining?",
@@ -244,9 +245,9 @@ export function AiChat() {
     return (
         <div className="flex flex-col h-full">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4 min-h-0">
-                {messages.length === 0 ? (
-                    /* Empty State */
+            <ElasticScroll className="flex-1 custom-scrollbar px-4 py-4 space-y-4 min-h-0">
+                <AnimatePresence initial={false}>
+                    {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-violet-500/30 flex items-center justify-center mb-4 shadow-lg shadow-violet-500/10">
                             <Bot className="w-8 h-8 text-violet-400" />
@@ -323,7 +324,8 @@ export function AiChat() {
                         <div ref={messagesEndRef} />
                     </>
                 )}
-            </div>
+                </AnimatePresence>
+            </ElasticScroll>
 
             {/* Error */}
             {error && (

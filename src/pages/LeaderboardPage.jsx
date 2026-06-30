@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Trophy, TrendingUp } from 'lucide-react';
 import { useGamification } from '../hooks/useGamification';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import { PersonalStatsHero } from '../components/rank/PersonalStatsHero';
 import { AchievementBadges } from '../components/rank/AchievementBadges';
 import { StreakHeatmap } from '../components/rank/StreakHeatmap';
@@ -8,7 +9,7 @@ import { LeaderboardTabs } from '../components/rank/LeaderboardTabs';
 
 export function LeaderboardPage() {
     const gamificationData = useGamification();
-    const [currentGlobalRank, setCurrentGlobalRank] = useState(null);
+    const [currentGlobalRank, setCurrentGlobalRank] = useLocalStorage('cached_global_rank', null);
 
     return (
         <div className="pt-8 px-4 pb-24 animate-in fade-in duration-500 max-w-2xl mx-auto">
