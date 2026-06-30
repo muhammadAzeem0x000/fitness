@@ -26,7 +26,6 @@ export async function generateHealthReport(weightHistory, workoutLogs, nutrition
     let daysToLookBack = 8; // Weekly report (7-8 days)
     let promoText = "";
 
-    if (reportType === 'daily') daysToLookBack = 2; // Yesterday + Today
     if (reportType === 'monthly') daysToLookBack = 32; // 1 month+
 
     const cutoffDate = new Date();
@@ -169,8 +168,6 @@ export async function generateHealthReport(weightHistory, workoutLogs, nutrition
         2. Beginner-friendly workout plan and nutrition recommendations based on their goals
         3. Tips for getting started with the MuscleBot app
         Keep it motivating and actionable. Don't mention lack of data negatively - focus on the exciting journey ahead.`;
-    } else if (reportType === 'daily') {
-        specificInstruction = "Critique today's session (if any), recent nutrition habits, and the most recent weight fluctuation. Be quick and punchy.";
     } else if (reportType === 'weekly') {
         specificInstruction = "Analyze volume trends, nutrition consistency (e.g., protein intake vs goals), and weight trend over the last week. Give 3 actionable tips for next week.";
     } else {

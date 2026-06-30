@@ -12,7 +12,7 @@ import { useWorkouts } from '../hooks/useWorkouts';
 import { useProfile } from '../hooks/useProfile';
 import { useNutrition } from '../hooks/useNutrition';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { SAMPLE_DAILY_REPORT, SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
+import { SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
 import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePricing } from '../context/PricingContext';
@@ -81,75 +81,8 @@ export function AiCoach() {
         }
     }, [selectedReport]);
 
-    const handleGenerateReport = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            // Check if user is premium or has quota
-            if (!isPremium) {
-                // Check monthly quota for free users (1 report per month)
-                const monthlyQuota = await checkFeatureUsage(user.id, 'ai_report_total', 1, 30);
-
-                if (!monthlyQuota.allowed) {
-                    const resetDate = monthlyQuota.resetDate.toLocaleDateString();
-                    setError(
-                        `Free tier limit reached (1 AI report/month). Your quota resets on ${resetDate}. Upgrade to Pro for unlimited reports!`
-                    );
-                    setLoading(false);
-                    return;
-                }
-            }
-            // Find previous report of SAME type for context
-            const previousReport = allReports.find(r => (r.report_type || 'weekly') === activeTab);
-
-            // Get latest weight for fresh accounts
-            const latestWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : null;
-
-            // Pass activeTab as reportType with complete profile data
-            const reportText = await generateHealthReport(weightHistory, workoutLogs, allNutrition || [], previousReport, activeTab, {
-                displayName: profile?.display_name,
-                workoutDays: profile?.workout_days,
-                height: profile?.height,
-                currentWeight: latestWeight || profile?.current_weight,
-                targetWeight: profile?.target_weight
-            });
-
-            // Save to DB
-            const { data, error: dbError } = await supabase
-                .from('ai_reports')
-                .insert({
-                    user_id: user.id,
-                    report_text: reportText,
-                    report_type: activeTab,
-                    created_at: new Date().toISOString()
-                })
-                .select()
-                .single();
-
-            if (dbError) throw dbError;
-
-            // Invalidate cache
-            queryClient.invalidateQueries(['aiReports', user.id]);
-
-            // Increment usage count for free users
-            if (!isPremium) {
-                await incrementFeatureUsage(user.id, 'ai_report_total');
-            }
-
-            // Set selection directly (instant feedback)
-            setSelectedReport(data);
-            setShowHistoryMobile(false); // Switch to view
-        } catch (err) {
-            console.error(err);
-            const msg = err.message || "Unknown error";
-            setError(`Failed to generate report: ${msg}`);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const tabs = [
-        { id: 'daily', label: 'Daily Check-in', icon: Calendar },
         { id: 'weekly', label: 'Weekly Analysis', icon: LineChart },
         { id: 'monthly', label: 'Monthly Transformation', icon: TrendingUp },
     ];
@@ -276,26 +209,23 @@ export function AiCoach() {
                     </div>
 
                     {/* Free tier usage indicator */}
-                    {!isPremium && !subLoading && (
-                        <div className="flex-none text-xs text-zinc-500 text-center px-2 py-2 bg-zinc-900/50 rounded border border-zinc-800">
-                            Free tier: 1 report/month
+                    {/* Automated Scheduling Info */}
+                    {!isPremium && !subLoading ? (
+                        <div className="flex-none text-xs text-zinc-500 text-center p-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                            Automated AI reports are a Pro feature.
                             <button
                                 onClick={() => openPricing()}
-                                className="ml-2 text-blue-400 hover:text-blue-300 underline"
+                                className="block w-full mt-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors shadow-sm"
                             >
-                                Upgrade for unlimited
+                                Upgrade for Automatic Reports
                             </button>
                         </div>
+                    ) : (
+                        <div className="flex-none text-xs text-slate-500 dark:text-zinc-400 text-center p-3 bg-slate-50 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-center gap-2">
+                            <Bot className="w-4 h-4 text-blue-500" />
+                            Next {activeTab} report generates automatically in {activeTab === 'weekly' ? '7' : '30'} days.
+                        </div>
                     )}
-
-                    <Button
-                        onClick={handleGenerateReport}
-                        disabled={loading || subLoading || isOffline}
-                        className="flex-none w-full gap-2 h-12 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/20 disabled:opacity-50"
-                    >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isOffline ? <WifiOff className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-                        {loading ? 'Analyzing...' : isOffline ? 'Unavailable Offline' : `New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`}
-                    </Button>
                 </div>
 
                 {/* Right Panel: Report View (Visible if showHistoryMobile is false OR on Desktop) */}
@@ -358,9 +288,7 @@ export function AiCoach() {
                             </CardHeader>
                             <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
                                 <ReactMarkdown>
-                                    {activeTab === 'daily' ? SAMPLE_DAILY_REPORT :
-                                        activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT :
-                                            SAMPLE_MONTHLY_REPORT}
+                                    {activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT : SAMPLE_MONTHLY_REPORT}
                                 </ReactMarkdown>
                             </CardContent>
                         </Card>

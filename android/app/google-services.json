@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "491689272956",
+    "project_id": "musclebot-app",
+    "storage_bucket": "musclebot-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:491689272956:android:eafc010fd9dc1de0188bf9",
+        "android_client_info": {
+          "package_name": "com.musclebot.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXWORk1ODPIZR6PuO2DZ0ZFKgTslPsKrQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -15,6 +15,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { initRevenueCat } from './lib/revenuecat';
 import { PremiumPromoPopup } from './components/premium/PremiumPromoPopup';
 import { PricingProvider } from './context/PricingContext';
+import { usePushNotifications } from './hooks/usePushNotifications';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -132,6 +133,7 @@ const AppContent = () => {
   const navigate = useNavigate();
 
   useHardwareBackButton();
+  usePushNotifications(user?.id);
 
   // Onboarding Redirect Verification (skip for public share pages)
   useEffect(() => {

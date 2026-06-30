@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 export function ReportSummaryCards({ workouts = [], weightData = [], reportType = 'weekly' }) {
     // Calculate metrics based on report type
     const calculateMetrics = () => {
-        const daysToLookBack = reportType === 'daily' ? 1 : reportType === 'monthly' ? 30 : 7;
+        const daysToLookBack = reportType === 'monthly' ? 30 : 7;
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - daysToLookBack);
 
@@ -32,7 +32,7 @@ export function ReportSummaryCards({ workouts = [], weightData = [], reportType 
 
         // Calculate frequency
         const frequency = recentWorkouts.length;
-        const expectedFrequency = reportType === 'daily' ? 1 : reportType === 'monthly' ? 12 : 4;
+        const expectedFrequency = reportType === 'monthly' ? 12 : 4;
         const frequencyPercentage = Math.min(100, Math.round((frequency / expectedFrequency) * 100));
 
         // Calculate weight change
