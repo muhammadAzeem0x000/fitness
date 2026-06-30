@@ -1,11 +1,13 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, WifiOff, Sparkles } from 'lucide-react';
+import { ArrowLeft, WifiOff, Sparkles, User } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { hapticLight } from '../../lib/haptics';
 import { useNetwork } from '../../hooks/useNetwork';
 import { useSubscription } from '../../hooks/useSubscription';
 import { usePricing } from '../../context/PricingContext';
+import { useAuth } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useProfile';
 import { ThemeToggle } from '../ui/ThemeToggle';
 
 export function MobileHeader() {
@@ -15,6 +17,8 @@ export function MobileHeader() {
     const { isOffline } = useNetwork();
     const { isPremium, isLoading: subLoading } = useSubscription();
     const { openPricing } = usePricing();
+    const { user } = useAuth();
+    const { profile } = useProfile(user?.id);
 
     const path = location.pathname;
     
@@ -32,7 +36,7 @@ export function MobileHeader() {
     else if (path === '/success') title = 'Success';
 
     // Top-level routes where we DO NOT show a back button
-    const topLevelRoutes = ['/', '/dashboard', '/log', '/ai-coach', '/profile'];
+    const topLevelRoutes = ['/', '/dashboard', '/log', '/ai-coach', '/nutrition', '/leaderboard'];
     const showBack = !topLevelRoutes.includes(path);
 
     const handleBack = () => {
@@ -51,14 +55,30 @@ export function MobileHeader() {
             style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
             <div className="flex items-center justify-between h-14 px-4">
-                {/* Left: Back Button or Placeholder */}
+                {/* Left: Back Button or Profile */}
                 <div className="w-12 flex justify-start">
-                    {showBack && (
+                    {showBack ? (
                         <button 
                             onClick={handleBack}
                             className="p-2 -ml-2 rounded-full text-slate-600 dark:text-zinc-400 active:text-slate-900 dark:active:text-white active:bg-slate-100 dark:active:bg-zinc-800 transition-colors"
                         >
                             <ArrowLeft className="w-6 h-6" />
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={() => {
+                                hapticLight();
+                                navigate('/profile');
+                            }}
+                            className="p-1 -ml-1 rounded-full text-slate-600 dark:text-zinc-400 active:bg-slate-100 dark:active:bg-zinc-800 transition-colors"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center border border-slate-300 dark:border-zinc-700 overflow-hidden">
+                                {profile?.avatar_url ? (
+                                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <User className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
+                                )}
+                            </div>
                         </button>
                     )}
                 </div>

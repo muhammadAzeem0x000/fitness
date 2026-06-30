@@ -14,6 +14,7 @@ import { usePricing } from '../../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
 import { ElasticScroll } from '../ui/ElasticScroll';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const QUICK_PROMPTS = [
     "Am I overtraining?",
