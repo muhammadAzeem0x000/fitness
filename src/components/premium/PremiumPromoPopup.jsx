@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, X, CheckCircle2, TrendingUp, Zap } from 'lucide-react';
+import { Sparkles, X, MessageCircle, Utensils, Activity } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { usePricing } from '../../context/PricingContext';
 
@@ -94,29 +94,29 @@ export function PremiumPromoPopup() {
                     <div className="space-y-4 mb-6">
                         <div className="flex items-start gap-3">
                             <div className="mt-0.5 bg-blue-100 dark:bg-blue-900/30 p-1 rounded-full text-blue-600 dark:text-blue-400">
-                                <Zap className="w-4 h-4" />
+                                <MessageCircle className="w-4 h-4" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">AI Workout Coach</h4>
-                                <p className="text-xs text-slate-500 dark:text-zinc-400">Personalized plans tailored for you.</p>
+                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Unlimited AI Coach Chat</h4>
+                                <p className="text-xs text-slate-500 dark:text-zinc-400">24/7 personalized fitness guidance & support.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <div className="mt-0.5 bg-emerald-100 dark:bg-emerald-900/30 p-1 rounded-full text-emerald-600 dark:text-emerald-400">
-                                <TrendingUp className="w-4 h-4" />
+                                <Utensils className="w-4 h-4" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Advanced Analytics</h4>
-                                <p className="text-xs text-slate-500 dark:text-zinc-400">Track progress with detailed charts.</p>
+                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">AI Meal Planner</h4>
+                                <p className="text-xs text-slate-500 dark:text-zinc-400">Smart, personalized nutrition plans to hit your goals.</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <div className="mt-0.5 bg-purple-100 dark:bg-purple-900/30 p-1 rounded-full text-purple-600 dark:text-purple-400">
-                                <CheckCircle2 className="w-4 h-4" />
+                                <Activity className="w-4 h-4" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Unlimited Logging</h4>
-                                <p className="text-xs text-slate-500 dark:text-zinc-400">No restrictions on your workout history.</p>
+                                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Advanced Analytics</h4>
+                                <p className="text-xs text-slate-500 dark:text-zinc-400">Data-driven recovery and training advice.</p>
                             </div>
                         </div>
                     </div>

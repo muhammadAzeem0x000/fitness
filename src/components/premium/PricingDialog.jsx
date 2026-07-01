@@ -238,10 +238,10 @@ export function PricingDialog({ isOpen, onClose }) {
                                                 </div>
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 mb-5">
-                                                    <FeatureItem text="Unlimited AI Coach" />
-                                                    <FeatureItem text="Advanced progress charts" />
-                                                    <FeatureItem text="Streak tracking" />
-                                                    <FeatureItem text="Priority support" />
+                                                    <FeatureItem text="Unlimited personalized AI coach chat" />
+                                                    <FeatureItem text="AI meal planner" />
+                                                    <FeatureItem text="Advanced readiness & recovery analytics" />
+                                                    <FeatureItem text="Weekly & monthly progress reports" />
                                                 </div>
 
                                                 <Button
