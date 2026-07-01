@@ -21,7 +21,7 @@ import { useHealthMetrics } from '../hooks/useHealthMetrics';
 import { calculateBMI, getUserStats } from '../lib/fitnessUtils';
 import { Dumbbell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { PremiumGate } from '../components/premium/PremiumGate';
+
 
 // Lazy load the 3D heatmap to keep initial bundle lean (Three.js is heavy)
 const BodyHeatmap3D = lazy(() => import('../components/dashboard/BodyHeatmap3D').then(m => ({ default: m.BodyHeatmap3D })));
@@ -67,22 +67,20 @@ export function Dashboard() {
                 />
             )}
 
-            {/* Streak and PRs Row - PREMIUM */}
-            <PremiumGate feature="streak tracking and personal records">
-                <div className="grid md:grid-cols-2 gap-6">
-                    {isLoading ? (
-                        <>
-                            <SkeletonCard />
-                            <SkeletonCard />
-                        </>
-                    ) : (
-                        <>
-                            <StreakCard workouts={workoutLogs} workoutDays={profile?.workout_days || []} />
-                            <PersonalRecords workouts={workoutLogs} />
-                        </>
-                    )}
-                </div>
-            </PremiumGate>
+            {/* Streak and PRs Row */}
+            <div className="grid md:grid-cols-2 gap-6">
+                {isLoading ? (
+                    <>
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </>
+                ) : (
+                    <>
+                        <StreakCard workouts={workoutLogs} workoutDays={profile?.workout_days || []} />
+                        <PersonalRecords workouts={workoutLogs} />
+                    </>
+                )}
+            </div>
 
             {/* 3D Muscle Activation Heatmap */}
             {!isLoading && (
@@ -91,31 +89,28 @@ export function Dashboard() {
                 </Suspense>
             )}
 
-            {/* Charts Row - PREMIUM */}
-            <PremiumGate feature="advanced progress charts">
-                <div className="grid lg:grid-cols-2 gap-6">
-                    {isLoading ? (
-                        <>
-                            <div className="col-span-full">
-                                <SkeletonChart />
-                            </div>
+            {/* Charts Row */}
+            <div className="grid lg:grid-cols-2 gap-6">
+                {isLoading ? (
+                    <>
+                        <div className="col-span-full">
                             <SkeletonChart />
-                            <SkeletonChart />
-                        </>
-                    ) : (
-                        <>
-                            <WeightChart data={weightHistory} />
-                            {hasWorkouts && (
-                                <>
-                                    <VolumeChart workouts={workoutLogs} />
-                                    <WorkoutCalendar workouts={workoutLogs} />
-                                </>
-                            )}
-                        </>
-                    )}
-                </div>
-
-            </PremiumGate>
+                        </div>
+                        <SkeletonChart />
+                        <SkeletonChart />
+                    </>
+                ) : (
+                    <>
+                        <WeightChart data={weightHistory} />
+                        {hasWorkouts && (
+                            <>
+                                <VolumeChart workouts={workoutLogs} />
+                                <WorkoutCalendar workouts={workoutLogs} />
+                            </>
+                        )}
+                    </>
+                )}
+            </div>
 
             {/* Main Content + Sidebar */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

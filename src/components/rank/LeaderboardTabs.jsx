@@ -101,7 +101,7 @@ export function LeaderboardTabs({ onCurrentRankUpdate }) {
     return (
         <div className="mb-8">
             {/* Main Tabs */}
-            <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl mb-4">
+            <div className="flex bg-slate-100/80 dark:bg-zinc-900/80 p-1.5 rounded-2xl mb-6 shadow-inner border border-slate-200/50 dark:border-zinc-800/50">
                 {TABS.map(tab => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -109,9 +109,9 @@ export function LeaderboardTabs({ onCurrentRankUpdate }) {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${isActive ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300'}`}
+                            className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${isActive ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-md ring-1 ring-black/5 dark:ring-white/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300'}`}
                         >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-blue-500' : ''}`} />
+                            <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'opacity-70'}`} />
                             {tab.label}
                         </button>
                     );
@@ -120,16 +120,18 @@ export function LeaderboardTabs({ onCurrentRankUpdate }) {
 
             {/* Time Filters */}
             {!activeTabConfig.hideTimeFilter && (
-                <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
-                    {TIME_FILTERS.map(filter => (
-                        <button
-                            key={filter.id}
-                            onClick={() => setTimeFilter(filter.id)}
-                            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${timeFilter === filter.id ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700'}`}
-                        >
-                            {filter.label}
-                        </button>
-                    ))}
+                <div className="flex justify-center mb-6">
+                    <div className="flex bg-slate-50 dark:bg-zinc-900/50 p-1 rounded-full border border-slate-200 dark:border-zinc-800 w-full max-w-sm">
+                        {TIME_FILTERS.map(filter => (
+                            <button
+                                key={filter.id}
+                                onClick={() => setTimeFilter(filter.id)}
+                                className={`flex-1 px-3 sm:px-4 py-2 rounded-full text-[11px] sm:text-xs uppercase tracking-wider font-bold whitespace-nowrap transition-all duration-300 ${timeFilter === filter.id ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 hover:bg-slate-200/50 dark:hover:bg-zinc-800/50'}`}
+                            >
+                                {filter.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
 

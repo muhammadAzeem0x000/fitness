@@ -1,10 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, BrainCircuit, User, Utensils, Trophy } from 'lucide-react';
 import { hapticLight } from '../../lib/haptics';
 
 export function MobileBottomNav() {
     const location = useLocation();
+    const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        const handleFocusIn = (e) => {
+            const tag = e.target.tagName?.toLowerCase();
+            if (tag === 'input' || tag === 'textarea') {
+                setKeyboardVisible(true);
+            }
+        };
+
+        const handleFocusOut = () => {
+            setKeyboardVisible(false);
+        };
+
+        window.addEventListener('focusin', handleFocusIn);
+        window.addEventListener('focusout', handleFocusOut);
+
+        return () => {
+            window.removeEventListener('focusin', handleFocusIn);
+            window.removeEventListener('focusout', handleFocusOut);
+        };
+    }, []);
+
+    if (isKeyboardVisible) return null;
 
     const NavItem = ({ to, icon: Icon, label, onClick }) => {
         const isActive = to ? location.pathname === to : false;

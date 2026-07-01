@@ -30,18 +30,32 @@ export function AchievementBadges({ unlockedBadges, badgeProgress, newlyUnlocked
                             onClick={() => setSelectedBadge(badge)}
                             className="snap-start shrink-0 flex flex-col items-center gap-2 w-20 active:scale-95 transition-transform"
                         >
-                            <div className={`relative w-16 h-16 rounded-full flex items-center justify-center shadow-sm border-2 transition-all duration-300 ${isUnlocked ? `${badge.color} border-white dark:border-zinc-800 shadow-md` : 'bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700'}`}>
-                                {isUnlocked ? (
-                                    <Icon className="w-8 h-8 text-white drop-shadow" />
-                                ) : (
-                                    <Lock className="w-6 h-6 text-slate-400 dark:text-zinc-500" />
+                            <div className="relative w-16 h-16 rounded-full flex items-center justify-center mb-1 transition-transform group-active:scale-95">
+                                {!isUnlocked && (
+                                    <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 64 64">
+                                        <circle cx="32" cy="32" r="30" className="stroke-slate-200 dark:stroke-zinc-800" strokeWidth="4" fill="none" />
+                                        {progress > 0 && (
+                                            <circle 
+                                                cx="32" cy="32" r="30" 
+                                                className="stroke-blue-500 transition-all duration-1000 ease-out" 
+                                                strokeWidth="4" 
+                                                fill="none" 
+                                                strokeDasharray={2 * Math.PI * 30} 
+                                                strokeDashoffset={(2 * Math.PI * 30) - (progress / 100) * (2 * Math.PI * 30)} 
+                                                strokeLinecap="round" 
+                                            />
+                                        )}
+                                    </svg>
                                 )}
-                                
-                                {!isUnlocked && progress > 0 && (
-                                    <div className="absolute inset-0 rounded-full border-2 border-slate-300 dark:border-zinc-600" style={{ clipPath: `polygon(0 0, 100% 0, 100% ${progress}%, 0 ${progress}%)` }}></div>
-                                )}
+                                <div className={`relative w-[52px] h-[52px] rounded-full flex items-center justify-center shadow-sm border-[3px] transition-all duration-300 z-10 ${isUnlocked ? `${badge.color} border-white dark:border-zinc-800 shadow-md` : 'bg-slate-100 dark:bg-zinc-900 border-white dark:border-zinc-950'}`}>
+                                    {isUnlocked ? (
+                                        <Icon className="w-6 h-6 text-white drop-shadow" />
+                                    ) : (
+                                        <Lock className="w-5 h-5 text-slate-400 dark:text-zinc-500" />
+                                    )}
+                                </div>
                             </div>
-                            <span className={`text-xs font-medium text-center leading-tight ${isUnlocked ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-zinc-500'}`}>
+                            <span className={`text-[11px] font-bold text-center leading-tight ${isUnlocked ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-zinc-500'}`}>
                                 {badge.name}
                             </span>
                         </button>
@@ -71,11 +85,17 @@ export function AchievementBadges({ unlockedBadges, badgeProgress, newlyUnlocked
                                 <Check className="w-4 h-4" /> Unlocked
                             </div>
                         ) : (
-                            <div className="w-full bg-slate-100 dark:bg-zinc-800 rounded-full h-3 mb-1 overflow-hidden relative">
-                                <div 
-                                    className={`absolute top-0 left-0 h-full rounded-full ${selectedBadge.color}`}
-                                    style={{ width: `${badgeProgress[selectedBadge.id] || 0}%` }}
-                                ></div>
+                            <div className="w-full">
+                                <div className="flex justify-between items-end mb-2 px-1">
+                                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Progress</span>
+                                    <span className="text-sm font-black text-blue-600 dark:text-blue-400">{badgeProgress[selectedBadge.id] || 0}%</span>
+                                </div>
+                                <div className="w-full bg-slate-100 dark:bg-zinc-800 rounded-full h-3 overflow-hidden relative shadow-inner">
+                                    <div 
+                                        className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ${selectedBadge.color}`}
+                                        style={{ width: `${badgeProgress[selectedBadge.id] || 0}%` }}
+                                    ></div>
+                                </div>
                             </div>
                         )}
                     </div>

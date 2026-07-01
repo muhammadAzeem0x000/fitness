@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Calendar, Camera, Loader2, KeyRound, ChevronDown, ChevronUp, Crown, ExternalLink, Sparkles, Trophy, Lock, Activity, Heart, Ruler, Utensils, RefreshCw, Footprints, Moon, Flame, Smartphone, CheckCircle2, WifiOff } from 'lucide-react';
+import { LogOut, User, Calendar, Loader2, KeyRound, Crown, Sparkles, Activity, Heart, Ruler, Utensils, RefreshCw, Footprints, Moon, Flame, Smartphone, CheckCircle2, WifiOff, Pencil } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { useWeight } from '../hooks/useWeight';
@@ -17,40 +17,56 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
 import { requestHealthPermissions, openHealthSettings } from '../lib/wearables';
 
-const CollapsibleSection = ({ title, icon: Icon, defaultOpen = false, children, extraHeader }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
-    return (
-        <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900/50">
-            <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    setIsOpen(!isOpen);
-                }}
-                className="w-full flex items-center justify-between p-5 text-xs font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300 uppercase tracking-wider transition-colors"
-            >
-                <span className="flex items-center gap-2">
-                    {Icon && <Icon className="w-4 h-4" />} {title}
-                </span>
-                <div className="flex items-center gap-3">
-                    {extraHeader}
-                    {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+const Section = ({ title, children, icon: Icon }) => (
+    <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <h2 className="text-[12px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest mb-2.5 flex items-center gap-2 px-2">
+            {Icon && <Icon className="w-3.5 h-3.5" />} {title}
+        </h2>
+        <div className="bg-white dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800/80 rounded-2xl overflow-hidden shadow-sm">
+            {children}
+        </div>
+    </div>
+);
+
+const SectionRow = ({ label, children, border = true }) => (
+    <div className={`p-4 flex items-center justify-between ${border ? 'border-b border-slate-100 dark:border-zinc-800/50' : ''}`}>
+        <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">{label}</span>
+        <div className="flex-1 flex justify-end items-center">
+            {children}
+        </div>
+    </div>
+);
+
+const SubscriptionBanner = ({ isPremium, isTrialExpired, isTrialing, subscription, openPricing, hasUsedTrial }) => {
+    if (isPremium && !isTrialExpired) {
+        return (
+            <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-3xl p-5 text-white shadow-xl shadow-amber-500/20 mb-8 flex items-center justify-between animate-in fade-in slide-in-from-bottom-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                        <Crown className="w-5 h-5 text-amber-100" />
+                        <h3 className="font-bold text-lg tracking-tight">Pro Member</h3>
+                    </div>
+                    <p className="text-amber-100 text-xs font-medium">Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</p>
                 </div>
-            </button>
-            <AnimatePresence initial={false}>
-                {isOpen && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="p-5 pt-2 space-y-4">
-                            {children}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                <Button size="sm" onClick={openPricing} className="bg-white/20 hover:bg-white/30 text-white border-0 h-10 px-5 rounded-2xl font-semibold backdrop-blur-md transition-all active:scale-95">
+                    Manage Plan
+                </Button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 rounded-3xl p-5 text-white shadow-xl shadow-blue-500/20 mb-8 flex items-center justify-between animate-in fade-in slide-in-from-bottom-4">
+            <div>
+                 <div className="flex items-center gap-2 mb-1.5">
+                    <Sparkles className="w-5 h-5 text-blue-200" />
+                    <h3 className="font-bold text-lg tracking-tight">{isTrialExpired ? 'Trial Expired' : 'Upgrade to Pro'}</h3>
+                </div>
+                <p className="text-blue-200 text-xs font-medium">{isTrialExpired ? 'Subscribe to keep Pro features' : 'Unlock premium analytics & plans'}</p>
+            </div>
+             <Button size="sm" onClick={openPricing} className="bg-white text-blue-600 hover:bg-slate-50 font-bold border-0 h-10 px-5 rounded-2xl shadow-sm transition-all active:scale-95">
+                {isTrialExpired ? 'Subscribe' : hasUsedTrial ? 'Upgrade' : 'Try Free'}
+            </Button>
         </div>
     );
 };
@@ -64,11 +80,10 @@ export default function ProfilePage() {
 
     const hasUsedTrial = false;
 
-    const { convertWeightToDb, displayWeight, formatWeightLabel } = useUserPreferences();
+    const { convertWeightToDb, displayWeight, formatWeightLabel, preferences, convertHeightToCm, formatHeightValue } = useUserPreferences();
 
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [portalLoading, setPortalLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [currentWeightInput, setCurrentWeightInput] = useState('');
     const { toast } = useToast();
@@ -81,12 +96,10 @@ export default function ProfilePage() {
     const { syncNow, isSyncing, lastSynced, refreshKey } = useHealthSync(user?.id);
     const { metrics: healthMetrics } = useHealthMetrics(user?.id, 1, refreshKey);
 
-    // Get today's health summary for display
     const todayNow = new Date();
     const todayStr = `${todayNow.getFullYear()}-${String(todayNow.getMonth() + 1).padStart(2, '0')}-${String(todayNow.getDate()).padStart(2, '0')}`;
     const todayHealth = healthMetrics?.find(m => m.date === todayStr) || { steps: 0, sleep_hours: 0, active_calories: 0 };
 
-    // Format "last synced" relative time
     const getLastSyncedText = () => {
         if (!lastSynced) return null;
         const diff = Date.now() - new Date(lastSynced).getTime();
@@ -110,13 +123,15 @@ export default function ProfilePage() {
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef(null);
 
+    // Height state
+    const [heightVal1, setHeightVal1] = useState('');
+    const [heightVal2, setHeightVal2] = useState('');
+
     // Password Update State
-    const [passwordOpen, setPasswordOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
 
-    // Sync with profile
     useEffect(() => {
         if (profile) {
             setDisplayName(profile.display_name || '');
@@ -127,22 +142,15 @@ export default function ProfilePage() {
             setGender(profile.gender || 'male');
             setActivityLevel(profile.activity_level || 'sedentary');
             setGoalType(profile.goal_type || 'maintain');
+            
+            if (profile.height) {
+                const h = formatHeightValue(profile.height);
+                setHeightVal1(h.val1?.toString() || '');
+                setHeightVal2(h.val2?.toString() || '');
+            }
             setIsDirty(false);
         }
-    }, [profile]);
-
-    // Height state
-    const { preferences, convertHeightToCm, formatHeightValue } = useUserPreferences();
-    const [heightVal1, setHeightVal1] = useState('');
-    const [heightVal2, setHeightVal2] = useState('');
-
-    useEffect(() => {
-        if (profile?.height) {
-            const h = formatHeightValue(profile.height);
-            setHeightVal1(h.val1?.toString() || '');
-            setHeightVal2(h.val2?.toString() || '');
-        }
-    }, [profile, formatHeightValue]);
+    }, [profile, formatHeightValue, displayWeight]);
 
     const isFeet = preferences.heightUnit === 'ft';
 
@@ -165,6 +173,7 @@ export default function ProfilePage() {
             });
             hapticSuccess();
             toast.success("Profile updated successfully!");
+            setIsDirty(false);
         } catch (error) {
             hapticError();
             console.error("Failed to save profile", error);
@@ -195,7 +204,6 @@ export default function ProfilePage() {
             toast.success("Password updated successfully!");
             setNewPassword('');
             setConfirmPassword('');
-            setPasswordOpen(false);
         } catch (error) {
             hapticError();
             toast.error(error.message || "Failed to update password");
@@ -203,7 +211,6 @@ export default function ProfilePage() {
             setPasswordLoading(false);
         }
     };
-
 
     const handleWeightLog = async () => {
         if (!currentWeightInput) return;
@@ -224,7 +231,6 @@ export default function ProfilePage() {
             e.preventDefault();
             e.stopPropagation();
         }
-
         try {
             setLoading(true);
             await signOut();
@@ -258,14 +264,12 @@ export default function ProfilePage() {
             const fileExt = file.name.split('.').pop();
             const fileName = `${profile.id}/${Date.now()}.${fileExt}`;
 
-            // Upload
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
                 .upload(fileName, file, { upsert: true });
 
             if (uploadError) throw uploadError;
 
-            // Get URL
             const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
             setAvatarUrl(data.publicUrl);
@@ -282,15 +286,24 @@ export default function ProfilePage() {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
     return (
-        <div className="w-full max-w-md mx-auto p-4 pb-24 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Top Section: Avatar + Name Side-by-Side */}
-            <div className="flex flex-col items-center gap-4 bg-white dark:bg-zinc-900/50 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                {/* Avatar */}
-                <div className="relative group cursor-pointer shrink-0" onClick={() => fileInputRef.current?.click()}>
-                    <div className="w-24 h-24 rounded-full overflow-hidden bg-slate-100 dark:bg-zinc-800 border-2 border-slate-300 dark:border-zinc-700 shadow-md group-hover:border-slate-400 dark:group-hover:border-zinc-500 transition-colors relative">
+        <div className="w-full max-w-md mx-auto p-4 pb-32">
+            
+            <SubscriptionBanner 
+                isPremium={isPremium} 
+                isTrialExpired={isTrialExpired} 
+                isTrialing={isTrialing} 
+                subscription={subscription} 
+                openPricing={openPricing} 
+                hasUsedTrial={hasUsedTrial} 
+            />
+
+            {/* Profile Header */}
+            <div className="flex flex-col items-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75">
+                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                    <div className="w-28 h-28 rounded-full overflow-hidden bg-slate-100 dark:bg-zinc-800 border-4 border-white dark:border-zinc-950 shadow-xl shadow-slate-200/50 dark:shadow-none relative">
                         {uploading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
-                                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                                <Loader2 className="w-6 h-6 text-white animate-spin" />
                             </div>
                         )}
                         {avatarUrl ? (
@@ -300,155 +313,141 @@ export default function ProfilePage() {
                                 <User className="w-12 h-12" />
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <Camera className="w-6 h-6 text-white" />
-                        </div>
+                    </div>
+                    {/* Edit Badge */}
+                    <div className="absolute bottom-0 right-0 w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-[3px] border-white dark:border-zinc-950 text-white hover:bg-blue-500 transition-colors active:scale-95">
+                        <Pencil className="w-4 h-4 ml-0.5" />
                     </div>
                     <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
                 </div>
-
-                {/* Name */}
-                <div className="w-full">
-                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-1 block text-center">
-                        Display Name
-                    </label>
-                    <input
+                <div className="mt-5 w-full">
+                     <input
                         type="text"
                         value={displayName}
                         onChange={(e) => { setDisplayName(e.target.value); setIsDirty(true); }}
                         placeholder="Your Name"
-                        className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-center text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
+                        className="w-full bg-transparent text-center text-3xl font-bold text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-300 dark:placeholder:text-zinc-700 tracking-tight"
                     />
                 </div>
             </div>
 
             {/* Body Metrics Section */}
-            <CollapsibleSection title="Body Metrics" icon={Ruler} defaultOpen={false}>
-                <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
-                        Log Today's Weight ({formatWeightLabel()})
-                    </label>
-                    <div className="flex gap-2 w-full">
+            <Section title="Body Metrics" icon={Ruler}>
+                <SectionRow label={`Log Today's Weight (${formatWeightLabel()})`}>
+                    <div className="flex items-center gap-2">
                         <input
                             type="number"
                             step="0.1"
                             value={currentWeightInput}
                             onChange={(e) => setCurrentWeightInput(e.target.value)}
-                            placeholder={`e.g. 180`}
-                            className="flex-1 min-w-0 bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
+                            placeholder="0.0"
+                            className="w-16 text-right bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none placeholder:text-slate-300 dark:placeholder:text-zinc-600"
                         />
-                        <Button className="px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold" onClick={handleWeightLog}>
+                        <Button size="sm" className="h-8 px-4 rounded-xl text-xs font-bold" onClick={handleWeightLog} disabled={!currentWeightInput}>
                             Log
                         </Button>
                     </div>
-                </div>
+                </SectionRow>
 
-                <div className="pt-2 border-t border-slate-200 dark:border-zinc-800/50">
-                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
-                        Height ({isFeet ? 'FT / IN' : 'CM'})
-                    </label>
-                    <div className={`grid gap-3 w-full ${isFeet ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <SectionRow label={`Height (${isFeet ? 'FT / IN' : 'CM'})`}>
+                    <div className="flex items-center justify-end gap-1">
                         <input
-                            type="number"
-                            value={heightVal1}
-                            onChange={(e) => { setHeightVal1(e.target.value); setIsDirty(true); }}
-                            placeholder={isFeet ? "Ft" : "Cm"}
-                            className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-center"
+                             type="number"
+                             value={heightVal1}
+                             onChange={(e) => { setHeightVal1(e.target.value); setIsDirty(true); }}
+                             placeholder={isFeet ? "Ft" : "Cm"}
+                             className="w-12 text-right bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none placeholder:text-slate-300 dark:placeholder:text-zinc-600"
                         />
                         {isFeet && (
-                            <input
-                                type="number"
-                                value={heightVal2}
-                                onChange={(e) => { setHeightVal2(e.target.value); setIsDirty(true); }}
-                                placeholder="In"
-                                className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-center"
-                            />
+                            <>
+                                <span className="text-slate-400 font-medium">'</span>
+                                <input
+                                     type="number"
+                                     value={heightVal2}
+                                     onChange={(e) => { setHeightVal2(e.target.value); setIsDirty(true); }}
+                                     placeholder="In"
+                                     className="w-12 text-right bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none placeholder:text-slate-300 dark:placeholder:text-zinc-600"
+                                />
+                                <span className="text-slate-400 font-medium">"</span>
+                            </>
                         )}
                     </div>
-                </div>
+                </SectionRow>
 
-                <div className="pt-2 border-t border-slate-200 dark:border-zinc-800/50">
-                    <label className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">
-                        Goal Weight ({formatWeightLabel()})
-                    </label>
+                <SectionRow label={`Goal Weight (${formatWeightLabel()})`} border={false}>
                     <input
-                        type="number"
-                        step="0.1"
-                        value={goalWeightInput}
-                        onChange={(e) => { setGoalWeightInput(e.target.value); setIsDirty(true); }}
-                        placeholder="e.g. 180"
-                        className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 text-center"
+                         type="number"
+                         step="0.1"
+                         value={goalWeightInput}
+                         onChange={(e) => { setGoalWeightInput(e.target.value); setIsDirty(true); }}
+                         placeholder="0.0"
+                         className="w-20 text-right bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none placeholder:text-slate-300 dark:placeholder:text-zinc-600"
                     />
-                </div>
-            </CollapsibleSection>
+                </SectionRow>
+            </Section>
 
             {/* Nutrition & Goals Section */}
-            <CollapsibleSection title="Nutrition Profile" icon={Utensils} defaultOpen={false}>
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="space-y-1">
-                        <label className="text-xs text-slate-500">Age</label>
-                        <input
-                            type="number"
-                            value={age}
-                            onChange={(e) => { setAge(e.target.value); setIsDirty(true); }}
-                            placeholder="Age"
-                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-xs text-slate-500">Gender</label>
-                        <select
-                            value={gender}
-                            onChange={(e) => { setGender(e.target.value); setIsDirty(true); }}
-                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                        <label className="text-xs text-slate-500">Activity Level</label>
-                        <select
-                            value={activityLevel}
-                            onChange={(e) => { setActivityLevel(e.target.value); setIsDirty(true); }}
-                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="sedentary">Sedentary</option>
-                            <option value="lightly_active">Lightly Active</option>
-                            <option value="moderately_active">Moderately Active</option>
-                            <option value="very_active">Very Active</option>
-                            <option value="super_active">Super Active</option>
-                        </select>
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-xs text-slate-500">Goal</label>
-                        <select
-                            value={goalType}
-                            onChange={(e) => { setGoalType(e.target.value); setIsDirty(true); }}
-                            className="w-full bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                        >
-                            <option value="maintain">Maintain</option>
-                            <option value="cut">Cut</option>
-                            <option value="bulk">Bulk</option>
-                        </select>
-                    </div>
-                </div>
-            </CollapsibleSection>
+            <Section title="Nutrition Profile" icon={Utensils}>
+                <SectionRow label="Age">
+                    <input
+                         type="number"
+                         value={age}
+                         onChange={(e) => { setAge(e.target.value); setIsDirty(true); }}
+                         placeholder="Age"
+                         className="w-16 text-right bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none placeholder:text-slate-300 dark:placeholder:text-zinc-600"
+                    />
+                </SectionRow>
+                <SectionRow label="Gender">
+                    <select
+                        value={gender}
+                        onChange={(e) => { setGender(e.target.value); setIsDirty(true); }}
+                        className="bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none text-right appearance-none cursor-pointer outline-none pl-4"
+                        dir="rtl"
+                    >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </SectionRow>
+                <SectionRow label="Activity Level">
+                    <select
+                         value={activityLevel}
+                         onChange={(e) => { setActivityLevel(e.target.value); setIsDirty(true); }}
+                         className="bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none text-right appearance-none cursor-pointer outline-none pl-4 max-w-[150px] truncate"
+                         dir="rtl"
+                    >
+                         <option value="sedentary">Sedentary</option>
+                         <option value="lightly_active">Lightly Active</option>
+                         <option value="moderately_active">Moderately Active</option>
+                         <option value="very_active">Very Active</option>
+                         <option value="super_active">Super Active</option>
+                    </select>
+                </SectionRow>
+                <SectionRow label="Goal" border={false}>
+                    <select
+                        value={goalType}
+                        onChange={(e) => { setGoalType(e.target.value); setIsDirty(true); }}
+                        className="bg-transparent text-slate-900 dark:text-white font-semibold focus:outline-none text-right appearance-none cursor-pointer outline-none pl-4"
+                        dir="rtl"
+                    >
+                         <option value="maintain">Maintain</option>
+                         <option value="cut">Cut</option>
+                         <option value="bulk">Bulk</option>
+                    </select>
+                </SectionRow>
+            </Section>
 
             {/* Training Schedule */}
-            <CollapsibleSection title="Training Schedule" icon={Calendar} defaultOpen={false}>
-                <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+            <Section title="Training Schedule" icon={Calendar}>
+                <div className="p-5 flex justify-between items-center gap-1 sm:gap-2">
                     {days.map(day => {
                         const isSelected = workoutDays.includes(day);
                         return (
                             <button
                                 key={day}
                                 onClick={() => toggleDay(day)}
-                                className={`aspect-square flex items-center justify-center text-sm rounded-full transition-all font-semibold active:scale-90 ${isSelected
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                                    : 'bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300'
+                                className={`w-10 h-10 flex items-center justify-center text-sm rounded-full transition-all font-bold active:scale-90 ${isSelected
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                    : 'bg-slate-50 dark:bg-zinc-950/50 border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-300'
                                     }`}
                             >
                                 {day.slice(0, 1)}
@@ -456,54 +455,45 @@ export default function ProfilePage() {
                         );
                     })}
                 </div>
-            </CollapsibleSection>
+            </Section>
 
-            {/* Health Sync */}
-            <CollapsibleSection
-                title="Health & Device Sync"
-                icon={Activity}
-                defaultOpen={false}
-            >
-
-                {/* Redesigned Health Sync Card */}
-                <div className={`relative overflow-hidden rounded-2xl border ${isHealthConnected
-                        ? 'border-emerald-500/30 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-teal-950/30'
-                        : 'border-slate-200 dark:border-zinc-700 bg-gradient-to-br from-slate-50 dark:from-zinc-900 to-slate-100 dark:to-zinc-800/50'
+            {/* Health Sync Card */}
+            <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h2 className="text-[12px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest mb-2.5 flex items-center gap-2 px-2">
+                    <Activity className="w-3.5 h-3.5" /> Health & Device Sync
+                </h2>
+                <div className={`relative overflow-hidden rounded-3xl border ${isHealthConnected
+                        ? 'border-emerald-500/30 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-teal-950/30 shadow-xl shadow-emerald-500/5'
+                        : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm'
                     }`}>
-                    {/* Animated glow for connected state */}
                     {isHealthConnected && (
-                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl animate-pulse" />
+                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl animate-pulse pointer-events-none" />
                     )}
 
-                    <div className="relative p-4 space-y-4">
-                        {/* Header Row */}
+                    <div className="relative p-5 space-y-5">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isHealthConnected
-                                        ? 'bg-emerald-500/20'
-                                        : 'bg-red-100 dark:bg-red-900/30'
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isHealthConnected
+                                        ? 'bg-emerald-500/20 text-emerald-500'
+                                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-400'
                                     }`}>
-                                    {isHealthConnected ? (
-                                        <Activity className="w-5 h-5 text-emerald-400" />
-                                    ) : (
-                                        <Heart className="w-5 h-5 text-red-500" />
-                                    )}
+                                    {isHealthConnected ? <Activity className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-slate-900 dark:text-white">Health Sync</p>
-                                    <div className="flex items-center gap-1.5">
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white">Health Connect</p>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
                                         {isHealthConnected ? (
                                             <>
-                                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                                <span className="text-[11px] text-emerald-400 font-semibold">Connected</span>
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                                <span className="text-[12px] text-emerald-600 dark:text-emerald-400 font-semibold">Connected</span>
                                                 {getLastSyncedText() && (
-                                                    <span className="text-[10px] text-zinc-500 ml-1">· Synced {getLastSyncedText()}</span>
+                                                    <span className="text-[11px] text-zinc-500 ml-1 font-medium">· {getLastSyncedText()}</span>
                                                 )}
                                             </>
                                         ) : (
                                             <>
                                                 <WifiOff className="w-3 h-3 text-slate-400 dark:text-zinc-500" />
-                                                <span className="text-[11px] text-slate-500 dark:text-zinc-500">Not connected</span>
+                                                <span className="text-[12px] text-slate-500 dark:text-zinc-500 font-medium">Not connected</span>
                                             </>
                                         )}
                                     </div>
@@ -511,51 +501,48 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        {/* Connected state: Live health summary + actions */}
                         {isHealthConnected ? (
                             <>
-                                {/* Today's Health Summary */}
-                                <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center">
-                                        <Footprints className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mx-auto mb-1" />
-                                        <p className="text-base font-bold text-slate-900 dark:text-white">{todayHealth.steps.toLocaleString()}</p>
-                                        <p className="text-[10px] text-slate-500 dark:text-zinc-500">Steps</p>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="bg-white dark:bg-zinc-950/50 border border-slate-100 dark:border-white/5 rounded-2xl p-3.5 text-center shadow-sm">
+                                        <Footprints className="w-5 h-5 text-emerald-500 mx-auto mb-1.5" />
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{todayHealth.steps.toLocaleString()}</p>
+                                        <p className="text-[11px] font-medium text-slate-500">Steps</p>
                                     </div>
-                                    <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center">
-                                        <Moon className="w-4 h-4 text-indigo-500 dark:text-indigo-400 mx-auto mb-1" />
-                                        <p className="text-base font-bold text-slate-900 dark:text-white">{todayHealth.sleep_hours}h</p>
-                                        <p className="text-[10px] text-slate-500 dark:text-zinc-500">Sleep</p>
+                                    <div className="bg-white dark:bg-zinc-950/50 border border-slate-100 dark:border-white/5 rounded-2xl p-3.5 text-center shadow-sm">
+                                        <Moon className="w-5 h-5 text-indigo-500 mx-auto mb-1.5" />
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{todayHealth.sleep_hours}h</p>
+                                        <p className="text-[11px] font-medium text-slate-500">Sleep</p>
                                     </div>
-                                    <div className="bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center">
-                                        <Flame className="w-4 h-4 text-orange-500 dark:text-orange-400 mx-auto mb-1" />
-                                        <p className="text-base font-bold text-slate-900 dark:text-white">{todayHealth.active_calories}</p>
-                                        <p className="text-[10px] text-slate-500 dark:text-zinc-500">Calories</p>
+                                    <div className="bg-white dark:bg-zinc-950/50 border border-slate-100 dark:border-white/5 rounded-2xl p-3.5 text-center shadow-sm">
+                                        <Flame className="w-5 h-5 text-orange-500 mx-auto mb-1.5" />
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{todayHealth.active_calories}</p>
+                                        <p className="text-[11px] font-medium text-slate-500">Calories</p>
                                     </div>
                                 </div>
 
-                                {/* Action buttons */}
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
                                     <Button
                                         size="sm"
-                                        className="flex-1 h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+                                        className="flex-1 h-11 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl border-0 shadow-md shadow-emerald-500/20 active:scale-95"
                                         disabled={isSyncing}
                                         onClick={() => {
                                             hapticLight();
                                             syncNow();
                                         }}
                                     >
-                                        <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                        <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
                                         {isSyncing ? 'Syncing...' : 'Sync Now'}
                                     </Button>
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        className="h-9 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                        className="h-11 px-5 text-sm font-semibold text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl"
                                         onClick={() => {
                                             setIsHealthConnected(false);
                                             localStorage.removeItem('health_connected');
                                             localStorage.removeItem('health_last_synced');
-                                            toast.success("Disconnected. Please revoke permissions in the Health Connect settings that just opened.");
+                                            toast.success("Disconnected. Please revoke permissions in settings.");
                                             hapticMedium();
                                             openHealthSettings();
                                         }}
@@ -563,20 +550,14 @@ export default function ProfilePage() {
                                         Disconnect
                                     </Button>
                                 </div>
-
-                                {/* Auto-sync info */}
-                                <p className="text-[10px] text-zinc-600 text-center">
-                                    Auto-syncs every 15 min & on app open
-                                </p>
                             </>
                         ) : (
-                            /* Disconnected state: Prominent connect CTA */
                             <>
-                                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+                                <p className="text-[13px] text-slate-500 dark:text-zinc-400 leading-relaxed font-medium">
                                     Connect to Google Health Connect or Apple HealthKit to automatically track your steps, sleep, and calories.
                                 </p>
                                 <Button
-                                    className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg shadow-emerald-900/20"
+                                    className="w-full h-12 text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-95"
                                     disabled={isConnectingHealth}
                                     onClick={async () => {
                                         setIsConnectingHealth(true);
@@ -588,10 +569,9 @@ export default function ProfilePage() {
                                                 localStorage.setItem('health_connected', 'true');
                                                 toast.success("Health sync activated!");
                                                 hapticSuccess();
-                                                // Trigger initial sync immediately
                                                 syncNow();
                                             } else {
-                                                toast.error("Failed: " + (success?.message || "Ensure Health Connect is installed"));
+                                                toast.error("Failed: Ensure Health Connect is installed");
                                                 hapticError();
                                             }
                                         } catch (err) {
@@ -604,12 +584,12 @@ export default function ProfilePage() {
                                 >
                                     {isConnectingHealth ? (
                                         <>
-                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                                             Connecting...
                                         </>
                                     ) : (
                                         <>
-                                            <Smartphone className="w-4 h-4 mr-2" />
+                                            <Smartphone className="w-5 h-5 mr-2" />
                                             Connect Health Data
                                         </>
                                     )}
@@ -618,135 +598,67 @@ export default function ProfilePage() {
                         )}
                     </div>
                 </div>
-            </CollapsibleSection>
-
-            {/* Subscription Plan Section */}
-            <CollapsibleSection title="Subscription Plan" icon={Crown} defaultOpen={false}>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">Current Plan</h3>
-                        </div>
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isTrialExpired
-                            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                            : isPremium
-                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-300 dark:border-zinc-700'
-                            }`}>
-                            {isTrialExpired ? 'Trial Expired' : isTrialing ? 'Free Trial' : isPremium ? (subscription?.plan_id === (import.meta.env.VITE_STRIPE_PRICE_YEARLY || 'price_1TfEnwESf91DrGyE4XWhZzVs') ? 'Pro Yearly' : 'Pro Monthly') : 'Free'}
-                        </span>
-                    </div>
-
-                    {isTrialExpired && (
-                        <div className="mb-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                            <p className="text-xs text-red-400 font-medium leading-relaxed">Your free trial has ended. Subscribe now to keep using Pro features.</p>
-                        </div>
-                    )}
-
-                    <div className="flex items-center justify-between mt-2">
-                        <div className="text-xs text-slate-500 dark:text-zinc-400">
-                            {isCanceled ? (
-                                <span className="text-red-400">Canceled (Expires {new Date(subscription?.current_period_end).toLocaleDateString()})</span>
-                            ) : isTrialExpired ? (
-                                <span className="text-red-400">Expired on {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                            ) : isTrialing ? (
-                                <span className="text-blue-400">Trial ends {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                            ) : isPremium ? (
-                                <span>Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                            ) : hasUsedTrial ? (
-                                <span>Upgrade to unlock premium</span>
-                            ) : (
-                                <span>Start your 14-day free trial</span>
-                            )}
-                        </div>
-
-                        {isPremium && !isTrialExpired ? (
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-9 px-4 text-xs gap-1.5 rounded-xl border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-zinc-800"
-                                onClick={() => openPricing()}
-                            >
-                                Manage
-                            </Button>
-                        ) : (
-                            <Button
-                                size="sm"
-                                className={`h-9 px-4 text-xs gap-1.5 rounded-xl ${isTrialExpired ? 'bg-red-600 hover:bg-red-500' : 'bg-blue-600 hover:bg-blue-500'}`}
-                                onClick={() => openPricing()}
-                            >
-                                {isTrialExpired ? 'Subscribe' : hasUsedTrial ? 'Upgrade' : 'Try Free'} <Sparkles className="w-3 h-3" />
-                            </Button>
-                        )}
-                    </div>
-                </div>
-            </CollapsibleSection>
-
-            {/* Change Password Section */}
-            <div className="border border-slate-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900/50">
-                <button
-                    onClick={() => setPasswordOpen(!passwordOpen)}
-                    className="w-full flex items-center justify-between p-5 text-xs font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-300 uppercase tracking-wider transition-colors"
-                >
-                    <span className="flex items-center gap-2">
-                        <KeyRound className="w-4 h-4" /> Change Password
-                    </span>
-                    {passwordOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-
-                <AnimatePresence>
-                    {passwordOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                        >
-                            <div className="p-5 pt-0 space-y-3">
-                                <PasswordInput
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    placeholder="New Password"
-                                    className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
-                                />
-                                <PasswordInput
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Confirm Password"
-                                    className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600"
-                                />
-                                <Button
-                                    size="sm"
-                                    onClick={handlePasswordUpdate}
-                                    disabled={passwordLoading || !newPassword || !confirmPassword}
-                                    className="w-full h-11 rounded-xl"
-                                >
-                                    {passwordLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                                    Update Password
-                                </Button>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
 
-            {/* Save Button */}
-            <Button
-                onClick={handleSave}
-                className="w-full h-12 text-base font-semibold rounded-xl shadow-lg shadow-blue-500/20"
-                disabled={!isDirty || loading || uploading}
-            >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                {loading ? 'Saving Changes...' : 'Save Profile Changes'}
-            </Button>
+            {/* Change Password Section */}
+            <Section title="Security" icon={KeyRound}>
+                <div className="p-5 space-y-4">
+                    <PasswordInput
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="New Password"
+                        className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 rounded-2xl px-4 py-3.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 transition-colors"
+                    />
+                    <PasswordInput
+                         value={confirmPassword}
+                         onChange={(e) => setConfirmPassword(e.target.value)}
+                         placeholder="Confirm Password"
+                         className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 rounded-2xl px-4 py-3.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-zinc-600 transition-colors"
+                    />
+                    <Button
+                         size="sm"
+                         onClick={handlePasswordUpdate}
+                         disabled={passwordLoading || !newPassword || !confirmPassword}
+                         className="w-full h-12 rounded-2xl font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-slate-100"
+                    >
+                         {passwordLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                         Update Password
+                    </Button>
+                </div>
+            </Section>
 
-            {/* Log Out Button */}
-            <button
-                onClick={handleSignOut}
-                className="w-full py-4 text-sm font-semibold text-red-500 hover:text-red-400 transition-colors flex items-center justify-center gap-2 rounded-xl bg-red-500/5 hover:bg-red-500/10"
-            >
-                <LogOut className="w-4 h-4" /> Log Out
-            </button>
+            {/* Account Management */}
+            <Section title="Account" icon={User}>
+                <button
+                    onClick={handleSignOut}
+                    className="w-full p-4.5 py-4 text-[15px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2 text-center"
+                >
+                    <LogOut className="w-5 h-5" /> Sign Out
+                </button>
+            </Section>
+
+            {/* Floating Save Button */}
+            <AnimatePresence>
+                {isDirty && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
+                        className="fixed bottom-[80px] left-0 right-0 px-4 z-50 flex justify-center pointer-events-none"
+                    >
+                        <div className="w-full max-w-md pointer-events-auto">
+                            <Button
+                                onClick={handleSave}
+                                className="w-full h-14 text-lg font-bold rounded-full shadow-2xl shadow-blue-500/40 bg-blue-600 hover:bg-blue-500 text-white border-[3px] border-white dark:border-zinc-900 active:scale-95 transition-all"
+                                disabled={loading || uploading}
+                            >
+                                {loading ? <Loader2 className="w-6 h-6 animate-spin mr-2" /> : null}
+                                {loading ? 'Saving...' : 'Save Profile Changes'}
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
