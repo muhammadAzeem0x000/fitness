@@ -241,7 +241,7 @@ export function NutritionPage() {
                         {/* Planned Meal Banner */}
                         <PlannedMealBanner date={selectedDate} />
 
-                        <PremiumGate feature="AI Food Logging">
+
                             <div className="space-y-6">
                                 {/* AI Logger */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-zinc-800 relative">
@@ -352,7 +352,7 @@ export function NutritionPage() {
                                     )}
                                 </div>
                             </div>
-                        </PremiumGate>
+
                     </div>
                 )}
 

@@ -90,3 +90,15 @@ export async function getCustomerInfo() {
   const { customerInfo } = await Purchases.getCustomerInfo();
   return customerInfo;
 }
+
+export async function checkTrialEligibility(productIdentifiers) {
+  if (!isNativePlatform()) return {};
+  await ensureInitialized();
+  try {
+    const eligibilityMap = await Purchases.checkTrialOrIntroductoryPriceEligibility({ productIdentifiers });
+    return eligibilityMap;
+  } catch (error) {
+    console.error("Trial check failed:", error);
+    return {};
+  }
+}

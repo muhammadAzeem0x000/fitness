@@ -14,7 +14,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 export function PricingDialog({ isOpen, onClose }) {
     const { user } = useAuth();
     const { toast } = useToast();
-    const { refreshSubscription } = useSubscription();
+    const { refreshSubscription, isTrialEligible } = useSubscription();
 
     const [offerings, setOfferings] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -249,14 +249,14 @@ export function PricingDialog({ isOpen, onClose }) {
                                                     disabled={!!purchasing}
                                                     className={`w-full py-6 rounded-xl font-bold text-[15px] ${
                                                         isAnnual 
-                                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md' 
-                                                            : 'bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white'
+                                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 border-none' 
+                                                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-white border-none'
                                                     }`}
                                                 >
                                                     {purchasing === pkg.identifier ? (
                                                         <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                                                     ) : (
-                                                        'Subscribe Now'
+                                                        isTrialEligible ? 'Start 14-Day Free Trial' : `Subscribe for ${pkg.product.priceString}`
                                                     )}
                                                 </Button>
                                             </div>

@@ -21,14 +21,14 @@ export function PremiumGate({
     fallback,
     showPreview = false
 }) {
-    const { isPremium, isLoading, subscription, isTrialExpired } = useSubscription();
+    const { isPremium, isTrialEligible, isLoading, subscription, isTrialExpired } = useSubscription();
     const { openPricing } = usePricing();
     const navigate = useNavigate();
 
-    const hasUsedTrial = false;
-
-    // Temporarily bypass premium lock screen while waiting for Google Play verification
-    return <>{children}</>;
+    // User is premium, allow access to premium content
+    if (isPremium) {
+        return <>{children}</>;
+    }
 
     // User needs to upgrade - show gate
     if (fallback) {
@@ -89,12 +89,12 @@ export function PremiumGate({
                     onClick={() => openPricing()}
                 >
                     <Sparkles className="w-5 h-5" />
-                    {hasUsedTrial ? 'Upgrade to Pro - $4.99/mo' : 'Start 14-Day Free Trial'}
+                    {isTrialEligible ? 'Start 14-Day Free Trial' : 'Upgrade to Pro - $4.99/mo'}
                 </Button>
 
                 {/* Subtext */}
                 <p className="text-xs text-zinc-600 mt-4">
-                    {hasUsedTrial ? '$4.99/mo • Cancel anytime' : '14-day free trial • Cancel anytime'}
+                    {isTrialEligible ? '14-day free trial • Cancel anytime' : '$4.99/mo • Cancel anytime'}
                 </p>
             </div>
         </div>

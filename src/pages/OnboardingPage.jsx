@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { supabase } from '../lib/supabase';
 import { useUserPreferences } from '../context/UserPreferencesContext';
@@ -12,6 +13,7 @@ import { z } from 'zod';
 
 const OnboardingPage = () => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { heightUnit, weightUnit, toggleHeightUnit, toggleWeightUnit, convertHeightToCm, convertWeightToDb } = useUserPreferences();
 
     useEffect(() => {
@@ -248,8 +250,14 @@ const OnboardingPage = () => {
                 localStorage.removeItem('onboarding_form');
                 localStorage.removeItem('onboarding_split_type');
                 localStorage.removeItem('onboarding_custom_days');
-                // Force reload
-                window.location.href = '/';
+                
+                // Optimistically update to prevent App.jsx from routing back before refetch completes
+                queryClient.setQueryData(['profile', user.id], (old) => {
+                    return old ? { ...old, needs_onboarding: false } : { id: user.id, needs_onboarding: false };
+                });
+                
+                await queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+                navigate('/dashboard', { replace: true });
             } else {
                 throw new Error("Verification failed.");
             }

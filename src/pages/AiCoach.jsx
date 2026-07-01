@@ -20,6 +20,7 @@ import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useBackInterceptor } from '../hooks/useHardwareBackButton';
 import { useNetwork } from '../hooks/useNetwork';
+import { PremiumGate } from '../components/premium/PremiumGate';
 
 export function AiCoach() {
     const { user } = useAuth();
@@ -136,6 +137,10 @@ export function AiCoach() {
                         Your personal elite fitness strategist.
                     </p>
                 </div>
+            </div>
+
+            <PremiumGate feature="AI Coach & Advanced Reports" showPreview={true}>
+            <>
                 {/* Mode Switcher */}
                 <div className="flex p-1 bg-slate-100 dark:bg-zinc-900/80 rounded-xl gap-1 border border-slate-300 dark:border-zinc-800">
                     <button
@@ -161,7 +166,6 @@ export function AiCoach() {
                         Reports
                     </button>
                 </div>
-            </div>
 
             {/* Chat Mode */}
             {coachMode === 'chat' ? (
@@ -343,6 +347,8 @@ export function AiCoach() {
             </div>
             </>
             )}
+            </>
+            </PremiumGate>
         </div>
     );
 }

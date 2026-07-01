@@ -11,6 +11,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
     BarChart, Bar, Line, ComposedChart
 } from 'recharts';
+import { PremiumGate } from '../components/premium/PremiumGate';
 
 export default function AnalyticsPage() {
     const navigate = useNavigate();
@@ -61,6 +62,7 @@ export default function AnalyticsPage() {
                 </div>
             </div>
 
+            <PremiumGate feature="Readiness Score & Advanced Analytics" showPreview={true}>
             {/* Score Breakdown Section */}
             <div className="bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
@@ -178,6 +180,7 @@ export default function AnalyticsPage() {
                     </ResponsiveContainer>
                 </div>
             </div>
+            </PremiumGate>
         </div>
     );
 }
