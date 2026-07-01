@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from '../lib/supabase';
 import { getPlatform } from '../lib/platform';
 
 export function usePushNotifications(userId) {
     const [token, setToken] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Only run on native Android/iOS
@@ -57,7 +59,11 @@ export function usePushNotifications(userId) {
 
                 await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
                     console.log('Push action performed: ', notification);
-                    // We can handle navigation here based on notification data
+                    // The payload from firebase v1 comes through under notification.notification.data
+                    const data = notification.notification?.data || {};
+                    if (data.route) {
+                        navigate(data.route, { state: { openLatestReport: true, reportId: data.reportId } });
+                    }
                 });
 
             } catch (err) {

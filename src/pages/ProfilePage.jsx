@@ -61,7 +61,7 @@ export default function ProfilePage() {
     const { addWeightEntry } = useWeight(user?.id);
     const { openPricing } = usePricing();
     const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
-    
+
     const hasUsedTrial = false;
 
     const { convertWeightToDb, displayWeight, formatWeightLabel } = useUserPreferences();
@@ -151,7 +151,7 @@ export default function ProfilePage() {
         try {
             const newGoalWeight = convertWeightToDb(goalWeightInput);
             const newHeight = convertHeightToCm(heightVal1, heightVal2, preferences.heightUnit);
-            
+
             await updateProfile({
                 display_name: displayName,
                 avatar_url: avatarUrl,
@@ -198,11 +198,12 @@ export default function ProfilePage() {
             setPasswordOpen(false);
         } catch (error) {
             hapticError();
-            toast.error("Error updating password: " + error.message);
+            toast.error(error.message || "Failed to update password");
         } finally {
             setPasswordLoading(false);
         }
     };
+
 
     const handleWeightLog = async () => {
         if (!currentWeightInput) return;
@@ -458,18 +459,17 @@ export default function ProfilePage() {
             </CollapsibleSection>
 
             {/* Health Sync */}
-            <CollapsibleSection 
-                title="Health & Device Sync" 
-                icon={Activity} 
-                defaultOpen={false} 
+            <CollapsibleSection
+                title="Health & Device Sync"
+                icon={Activity}
+                defaultOpen={false}
             >
 
                 {/* Redesigned Health Sync Card */}
-                <div className={`relative overflow-hidden rounded-2xl border ${
-                    isHealthConnected 
-                        ? 'border-emerald-500/30 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-teal-950/30' 
+                <div className={`relative overflow-hidden rounded-2xl border ${isHealthConnected
+                        ? 'border-emerald-500/30 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-teal-950/30'
                         : 'border-slate-200 dark:border-zinc-700 bg-gradient-to-br from-slate-50 dark:from-zinc-900 to-slate-100 dark:to-zinc-800/50'
-                }`}>
+                    }`}>
                     {/* Animated glow for connected state */}
                     {isHealthConnected && (
                         <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl animate-pulse" />
@@ -479,11 +479,10 @@ export default function ProfilePage() {
                         {/* Header Row */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                    isHealthConnected 
-                                        ? 'bg-emerald-500/20' 
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isHealthConnected
+                                        ? 'bg-emerald-500/20'
                                         : 'bg-red-100 dark:bg-red-900/30'
-                                }`}>
+                                    }`}>
                                     {isHealthConnected ? (
                                         <Activity className="w-5 h-5 text-emerald-400" />
                                     ) : (
@@ -548,9 +547,9 @@ export default function ProfilePage() {
                                         <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isSyncing ? 'animate-spin' : ''}`} />
                                         {isSyncing ? 'Syncing...' : 'Sync Now'}
                                     </Button>
-                                    <Button 
-                                        size="sm" 
-                                        variant="ghost" 
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
                                         className="h-9 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
                                         onClick={() => {
                                             setIsHealthConnected(false);
@@ -576,7 +575,7 @@ export default function ProfilePage() {
                                 <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
                                     Connect to Google Health Connect or Apple HealthKit to automatically track your steps, sleep, and calories.
                                 </p>
-                                <Button 
+                                <Button
                                     className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg shadow-emerald-900/20"
                                     disabled={isConnectingHealth}
                                     onClick={async () => {
@@ -584,7 +583,7 @@ export default function ProfilePage() {
                                         hapticLight();
                                         try {
                                             const success = await requestHealthPermissions();
-                                            if(success === true) {
+                                            if (success === true) {
                                                 setIsHealthConnected(true);
                                                 localStorage.setItem('health_connected', 'true');
                                                 toast.success("Health sync activated!");

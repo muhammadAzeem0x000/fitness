@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft, MessageSquare, WifiOff } from 'lucide-react';
@@ -17,7 +17,7 @@ import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePricing } from '../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useBackInterceptor } from '../hooks/useHardwareBackButton';
 import { useNetwork } from '../hooks/useNetwork';
 
@@ -31,11 +31,10 @@ export function AiCoach() {
     const { isPremium, isLoading: subLoading } = useSubscription();
     const { openPricing } = usePricing();
     const navigate = useNavigate();
+    const location = useLocation();
     const { isOffline } = useNetwork();
 
-    const [loading, setLoading] = useState(false); // Keep for generation state
     const [selectedReport, setSelectedReport] = useState(null);
-    const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('weekly');
     const [coachMode, setCoachMode] = useState('chat'); // 'reports' or 'chat'
     const [showHistoryMobile, setShowHistoryMobile] = useState(true);
@@ -69,10 +68,44 @@ export function AiCoach() {
         refetchOnWindowFocus: false
     });
 
-    // Clear selection when tab changes to show history list
+    // Handle incoming push notification navigation
     useEffect(() => {
-        setSelectedReport(null);
-    }, [activeTab]);
+        if (location.state?.reportId || location.state?.openLatestReport) {
+            setCoachMode('reports'); // Switch UI immediately
+            
+            if (location.state?.reportId) {
+                const targetReport = allReports.find(r => String(r.id) === String(location.state.reportId));
+                if (targetReport) {
+                    setShowHistoryMobile(false);
+                    if (targetReport.report_type) {
+                        setActiveTab(targetReport.report_type);
+                    }
+                    setSelectedReport(targetReport);
+                    navigate(location.pathname, { replace: true, state: {} });
+                } else {
+                    queryClient.invalidateQueries({ queryKey: ['aiReports', user?.id] });
+                }
+            } else if (allReports.length > 0) {
+                // Fallback for older payload (no reportId)
+                // Ensure we fetch latest so we don't open a stale report
+                queryClient.invalidateQueries({ queryKey: ['aiReports', user?.id] });
+                
+                setShowHistoryMobile(false);
+                if (allReports[0].report_type) {
+                    setActiveTab(allReports[0].report_type);
+                }
+                setSelectedReport(allReports[0]);
+                
+                // Only clear state if the report is very recent (less than 1 min old)
+                const isRecent = new Date(allReports[0].created_at) > new Date(Date.now() - 60000);
+                if (isRecent) {
+                    navigate(location.pathname, { replace: true, state: {} });
+                }
+            }
+        }
+    }, [location.state, allReports, navigate, location.pathname, queryClient, user?.id]);
+
+    const isInitialMount = useRef(true);
 
     // Auto-switch to report view on mobile when report selected or generated
     useEffect(() => {
@@ -156,6 +189,7 @@ export function AiCoach() {
                             key={tab.id}
                             onClick={() => {
                                 setActiveTab(tab.id);
+                                setSelectedReport(null); // Clear selection only on manual tab click
                                 setShowHistoryMobile(true); // Go back to list on tab change
                             }}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap
@@ -228,14 +262,7 @@ export function AiCoach() {
                     )}
                 </div>
 
-                {/* Right Panel: Report View (Visible if showHistoryMobile is false OR on Desktop) */}
                 <div className={`${!showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-3 flex-col h-full min-h-0 space-y-4`}>
-                    {error && (
-                        <div className="flex-none bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-2 animate-in slide-in-from-top-2">
-                            <AlertCircle className="h-5 w-5 shrink-0" />
-                            {error}
-                        </div>
-                    )}
 
                     {selectedReport ? (
                         <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-white dark:bg-slate-950">
