@@ -176,45 +176,6 @@ export function NutritionSetupModal({ isOpen, onClose }) {
                     <div className="overflow-y-auto px-6 py-2 pb-6 custom-scrollbar flex-1">
                         <form onSubmit={handleSave} className="space-y-2 mt-2">
                             
-                            <SectionRow label={`Current Weight (${formatWeightLabel ? formatWeightLabel() : 'kg'})`}>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    required
-                                    value={currentWeightInput}
-                                    onChange={(e) => setCurrentWeightInput(e.target.value)}
-                                    placeholder="0.0"
-                                    className="w-20 text-right bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-2 py-1 placeholder:text-slate-400"
-                                />
-                            </SectionRow>
-
-                            <SectionRow label={`Height (${isFeet ? 'FT / IN' : 'CM'})`}>
-                                <div className="flex items-center justify-end gap-1">
-                                    <input
-                                        type="number"
-                                        required
-                                        value={heightVal1}
-                                        onChange={(e) => setHeightVal1(e.target.value)}
-                                        placeholder={isFeet ? "Ft" : "Cm"}
-                                        className="w-16 text-right bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-2 py-1 placeholder:text-slate-400"
-                                    />
-                                    {isFeet && (
-                                        <>
-                                            <span className="text-slate-400 font-medium">'</span>
-                                            <input
-                                                type="number"
-                                                required
-                                                value={heightVal2}
-                                                onChange={(e) => setHeightVal2(e.target.value)}
-                                                placeholder="In"
-                                                className="w-16 text-right bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-2 py-1 placeholder:text-slate-400"
-                                            />
-                                            <span className="text-slate-400 font-medium">"</span>
-                                        </>
-                                    )}
-                                </div>
-                            </SectionRow>
-
                             <SectionRow label="Age">
                                 <input
                                     type="number"
@@ -261,6 +222,45 @@ export function NutritionSetupModal({ isOpen, onClose }) {
                                         { value: 'bulk', label: 'Bulk' }
                                     ]}
                                 />
+                            </SectionRow>
+
+                            <SectionRow label={`Current Weight (${formatWeightLabel ? formatWeightLabel() : 'kg'})`}>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    required
+                                    value={currentWeightInput}
+                                    onChange={(e) => setCurrentWeightInput(e.target.value)}
+                                    placeholder="0.0"
+                                    className="w-20 text-right bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-2 py-1 placeholder:text-slate-400"
+                                />
+                            </SectionRow>
+
+                            <SectionRow label={`Height (${isFeet ? 'FT / IN' : 'CM'})`}>
+                                <div className="flex items-center justify-end gap-1">
+                                    <input
+                                        type="number"
+                                        required
+                                        value={heightVal1}
+                                        onChange={(e) => setHeightVal1(e.target.value)}
+                                        placeholder={isFeet ? "Ft" : "Cm"}
+                                        className="w-16 text-right bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-2 py-1 placeholder:text-slate-400"
+                                    />
+                                    {isFeet && (
+                                        <>
+                                            <span className="text-slate-400 font-medium">'</span>
+                                            <input
+                                                type="number"
+                                                required
+                                                value={heightVal2}
+                                                onChange={(e) => setHeightVal2(e.target.value)}
+                                                placeholder="In"
+                                                className="w-16 text-right bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-2 py-1 placeholder:text-slate-400"
+                                            />
+                                            <span className="text-slate-400 font-medium">"</span>
+                                        </>
+                                    )}
+                                </div>
                             </SectionRow>
 
                             <div className="pt-6">
