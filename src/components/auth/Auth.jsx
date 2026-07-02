@@ -7,7 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, signupSchema } from '../../lib/schemas';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PasswordInput } from '../ui/PasswordInput';
 import authBg from '../../assets/auth-bg.jpg';
 import { isNativePlatform } from '../../lib/platform';
@@ -24,6 +24,7 @@ const GoogleIcon = () => (
 
 export function Auth() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState(() => {
         if (location.state?.view) return location.state.view;
@@ -34,6 +35,11 @@ export function Auth() {
         }
         return 'login';
     });
+
+    // Sync view state to router history so back navigation remembers the current view
+    useEffect(() => {
+        navigate(location.pathname, { replace: true, state: { ...location.state, view } });
+    }, [view, navigate, location.pathname]);
     const { toast } = useToast();
 
     // Login Form
