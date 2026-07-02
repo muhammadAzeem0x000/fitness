@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { calculateReadiness } from '../../lib/readiness';
-import { Moon, Footprints, Flame, Activity, ChevronRight, RefreshCw } from 'lucide-react';
+import { Moon, Footprints, Flame, Activity, ChevronRight, RefreshCw, Lock, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSubscription } from '../../hooks/useSubscription';
+import { usePricing } from '../../context/PricingContext';
 
 // Simple circular progress ring component
 const ProgressRing = ({ radius, stroke, progress, color }) => {
@@ -52,6 +54,8 @@ const ProgressRing = ({ radius, stroke, progress, color }) => {
 
 export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSyncing }) => {
     const navigate = useNavigate();
+    const { isPremium } = useSubscription();
+    const { openPricing } = usePricing();
     
     // Get today's metrics using local date (not UTC via toISOString)
     const now = new Date();
@@ -86,6 +90,45 @@ export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSynci
     }
 
     const isConnected = localStorage.getItem('health_connected') === 'true';
+
+    // If not premium, show a locked state
+    if (!isPremium) {
+        return (
+            <div 
+                onClick={() => openPricing()}
+                className="relative overflow-hidden cursor-pointer group bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl p-6 shadow-xl transition-all hover:scale-[1.02]"
+            >
+                {/* Decorative background elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl transform -translate-x-1/2 translate-y-1/2" />
+                
+                <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="p-1.5 bg-indigo-500/20 rounded-lg">
+                                <Activity className="w-4 h-4 text-indigo-400" />
+                            </div>
+                            <h3 className="text-sm font-bold tracking-wider uppercase text-indigo-200">
+                                Daily Readiness
+                            </h3>
+                        </div>
+                        
+                        <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-2">
+                            Unlock Insights <Lock className="w-5 h-5 text-indigo-400" />
+                        </h2>
+                        <p className="text-sm text-slate-400 leading-relaxed max-w-[220px]">
+                            Get a personalized daily score based on your sleep, recovery, and workout volume.
+                        </p>
+
+                        <div className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-full border border-indigo-500/20">
+                            <Sparkles className="w-3 h-3" />
+                            Pro Feature
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div 
@@ -123,8 +166,15 @@ export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSynci
                             <p className="text-base font-bold text-slate-800 dark:text-zinc-200 mb-1">
                                 {status}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed max-w-[200px] hidden sm:block">
-                                {recommendation}
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed max-w-[200px] hidden sm:block mt-1">
+                                {todayMetrics.sleep_hours === 0 ? (
+                                    <span className="text-amber-600 dark:text-amber-500 flex flex-col gap-0.5">
+                                        <span className="font-semibold">⚠️ Sleep data missing</span>
+                                        <span className="text-[10px] leading-tight text-amber-600/80 dark:text-amber-500/80">Wearable tracker required for accurate score</span>
+                                    </span>
+                                ) : (
+                                    recommendation
+                                )}
                             </p>
                         </>
                     )}

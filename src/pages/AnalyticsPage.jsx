@@ -122,9 +122,18 @@ export default function AnalyticsPage() {
 
                 <div className="mt-6 p-4 bg-slate-50 dark:bg-zinc-800/50 rounded-xl border border-slate-100 dark:border-zinc-700/50 flex gap-3">
                     <Info className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-                        {recommendation}
-                    </p>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
+                            {recommendation}
+                        </p>
+                        {todayMetrics.sleep_hours === 0 && (
+                            <div className="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg">
+                                <p className="text-xs text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+                                    ⚠️ We noticed your sleep data is 0. A wearable device (like a smartwatch or fitness tracker) synced to Health Connect is required to accurately track your sleep pattern and calculate a precise readiness score.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
