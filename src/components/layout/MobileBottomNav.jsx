@@ -8,23 +8,41 @@ export function MobileBottomNav() {
     const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
     useEffect(() => {
-        const handleFocusIn = (e) => {
-            const tag = e.target.tagName?.toLowerCase();
-            if (tag === 'input' || tag === 'textarea') {
+        const baseHeight = window.innerHeight;
+
+        const handleResize = () => {
+            if (window.innerHeight < baseHeight - 150) {
                 setKeyboardVisible(true);
+            } else {
+                setKeyboardVisible(false);
             }
         };
 
-        const handleFocusOut = () => {
-            setKeyboardVisible(false);
+        const handleVisualViewportResize = () => {
+            if (window.visualViewport && window.visualViewport.height < baseHeight - 150) {
+                setKeyboardVisible(true);
+            } else if (window.visualViewport && window.visualViewport.height >= baseHeight - 150) {
+                setKeyboardVisible(false);
+            }
         };
 
-        window.addEventListener('focusin', handleFocusIn);
-        window.addEventListener('focusout', handleFocusOut);
+        window.addEventListener('resize', handleResize);
+        window.visualViewport?.addEventListener('resize', handleVisualViewportResize);
+
+        let showListener;
+        let hideListener;
+        if (window.Capacitor?.isNativePlatform()) {
+            import('@capacitor/keyboard').then(({ Keyboard }) => {
+                showListener = Keyboard.addListener('keyboardWillShow', () => setKeyboardVisible(true));
+                hideListener = Keyboard.addListener('keyboardWillHide', () => setKeyboardVisible(false));
+            }).catch(() => {});
+        }
 
         return () => {
-            window.removeEventListener('focusin', handleFocusIn);
-            window.removeEventListener('focusout', handleFocusOut);
+            window.removeEventListener('resize', handleResize);
+            window.visualViewport?.removeEventListener('resize', handleVisualViewportResize);
+            if (showListener) showListener.then(l => l?.remove());
+            if (hideListener) hideListener.then(l => l?.remove());
         };
     }, []);
 

@@ -3,7 +3,7 @@ import { Send, Loader2, Bot, User, Sparkles, Trash2, AlertCircle } from 'lucide-
 import { Button } from '../ui/Button';
 import ReactMarkdown from 'react-markdown';
 import { sendChatMessage } from '../../lib/aiChat';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
@@ -13,7 +13,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { usePricing } from '../../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 import { useNavigate } from 'react-router-dom';
-import { ElasticScroll } from '../ui/ElasticScroll';
+
 import { AnimatePresence, motion } from 'framer-motion';
 
 const QUICK_PROMPTS = [
@@ -56,12 +56,14 @@ export function AiChat() {
         enabled: !!user?.id && !isPremium,
     });
 
+    const queryClient = useQueryClient();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isStreaming, setIsStreaming] = useState(false);
     const [error, setError] = useState(null);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const scrollRef = useRef(null);
 
     // Auto-scroll to bottom on new messages
     useEffect(() => {
@@ -169,6 +171,7 @@ export function AiChat() {
                 if (!quota.allowed) {
                     const resetDate = quota.resetDate.toLocaleDateString();
                     setError(`limit_reached:You've reached your free limit of 5 AI messages this month. Your limit resets on ${resetDate}.`);
+                    setTimeout(() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                     return;
                 }
             } catch (err) {
@@ -223,6 +226,7 @@ export function AiChat() {
             if (!isPremium) {
                 try {
                     await incrementFeatureUsage(user.id, 'ai_chat');
+                    queryClient.invalidateQueries(['featureUsage', user.id, 'ai_chat']);
                 } catch (err) {
                     console.warn('Feature usage increment failed:', err);
                 }
@@ -232,6 +236,7 @@ export function AiChat() {
             // Remove the placeholder on error
             setMessages(updatedMessages);
             setError(err.message || 'Failed to get a response');
+            setTimeout(() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
         } finally {
             setIsStreaming(false);
             inputRef.current?.focus();
@@ -253,8 +258,53 @@ export function AiChat() {
     return (
         <div className="flex flex-col h-full">
             {/* Messages Area */}
-            <ElasticScroll className="flex-1 custom-scrollbar px-4 py-4 space-y-4 min-h-0">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4 min-h-0">
                 <AnimatePresence initial={false}>
+                    {/* Error */}
+                    {error && (
+                        error.startsWith('limit_reached:') ? (
+                            <div className="mb-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 relative overflow-hidden animate-in zoom-in-95 shadow-sm">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
+                                <div className="flex flex-col gap-3 relative z-10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-1.5 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                                            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        </div>
+                                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                            Premium Feature Limit
+                                        </h4>
+                                    </div>
+                                    <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
+                                        {error.replace('limit_reached:', '')}
+                                    </p>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => openPricing()}
+                                        className="w-full h-10 mt-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/25 transition-all"
+                                    >
+                                        <Sparkles className="w-4 h-4 mr-2" />
+                                        Upgrade for Unlimited Access
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-sm animate-in slide-in-from-top-2">
+                                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                                <div>
+                                    {error}
+                                    {error.includes('Upgrade') && (
+                                        <button
+                                            onClick={() => openPricing()}
+                                            className="ml-2 text-blue-400 hover:text-blue-300 underline text-xs"
+                                        >
+                                            View Pro Plans
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )
+                    )}
+
                     {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center py-8">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-blue-500/20 border border-violet-500/30 flex items-center justify-center mb-4 shadow-lg shadow-violet-500/10">
@@ -276,27 +326,6 @@ export function AiChat() {
                                 </button>
                             ))}
                         </div>
-
-                        {!isPremium && !subLoading && (
-                            <div className="mt-6 text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-between bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl px-4 py-3">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-                                    {usageData ? (
-                                        <span>
-                                            <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/5 messages remaining
-                                        </span>
-                                    ) : (
-                                        <span>Free tier: 5 messages/month</span>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={() => openPricing()}
-                                    className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
-                                >
-                                    Upgrade
-                                </button>
-                            </div>
-                        )}
                     </div>
                 ) : (
                     /* Message List */
@@ -342,55 +371,30 @@ export function AiChat() {
                     </>
                 )}
                 </AnimatePresence>
-            </ElasticScroll>
-
-            {/* Error */}
-            {error && (
-                error.startsWith('limit_reached:') ? (
-                    <div className="flex-none mx-4 mb-2 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 relative overflow-hidden animate-in zoom-in-95 shadow-sm">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
-                        <div className="flex flex-col gap-3 relative z-10">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
-                                    <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                    Premium Feature Limit
-                                </h4>
-                            </div>
-                            <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
-                                {error.replace('limit_reached:', '')}
-                            </p>
-                            <Button
-                                size="sm"
-                                onClick={() => openPricing()}
-                                className="w-full h-10 mt-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/25 transition-all"
-                            >
-                                <Sparkles className="w-4 h-4 mr-2" />
-                                Upgrade for Unlimited Access
-                            </Button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex-none mx-4 mb-2 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-sm animate-in slide-in-from-bottom-2">
-                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                        <div>
-                            {error}
-                            {error.includes('Upgrade') && (
-                                <button
-                                    onClick={() => openPricing()}
-                                    className="ml-2 text-blue-400 hover:text-blue-300 underline text-xs"
-                                >
-                                    View Pro Plans
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )
-            )}
+            </div>
 
             {/* Input Area */}
-            <div className="flex-none px-4 py-3 border-t border-slate-200 dark:border-zinc-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm">
+            <div className="flex-none px-4 py-3 border-t border-slate-200 dark:border-zinc-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm flex flex-col gap-2">
+                {!isPremium && !subLoading && (
+                    <div className="text-[11px] text-slate-500 dark:text-zinc-500 flex items-center justify-between w-full">
+                        <div className="flex items-center gap-1.5">
+                            <Sparkles className="w-3 h-3 text-violet-500" />
+                            {usageData ? (
+                                <span>
+                                    <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/5 messages remaining
+                                </span>
+                            ) : (
+                                <span>Free tier: 5 messages/month</span>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => openPricing()}
+                            className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
+                        >
+                            Upgrade
+                        </button>
+                    </div>
+                )}
                 <div className="flex gap-2 items-end">
                     {messages.length > 0 && (
                         <Button
@@ -404,7 +408,7 @@ export function AiChat() {
                         </Button>
                     )}
 
-                    <div className="flex-1 flex items-end bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl focus-within:ring-2 focus-within:ring-violet-500/50 focus-within:border-violet-500/50 transition-all overflow-hidden">
+                    <div className="flex-1 flex items-end bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl focus-within:border-violet-500 dark:focus-within:border-violet-500 transition-colors overflow-hidden">
                         <textarea
                             ref={inputRef}
                             value={input}
@@ -412,7 +416,7 @@ export function AiChat() {
                             onKeyDown={handleKeyDown}
                             placeholder="Ask your AI coach..."
                             rows={1}
-                            className="block w-full min-h-[44px] max-h-[120px] bg-transparent border-0 pl-4 pr-2 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:ring-0 resize-none custom-scrollbar"
+                            className="block w-full min-h-[44px] max-h-[120px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 pl-4 pr-2 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 resize-none custom-scrollbar"
                             style={{ height: 'auto' }}
                             onInput={(e) => {
                                 e.target.style.height = 'auto';
@@ -421,7 +425,15 @@ export function AiChat() {
                         />
                         <div className="p-1.5 shrink-0 flex items-center justify-center">
                             <button
-                                onClick={() => handleSend()}
+                                onMouseDown={(e) => {
+                                    e.preventDefault(); // Prevents input blur on Desktop
+                                    if (input.trim() && !isStreaming) handleSend();
+                                }}
+                                onTouchStart={(e) => {
+                                    e.preventDefault(); // Prevents input blur on Mobile touch
+                                    if (input.trim() && !isStreaming) handleSend();
+                                }}
+                                onClick={(e) => e.preventDefault()}
                                 disabled={!input.trim() || isStreaming}
                                 className="h-8 w-8 flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
