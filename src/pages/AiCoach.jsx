@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft, MessageSquare, WifiOff } from 'lucide-react';
+import { Bot, Loader2, FileText, AlertCircle, Calendar, LineChart, TrendingUp, ArrowLeft, MessageSquare, WifiOff, Sparkles } from 'lucide-react';
 import { AiChat } from '../components/ai/AiChat';
 import { generateHealthReport } from '../lib/openai';
 import { supabase } from '../lib/supabase';
@@ -314,10 +314,29 @@ export function AiCoach() {
                                     </span>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
-                                <ReactMarkdown>
-                                    {activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT : SAMPLE_MONTHLY_REPORT}
-                                </ReactMarkdown>
+                            <CardContent className="flex-1 overflow-y-auto p-0 custom-scrollbar flex flex-col">
+                                <div className="p-6 md:p-8 bg-gradient-to-b from-blue-50/80 to-white dark:from-blue-950/20 dark:to-slate-950 border-b border-slate-200 dark:border-zinc-800/50">
+                                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                                        <Sparkles className="w-6 h-6 text-blue-500" />
+                                        Unlock Your Progress with AI
+                                    </h3>
+                                    <p className="text-slate-600 dark:text-zinc-400 leading-relaxed max-w-2xl text-sm md:text-base">
+                                        Master AI analyzes your entire {activeTab} of workouts, nutrition logs, and recovery metrics to automatically generate a comprehensive strategy report. Identify weak points, celebrate consistencies, and receive actionable adjustments to break through plateaus faster.
+                                    </p>
+                                    {!isPremium && (
+                                        <Button
+                                            onClick={() => openPricing()}
+                                            className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/25 transition-all"
+                                        >
+                                            <Sparkles className="w-4 h-4 mr-2" /> Upgrade to Automate Reports
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="p-6 md:p-8 prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
+                                    <ReactMarkdown>
+                                        {activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT : SAMPLE_MONTHLY_REPORT}
+                                    </ReactMarkdown>
+                                </div>
                             </CardContent>
                         </Card>
                     ) : (

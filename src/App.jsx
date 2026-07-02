@@ -48,6 +48,8 @@ const SharedWorkout = lazyWithRetry(() => import('./pages/SharedWorkout').then(m
 const NutritionPage = lazyWithRetry(() => import('./pages/NutritionPage').then(module => ({ default: module.NutritionPage })));
 const LeaderboardPage = lazyWithRetry(() => import('./pages/LeaderboardPage').then(module => ({ default: module.LeaderboardPage })));
 const AnalyticsPage = lazyWithRetry(() => import('./pages/AnalyticsPage'));
+const TermsOfService = lazyWithRetry(() => import('./pages/TermsOfService'));
+const PrivacyPolicy = lazyWithRetry(() => import('./pages/PrivacyPolicy'));
 
 // Cool Logo Loader Component
 const Loader = () => (
@@ -172,6 +174,10 @@ const AppContent = () => {
             <Auth />
           </PublicRoute>
         } />
+
+        {/* Legal Pages */}
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
 
         {/* Protected Routes Wrapper - Persistent Layout */}
         <Route element={<ProtectedLayout />}>

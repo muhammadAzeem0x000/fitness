@@ -330,6 +330,9 @@ export function Auth() {
                                 >
                                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Account'}
                                 </Button>
+                                <div className="text-center text-xs text-slate-400 mt-2">
+                                    By signing up, you agree to our <a href="/terms" className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="/privacy" className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                </div>
 
                                 <div className="relative my-4">
                                     <div className="absolute inset-0 flex items-center">

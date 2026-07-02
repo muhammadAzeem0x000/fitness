@@ -201,9 +201,15 @@ export default function LandingPage() {
                         <Dumbbell className="w-6 h-6 text-blue-600" />
                         <span className="font-bold text-lg text-slate-900 dark:text-slate-200">MuscleBot</span>
                     </div>
-                    <p className="text-slate-500 text-sm">
-                        © {new Date().getFullYear()} MuscleBot. All rights reserved.
-                    </p>
+                    <div className="flex flex-col items-center md:items-end gap-2">
+                        <p className="text-slate-500 text-sm">
+                            © {new Date().getFullYear()} MuscleBot. All rights reserved.
+                        </p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                            <button onClick={() => navigate('/terms')} className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors">Terms of Service</button>
+                            <button onClick={() => navigate('/privacy')} className="hover:text-slate-800 dark:hover:text-slate-300 transition-colors">Privacy Policy</button>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </div>
