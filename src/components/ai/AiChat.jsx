@@ -330,20 +330,47 @@ export function AiChat() {
 
             {/* Error */}
             {error && (
-                <div className="flex-none mx-4 mb-2 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-sm animate-in slide-in-from-bottom-2">
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                    <div>
-                        {error}
-                        {error.includes('Upgrade') && (
-                            <button
+                error.includes('Free tier limit reached') ? (
+                    <div className="flex-none mx-4 mb-2 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 relative overflow-hidden animate-in zoom-in-95 shadow-sm">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
+                        <div className="flex flex-col gap-3 relative z-10">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                                    <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                    Premium Feature Limit
+                                </h4>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
+                                {error.replace('Free tier limit reached ', 'You\'ve used your ').replace('Upgrade to Pro for unlimited!', '')}
+                            </p>
+                            <Button
+                                size="sm"
                                 onClick={() => openPricing()}
-                                className="ml-2 text-blue-400 hover:text-blue-300 underline text-xs"
+                                className="w-full h-10 mt-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/25 transition-all"
                             >
-                                View Pro Plans
-                            </button>
-                        )}
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Upgrade for Unlimited Access
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex-none mx-4 mb-2 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl flex items-start gap-2 text-sm animate-in slide-in-from-bottom-2">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <div>
+                            {error}
+                            {error.includes('Upgrade') && (
+                                <button
+                                    onClick={() => openPricing()}
+                                    className="ml-2 text-blue-400 hover:text-blue-300 underline text-xs"
+                                >
+                                    View Pro Plans
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )
             )}
 
             {/* Input Area */}

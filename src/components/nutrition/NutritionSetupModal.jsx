@@ -146,6 +146,14 @@ export function NutritionSetupModal({ isOpen, onClose }) {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: '100%', opacity: 0 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    drag="y"
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={{ top: 0, bottom: 1 }}
+                    onDragEnd={(e, info) => {
+                        if (info.offset.y > 100 || info.velocity.y > 500) {
+                            onClose();
+                        }
+                    }}
                     className="relative w-full max-w-md bg-white dark:bg-slate-900 sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]"
                 >
                     {/* Drag Handle for Mobile */}

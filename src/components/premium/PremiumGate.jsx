@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { Button } from '../ui/Button';
-import { Lock, Sparkles, Zap } from 'lucide-react';
+import { Lock, Sparkles, MessageCircle, Utensils, Activity, LineChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePricing } from '../../context/PricingContext';
 
@@ -37,64 +37,79 @@ export function PremiumGate({
 
     // Default upgrade prompt
     return (
-        <div className="relative">
+        <div className="relative overflow-hidden rounded-2xl">
             {/* Blurred preview (optional) */}
             {showPreview && (
-                <div className="absolute inset-0 z-0 blur-md opacity-30 pointer-events-none overflow-hidden">
+                <div className="absolute inset-0 z-0 blur-md opacity-30 pointer-events-none overflow-hidden select-none">
                     {children}
                 </div>
             )}
 
             {/* Upgrade prompt overlay */}
-            <div className="relative z-10 flex flex-col items-center justify-center p-8 md:p-12 border-2 border-dashed border-zinc-800 rounded-xl bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-blue-900/10 backdrop-blur-sm min-h-[320px]">
+            <div className="relative z-10 flex flex-col items-center justify-center p-6 sm:p-8 md:p-12 border border-slate-200 dark:border-zinc-800 rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md min-h-[320px] shadow-xl">
+                {/* Decorative background glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
                 {/* Icon */}
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/10">
-                    <Lock className="w-8 h-8 text-blue-400" />
+                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30">
+                    <Lock className="w-8 h-8 text-white" />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">
-                    Premium Feature
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 text-center">
+                    Unlock Premium
                 </h3>
 
                 {/* Description */}
-                <p className="text-zinc-400 mb-6 text-center max-w-md text-sm md:text-base">
-                    Unlock <span className="text-blue-400 font-medium">{feature}</span> with MuscleBot Pro
+                <p className="text-slate-500 dark:text-zinc-400 mb-8 text-center max-w-md text-sm md:text-base px-2">
+                    Get access to <span className="text-blue-600 dark:text-blue-400 font-semibold">{feature}</span> and take your fitness journey to the next level with MuscleBot Pro.
                 </p>
 
                 {/* Features list */}
-                <div className="bg-zinc-900/60 border border-zinc-800 rounded-lg p-4 mb-6 w-full max-w-sm">
-                    <div className="text-xs text-zinc-500 uppercase tracking-wide mb-2 font-semibold">
-                        Pro includes
+                <div className="bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-700/50 rounded-xl p-5 mb-8 w-full max-w-sm">
+                    <div className="text-xs text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-4 font-bold text-center">
+                        Pro Includes
                     </div>
-                    <ul className="space-y-2 text-sm text-zinc-300">
-                        <li className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-blue-400" />
-                            Unlimited AI Coach reports
+                    <ul className="space-y-4 text-sm text-slate-700 dark:text-zinc-300">
+                        <li className="flex items-center gap-3">
+                            <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600 dark:text-blue-400 shrink-0">
+                                <MessageCircle className="w-4 h-4" />
+                            </div>
+                            <span className="font-medium leading-snug">Unlimited personalized AI coach chat</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-blue-400" />
-                            Advanced progress charts
+                        <li className="flex items-center gap-3">
+                            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 shrink-0">
+                                <Utensils className="w-4 h-4" />
+                            </div>
+                            <span className="font-medium leading-snug">AI meal planner</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-blue-400" />
-                            Streak tracking & PRs
+                        <li className="flex items-center gap-3">
+                            <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-lg text-purple-600 dark:text-purple-400 shrink-0">
+                                <Activity className="w-4 h-4" />
+                            </div>
+                            <span className="font-medium leading-snug">Advanced readiness & analytics</span>
+                        </li>
+                        <li className="flex items-center gap-3">
+                            <div className="bg-amber-100 dark:bg-amber-900/30 p-1.5 rounded-lg text-amber-600 dark:text-amber-400 shrink-0">
+                                <LineChart className="w-4 h-4" />
+                            </div>
+                            <span className="font-medium leading-snug">Weekly & monthly progress reports</span>
                         </li>
                     </ul>
                 </div>
 
                 <Button
                     size="lg"
-                    className="gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5"
+                    className="w-full max-w-sm h-12 text-base gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5 border-0 rounded-xl"
                     onClick={() => openPricing()}
                 >
                     <Sparkles className="w-5 h-5" />
-                    {isTrialEligible ? 'Start 14-Day Free Trial' : 'Upgrade to Pro - $4.99/mo'}
+                    {isTrialEligible ? 'Start 14-Day Free Trial' : 'Upgrade to Pro'}
                 </Button>
 
                 {/* Subtext */}
-                <p className="text-xs text-zinc-600 mt-4">
-                    {isTrialEligible ? '14-day free trial • Cancel anytime' : '$4.99/mo • Cancel anytime'}
+                <p className="text-xs font-medium text-slate-400 dark:text-zinc-500 mt-4">
+                    {isTrialEligible ? '14-day free trial • Cancel anytime' : 'Cancel anytime'}
                 </p>
             </div>
         </div>
@@ -107,11 +122,9 @@ export function PremiumGate({
  */
 export function PremiumBadge({ className = "" }) {
     return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-xs font-semibold text-blue-400 ${className}`}>
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-500/20 dark:border-blue-500/30 text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wide uppercase ${className}`}>
             <Sparkles className="w-3 h-3" />
             PRO
         </span>
     );
 }
-
-/**Pricing issues fixed and commiting for deployment */
