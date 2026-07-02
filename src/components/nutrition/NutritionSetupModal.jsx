@@ -1,13 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Loader2, Settings2, Sparkles } from 'lucide-react';
+import { X, Loader2, Settings2, Sparkles, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useToast } from '../../context/ToastContext';
 import { hapticSuccess, hapticError } from '../../lib/haptics';
+
+const SectionRow = ({ label, children }) => (
+    <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800 last:border-0">
+        <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">{label}</span>
+        <div className="flex items-center justify-end">
+            {children}
+        </div>
+    </div>
+);
+
+const CustomSelect = ({ value, options, onChange }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-3 py-1.5 flex items-center gap-2 min-w-[120px] justify-end"
+            >
+                <span className="truncate">{options.find(o => o.value === value)?.label}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 duration-100">
+                        {options.map(opt => (
+                            <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setIsOpen(false);
+                                }}
+                                className={`w-full text-right px-4 py-2.5 text-sm font-medium transition-colors ${value === opt.value ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-700'}`}
+                            >
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
 
 export function NutritionSetupModal({ isOpen, onClose }) {
     const { user } = useAuth();
@@ -81,14 +126,7 @@ export function NutritionSetupModal({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
-    const SectionRow = ({ label, children }) => (
-        <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800 last:border-0">
-            <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">{label}</span>
-            <div className="flex items-center justify-end">
-                {children}
-            </div>
-        </div>
-    );
+    if (!isOpen) return null;
 
     return createPortal(
         <AnimatePresence>
@@ -189,43 +227,40 @@ export function NutritionSetupModal({ isOpen, onClose }) {
                             </SectionRow>
                             
                             <SectionRow label="Gender">
-                                <select
+                                <CustomSelect
                                     value={gender}
-                                    onChange={(e) => setGender(e.target.value)}
-                                    className="bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-3 py-1.5 cursor-pointer outline-none"
-                                    dir="rtl"
-                                >
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
+                                    onChange={setGender}
+                                    options={[
+                                        { value: 'male', label: 'Male' },
+                                        { value: 'female', label: 'Female' }
+                                    ]}
+                                />
                             </SectionRow>
 
                             <SectionRow label="Activity Level">
-                                <select
+                                <CustomSelect
                                     value={activityLevel}
-                                    onChange={(e) => setActivityLevel(e.target.value)}
-                                    className="bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-3 py-1.5 cursor-pointer outline-none max-w-[150px] truncate"
-                                    dir="rtl"
-                                >
-                                    <option value="sedentary">Sedentary</option>
-                                    <option value="lightly_active">Lightly Active</option>
-                                    <option value="moderately_active">Moderately Active</option>
-                                    <option value="very_active">Very Active</option>
-                                    <option value="super_active">Super Active</option>
-                                </select>
+                                    onChange={setActivityLevel}
+                                    options={[
+                                        { value: 'sedentary', label: 'Sedentary' },
+                                        { value: 'lightly_active', label: 'Lightly Active' },
+                                        { value: 'moderately_active', label: 'Moderately Active' },
+                                        { value: 'very_active', label: 'Very Active' },
+                                        { value: 'super_active', label: 'Super Active' }
+                                    ]}
+                                />
                             </SectionRow>
 
                             <SectionRow label="Goal">
-                                <select
+                                <CustomSelect
                                     value={goalType}
-                                    onChange={(e) => setGoalType(e.target.value)}
-                                    className="bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 rounded-lg px-3 py-1.5 cursor-pointer outline-none"
-                                    dir="rtl"
-                                >
-                                    <option value="maintain">Maintain</option>
-                                    <option value="cut">Cut</option>
-                                    <option value="bulk">Bulk</option>
-                                </select>
+                                    onChange={setGoalType}
+                                    options={[
+                                        { value: 'maintain', label: 'Maintain' },
+                                        { value: 'cut', label: 'Cut' },
+                                        { value: 'bulk', label: 'Bulk' }
+                                    ]}
+                                />
                             </SectionRow>
 
                             <div className="pt-6">
