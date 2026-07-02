@@ -16,6 +16,7 @@ import { PlannedMealBanner } from '../components/nutrition/PlannedMealBanner';
 import { QuickAddFavorites } from '../components/nutrition/QuickAddFavorites';
 import { NutritionInsights } from '../components/nutrition/NutritionInsights';
 import { DatePickerModal } from '../components/ui/DatePickerModal';
+import { NutritionSetupModal } from '../components/nutrition/NutritionSetupModal';
 import { hapticLight, hapticSuccess } from '../lib/haptics';
 
 export function NutritionPage() {
@@ -27,6 +28,7 @@ export function NutritionPage() {
     // For Plan Tab
     const { plannedMeals, markMealAsLogged } = useMealPlan(user?.id, selectedDate);
     const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+    const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
     const [generatedPlan, setGeneratedPlan] = useState(null);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -196,14 +198,22 @@ export function NutritionPage() {
 
             <div className="p-4 space-y-6">
                 {!targets && (
-                    <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
-                        <Target className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                        <div>
-                            <h4 className="font-medium text-amber-800 dark:text-amber-400">Profile Incomplete</h4>
-                            <p className="text-sm text-amber-700 dark:text-amber-500/80 mt-1">
-                                Update Age, Gender, and Activity Level to get macro targets.
-                            </p>
+                    <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-3xl p-5 text-white shadow-xl shadow-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                            <Target className="w-6 h-6 text-amber-100 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="font-bold text-lg tracking-tight">Nutrition Profile Incomplete</h4>
+                                <p className="text-amber-100 text-sm mt-1">
+                                    Set your body details to unlock personalized daily targets.
+                                </p>
+                            </div>
                         </div>
+                        <Button 
+                            onClick={() => { hapticLight(); setIsSetupModalOpen(true); }}
+                            className="bg-white/20 hover:bg-white/30 text-white border-0 h-11 px-6 rounded-2xl font-bold backdrop-blur-md transition-all active:scale-95 shrink-0 shadow-sm"
+                        >
+                            Setup Now
+                        </Button>
                     </div>
                 )}
 
@@ -467,6 +477,10 @@ export function NutritionPage() {
                 )}
 
             </div>
+            <NutritionSetupModal 
+                isOpen={isSetupModalOpen} 
+                onClose={() => setIsSetupModalOpen(false)} 
+            />
         </div>
     );
 }
