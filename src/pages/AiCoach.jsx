@@ -20,8 +20,6 @@ import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useBackInterceptor } from '../hooks/useHardwareBackButton';
 import { useNetwork } from '../hooks/useNetwork';
-import { PremiumGate } from '../components/premium/PremiumGate';
-
 export function AiCoach() {
     const { user } = useAuth();
     const { weightHistory } = useWeight(user?.id);
@@ -139,7 +137,6 @@ export function AiCoach() {
                 </div>
             </div>
 
-            <PremiumGate feature="AI Coach & Advanced Reports" showPreview={true}>
             <>
                 {/* Mode Switcher */}
                 <div className="flex p-1 bg-slate-100 dark:bg-zinc-900/80 rounded-xl gap-1 border border-slate-300 dark:border-zinc-800">
@@ -339,7 +336,7 @@ export function AiCoach() {
                             </div>
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Ready to Analyze</h3>
                             <p className="text-slate-500 dark:text-zinc-500 max-w-md mx-auto leading-relaxed">
-                                Select a report type from the tabs above and click "New Report" to generate AI insights, or view past analysis from the sidebar.
+                                Select a report type from the tabs above to view past analysis from the sidebar.
                             </p>
                         </div>
                     )}
@@ -348,7 +345,6 @@ export function AiCoach() {
             </>
             )}
             </>
-            </PremiumGate>
         </div>
     );
 }

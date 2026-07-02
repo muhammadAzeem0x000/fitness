@@ -49,6 +49,13 @@ export function AiChat() {
     const { openPricing } = usePricing();
     const navigate = useNavigate();
 
+    // Fetch feature usage for free tier indicator
+    const { data: usageData } = useQuery({
+        queryKey: ['featureUsage', user?.id, 'ai_chat'],
+        queryFn: () => checkFeatureUsage(user.id, 'ai_chat', 5, 30),
+        enabled: !!user?.id && !isPremium,
+    });
+
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isStreaming, setIsStreaming] = useState(false);
@@ -161,7 +168,7 @@ export function AiChat() {
                 const quota = await checkFeatureUsage(user.id, 'ai_chat', 5, 30);
                 if (!quota.allowed) {
                     const resetDate = quota.resetDate.toLocaleDateString();
-                    setError(`Free tier limit reached (5 messages/month). Resets on ${resetDate}. Upgrade to Pro for unlimited!`);
+                    setError(`limit_reached:You've reached your free limit of 5 AI messages this month. Your limit resets on ${resetDate}.`);
                     return;
                 }
             } catch (err) {
@@ -271,11 +278,20 @@ export function AiChat() {
                         </div>
 
                         {!isPremium && !subLoading && (
-                            <div className="mt-6 text-xs text-slate-500 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-lg px-4 py-2">
-                                Free tier: 5 messages/month
+                            <div className="mt-6 text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-between bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                                    {usageData ? (
+                                        <span>
+                                            <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/5 messages remaining
+                                        </span>
+                                    ) : (
+                                        <span>Free tier: 5 messages/month</span>
+                                    )}
+                                </div>
                                 <button
                                     onClick={() => openPricing()}
-                                    className="ml-2 text-violet-400 hover:text-violet-300 underline"
+                                    className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
                                 >
                                     Upgrade
                                 </button>
@@ -330,7 +346,7 @@ export function AiChat() {
 
             {/* Error */}
             {error && (
-                error.includes('Free tier limit reached') ? (
+                error.startsWith('limit_reached:') ? (
                     <div className="flex-none mx-4 mb-2 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 relative overflow-hidden animate-in zoom-in-95 shadow-sm">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
                         <div className="flex flex-col gap-3 relative z-10">
@@ -343,7 +359,7 @@ export function AiChat() {
                                 </h4>
                             </div>
                             <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
-                                {error.replace('Free tier limit reached ', 'You\'ve used your ').replace('Upgrade to Pro for unlimited!', '')}
+                                {error.replace('limit_reached:', '')}
                             </p>
                             <Button
                                 size="sm"

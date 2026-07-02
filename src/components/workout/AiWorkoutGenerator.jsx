@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '../ui/Button';
 import {
     Sparkles, Loader2, ArrowLeft, Play, Save, Clock, Dumbbell,
@@ -18,6 +18,7 @@ import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage
 import { useNavigate } from 'react-router-dom';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 import { getExerciseDataBatch } from '../../lib/exerciseImages';
+import { useQuery } from '@tanstack/react-query';
 // Survey option definitions
 const GOALS = [
     { id: 'strength', label: 'Strength', icon: Dumbbell, desc: 'Heavy weight, low reps' },
@@ -79,6 +80,14 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
     const [error, setError] = useState(null);
     const [generatedPlan, setGeneratedPlan] = useState(null);
     const [showExerciseDetails, setShowExerciseDetails] = useState(true);
+    const scrollRef = useRef(null);
+
+    // Fetch feature usage for free tier indicator
+    const { data: usageData } = useQuery({
+        queryKey: ['featureUsage', user?.id, 'ai_workout_plan'],
+        queryFn: () => checkFeatureUsage(user.id, 'ai_workout_plan', 2, 30),
+        enabled: !!user?.id && !isPremium,
+    });
 
     useBackInterceptor(() => {
         if (generatedPlan) {
@@ -102,8 +111,11 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                 const quota = await checkFeatureUsage(user.id, 'ai_workout_plan', 2, 30);
                 if (!quota.allowed) {
                     const resetDate = quota.resetDate.toLocaleDateString();
-                    setError(`Free tier limit reached (2 AI workout plans/month). Resets on ${resetDate}. Upgrade to Pro for unlimited!`);
+                    setError(`limit_reached:You've reached your free limit of 2 AI workout plans this month. Your limit resets on ${resetDate}.`);
                     setLoading(false);
+                    setTimeout(() => {
+                        scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 50);
                     return;
                 }
             }
@@ -166,6 +178,9 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
         } catch (err) {
             console.error('AI Workout Generation Error:', err);
             setError(err.message || 'Failed to generate workout plan');
+            setTimeout(() => {
+                scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
         } finally {
             setLoading(false);
         }
@@ -375,9 +390,9 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-6">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-6">
                 {error && (
-                    error.includes('Free tier limit reached') ? (
+                    error.startsWith('limit_reached:') ? (
                         <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-5 mb-2 relative overflow-hidden animate-in zoom-in-95 shadow-sm">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
                             <div className="flex flex-col gap-3 relative z-10">
@@ -390,7 +405,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                                     </h4>
                                 </div>
                                 <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
-                                    {error.replace('Free tier limit reached ', 'You\'ve used your ').replace('Upgrade to Pro for unlimited!', '')}
+                                    {error.replace('limit_reached:', '')}
                                 </p>
                                 <Button
                                     size="sm"
@@ -572,13 +587,22 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
 
                 {/* Free tier indicator */}
                 {!isPremium && !subLoading && (
-                    <div className="text-xs text-slate-500 dark:text-zinc-500 text-center px-2 py-3 bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800">
-                        Free tier: 2 AI workout plans/month
+                    <div className="text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 mt-2">
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-3.5 h-3.5 text-violet-500" />
+                            {usageData ? (
+                                <span>
+                                    <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/2 AI plans remaining
+                                </span>
+                            ) : (
+                                <span>Free tier: 2 AI plans/month</span>
+                            )}
+                        </div>
                         <button
                             onClick={() => openPricing()}
-                            className="ml-2 text-violet-400 hover:text-violet-300 underline"
+                            className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
                         >
-                            Upgrade for unlimited
+                            Upgrade
                         </button>
                     </div>
                 )}
