@@ -68,8 +68,9 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
             </>
           ) : (
             <div className="flex flex-col items-center gap-2 text-zinc-500 py-8">
-              <Dumbbell className="w-12 h-12" />
-              <span className="text-sm">No animation available</span>
+              <Dumbbell className="w-12 h-12 mb-1 opacity-50" />
+              <span className="text-sm font-medium text-zinc-400">No animation available</span>
+              <span className="text-xs font-semibold text-blue-300 bg-blue-500/20 border border-blue-500/30 px-2.5 py-1 rounded-full mt-1 tracking-wide uppercase">Coming Soon</span>
             </div>
           )}
         </div>
