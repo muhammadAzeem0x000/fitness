@@ -6,12 +6,14 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
   const [exerciseData, setExerciseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [gifLoaded, setGifLoaded] = useState(false);
+  const [gifError, setGifError] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !exerciseName) return;
     
     setLoading(true);
     setGifLoaded(false);
+    setGifError(false);
     
     getExerciseData(exerciseName).then(data => {
       setExerciseData(data);
@@ -46,7 +48,7 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
               <div className="w-12 h-12 rounded-full border-2 border-zinc-700 border-t-blue-500 animate-spin" />
               <span className="text-sm">Loading exercise...</span>
             </div>
-          ) : exerciseData?.gif_url ? (
+          ) : (exerciseData?.gif_url && !gifError) ? (
             <>
               {!gifLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -58,6 +60,10 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
                 alt={`${exerciseName} demonstration`}
                 className={`w-full max-h-[280px] object-contain hd-image transition-opacity duration-300 ${gifLoaded ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => setGifLoaded(true)}
+                onError={() => {
+                  setGifError(true);
+                  setGifLoaded(true);
+                }}
               />
             </>
           ) : (

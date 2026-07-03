@@ -375,77 +375,92 @@ export function AiChat() {
 
             {/* Input Area */}
             <div className="flex-none px-4 py-3 border-t border-slate-200 dark:border-zinc-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm flex flex-col gap-2">
-                {!isPremium && !subLoading && (
-                    <div className="text-[11px] text-slate-500 dark:text-zinc-500 flex items-center justify-between w-full">
-                        <div className="flex items-center gap-1.5">
-                            <Sparkles className="w-3 h-3 text-violet-500" />
-                            {usageData ? (
-                                <span>
-                                    <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/5 messages remaining
-                                </span>
-                            ) : (
-                                <span>Free tier: 5 messages/month</span>
-                            )}
-                        </div>
-                        <button
-                            onClick={() => openPricing()}
-                            className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
-                        >
-                            Upgrade
-                        </button>
-                    </div>
-                )}
-                <div className="flex gap-2 items-end">
-                    {messages.length > 0 && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleClearChat}
-                            className="h-11 w-11 shrink-0 text-slate-400 dark:text-zinc-500 hover:text-red-400"
-                            title="Clear chat"
-                        >
-                            <Trash2 className="w-4 h-4" />
+                {!isPremium && usageData && usageData.remaining <= 0 ? (
+                    <div className="bg-violet-500/10 border border-violet-500/30 rounded-xl p-4 text-center animate-in fade-in zoom-in-95">
+                        <Sparkles className="w-6 h-6 text-violet-500 mx-auto mb-2" />
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Out of AI Credits</h3>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 mb-3">
+                            You've used all 5 of your free monthly messages. Upgrade to Pro for unlimited chats.
+                        </p>
+                        <Button onClick={() => openPricing()} className="w-full bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/25">
+                            Upgrade to Pro
                         </Button>
-                    )}
-
-                    <div className="flex-1 flex items-end bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl focus-within:border-violet-500 dark:focus-within:border-violet-500 transition-colors overflow-hidden">
-                        <textarea
-                            ref={inputRef}
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Ask your AI coach..."
-                            rows={1}
-                            className="block w-full min-h-[44px] max-h-[120px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 pl-4 pr-2 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 resize-none custom-scrollbar"
-                            style={{ height: 'auto' }}
-                            onInput={(e) => {
-                                e.target.style.height = 'auto';
-                                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-                            }}
-                        />
-                        <div className="p-1.5 shrink-0 flex items-center justify-center">
-                            <button
-                                onMouseDown={(e) => {
-                                    e.preventDefault(); // Prevents input blur on Desktop
-                                    if (input.trim() && !isStreaming) handleSend();
-                                }}
-                                onTouchStart={(e) => {
-                                    e.preventDefault(); // Prevents input blur on Mobile touch
-                                    if (input.trim() && !isStreaming) handleSend();
-                                }}
-                                onClick={(e) => e.preventDefault()}
-                                disabled={!input.trim() || isStreaming}
-                                className="h-8 w-8 flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                            >
-                                {isStreaming ? (
-                                    <Loader2 className="w-4 h-4 text-white animate-spin" />
-                                ) : (
-                                    <Send className="w-4 h-4 text-white -ml-0.5" />
-                                )}
-                            </button>
-                        </div>
                     </div>
-                </div>
+                ) : (
+                    <>
+                        {!isPremium && !subLoading && (
+                            <div className="text-[11px] text-slate-500 dark:text-zinc-500 flex items-center justify-between w-full">
+                                <div className="flex items-center gap-1.5">
+                                    <Sparkles className="w-3 h-3 text-violet-500" />
+                                    {usageData ? (
+                                        <span>
+                                            <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/5 messages remaining
+                                        </span>
+                                    ) : (
+                                        <span>Free tier: 5 messages/month</span>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => openPricing()}
+                                    className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
+                                >
+                                    Upgrade
+                                </button>
+                            </div>
+                        )}
+                        <div className="flex gap-2 items-end">
+                            {messages.length > 0 && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleClearChat}
+                                    className="h-11 w-11 shrink-0 text-slate-400 dark:text-zinc-500 hover:text-red-400"
+                                    title="Clear chat"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                            )}
+
+                            <div className="flex-1 flex items-end bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl focus-within:border-violet-500 dark:focus-within:border-violet-500 transition-colors overflow-hidden">
+                                <textarea
+                                    ref={inputRef}
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Ask your AI coach..."
+                                    rows={1}
+                                    className="block w-full min-h-[44px] max-h-[120px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 pl-4 pr-2 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 resize-none custom-scrollbar"
+                                    style={{ height: 'auto' }}
+                                    onInput={(e) => {
+                                        e.target.style.height = 'auto';
+                                        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                                    }}
+                                />
+                                <div className="p-1.5 shrink-0 flex items-center justify-center">
+                                    <button
+                                        onMouseDown={(e) => {
+                                            e.preventDefault(); // Prevents input blur on Desktop
+                                            if (input.trim() && !isStreaming) handleSend();
+                                        }}
+                                        onTouchStart={(e) => {
+                                            e.preventDefault(); // Prevents input blur on Mobile touch
+                                            if (input.trim() && !isStreaming) handleSend();
+                                        }}
+                                        onClick={(e) => e.preventDefault()}
+                                        disabled={!input.trim() || isStreaming}
+                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {isStreaming ? (
+                                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                        ) : (
+                                            <Send className="w-4 h-4 text-white -ml-0.5" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

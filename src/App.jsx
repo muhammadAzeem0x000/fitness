@@ -1,4 +1,6 @@
 import React, { useEffect, Suspense, lazy } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from './lib/supabase';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { PageTransition } from './components/ui/PageTransition';
@@ -207,10 +209,30 @@ const AppContent = () => {
 };
 
 function App() {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     initNativeFeatures();
     initRevenueCat(null); // Init anonymously first, Auth will log them in
-  }, []);
+
+    // Prefetch global exercises catalog in the background so it's instantly ready
+    // when the user goes to the Log Workout page for the first time.
+    queryClient.prefetchQuery({
+      queryKey: ['exercises'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+            .from('exercises')
+            .select('*')
+            .order('name', { ascending: true });
+        if (error) {
+            console.warn("Could not prefetch exercises", error);
+            return [];
+        }
+        return data;
+      },
+      staleTime: 1000 * 60 * 60, // 1 hour
+    });
+  }, [queryClient]);
 
   return (
     <ThemeProvider>

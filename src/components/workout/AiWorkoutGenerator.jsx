@@ -152,7 +152,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
             if (plan && plan.exercises) {
                 const aiNames = plan.exercises.map(ex => ex.name);
                 const batchMatches = await getExerciseDataBatch(aiNames);
-                
+
                 plan.exercises = plan.exercises.map(ex => {
                     const match = batchMatches.get(ex.name);
                     if (match) {
@@ -366,22 +366,20 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                 <div className="flex mt-4 p-1 bg-white dark:bg-zinc-900/80 rounded-xl gap-1 border border-slate-200 dark:border-zinc-800">
                     <button
                         onClick={() => setMode('survey')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
-                            mode === 'survey'
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${mode === 'survey'
                                 ? 'bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm'
                                 : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200'
-                        }`}
+                            }`}
                     >
                         <LayoutGrid className={`w-4 h-4 ${mode === 'survey' ? 'text-violet-400' : ''}`} />
                         Quick Options
                     </button>
                     <button
                         onClick={() => setMode('freetext')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
-                            mode === 'freetext'
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${mode === 'freetext'
                                 ? 'bg-slate-100 dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm'
                                 : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200'
-                        }`}
+                            }`}
                     >
                         <MessageSquare className={`w-4 h-4 ${mode === 'freetext' ? 'text-violet-400' : ''}`} />
                         Describe It
@@ -435,199 +433,217 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                     )
                 )}
 
-                {mode === 'survey' ? (
-                    <>
-                        {/* Goal Selection */}
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
-                                What's your goal?
-                            </h3>
-                            <div className="grid grid-cols-2 gap-2">
-                                {GOALS.map(g => {
-                                    const Icon = g.icon;
-                                    const isActive = selectedGoal === g.id;
-                                    return (
-                                        <button
-                                            key={g.id}
-                                            onClick={() => setSelectedGoal(g.id)}
-                                            className={`p-3.5 rounded-xl border text-left transition-all ${
-                                                isActive
-                                                    ? 'border-violet-500 bg-violet-500/10 shadow-sm shadow-violet-500/10'
-                                                    : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
-                                            }`}
-                                        >
-                                            <Icon className={`w-5 h-5 mb-2 ${isActive ? 'text-violet-500 dark:text-violet-400' : 'text-slate-500 dark:text-zinc-500'}`} />
-                                            <p className={`font-medium text-sm ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'}`}>{g.label}</p>
-                                            <p className="text-[11px] text-slate-500 dark:text-zinc-500 mt-0.5">{g.desc}</p>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                {(!isPremium && usageData && usageData.remaining <= 0) ? (
+                    <div className="flex-1 flex flex-col items-center justify-center h-full min-h-[300px] text-center animate-in fade-in zoom-in-95">
+                        <div className="w-16 h-16 rounded-2xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center mb-4 mx-auto">
+                            <Sparkles className="w-8 h-8 text-violet-500" />
                         </div>
-
-                        {/* Target Muscles */}
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
-                                Target Muscles
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                                {MUSCLE_GROUPS.map(m => {
-                                    const isActive = selectedMuscles === m.id;
-                                    return (
-                                        <button
-                                            key={m.id}
-                                            onClick={() => setSelectedMuscles(m.id)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                                                isActive
-                                                    ? 'bg-violet-600 dark:bg-violet-500 text-white shadow-lg shadow-violet-500/25 border border-violet-600 dark:border-violet-500'
-                                                    : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-zinc-700'
-                                            }`}
-                                        >
-                                            {m.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Duration */}
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
-                                Time Available
-                            </h3>
-                            <div className="grid grid-cols-4 gap-2">
-                                {DURATIONS.map(d => {
-                                    const isActive = selectedDuration === d.id;
-                                    return (
-                                        <button
-                                            key={d.id}
-                                            onClick={() => setSelectedDuration(d.id)}
-                                            className={`p-3 rounded-xl border text-center transition-all ${
-                                                isActive
-                                                    ? 'border-violet-500 bg-violet-500/10'
-                                                    : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-800'
-                                            }`}
-                                        >
-                                            <p className={`font-bold text-sm ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'}`}>{d.label}</p>
-                                            <p className="text-[10px] text-slate-500 dark:text-zinc-500 mt-0.5">{d.desc}</p>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Equipment */}
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
-                                Equipment
-                            </h3>
-                            <div className="grid grid-cols-3 gap-2">
-                                {EQUIPMENT.map(e => {
-                                    const isActive = selectedEquipment === e.id;
-                                    return (
-                                        <button
-                                            key={e.id}
-                                            onClick={() => setSelectedEquipment(e.id)}
-                                            className={`p-3 rounded-xl border text-center transition-all ${
-                                                isActive
-                                                    ? 'border-violet-500 bg-violet-500/10'
-                                                    : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-800'
-                                            }`}
-                                        >
-                                            <p className={`font-medium text-sm ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'}`}>{e.label}</p>
-                                            <p className="text-[10px] text-slate-500 dark:text-zinc-500 mt-0.5">{e.desc}</p>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    /* Free Text Mode */
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
-                                Describe Your Ideal Workout
-                            </h3>
-                            <textarea
-                                value={freeText}
-                                onChange={(e) => setFreeText(e.target.value)}
-                                placeholder="e.g., &quot;I want a chest and triceps workout. I have 45 minutes and my shoulder is a bit sore so avoid overhead pressing. Focus on hypertrophy.&quot;"
-                                className="w-full h-40 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl p-4 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all resize-none"
-                                autoFocus
-                            />
-                            <p className="text-xs text-slate-500 dark:text-zinc-600 mt-2">
-                                Be specific about your goals, injuries, available equipment, and time constraints.
-                            </p>
-                        </div>
-
-                        {/* Quick Prompt Suggestions */}
-                        <div>
-                            <p className="text-xs text-zinc-500 mb-2 font-medium">Quick prompts:</p>
-                            <div className="flex flex-wrap gap-2">
-                                {[
-                                    "Quick upper body pump, 30 minutes",
-                                    "Heavy leg day with squats and deadlifts",
-                                    "Full body workout for a beginner",
-                                    "Arms and shoulders, focus on size",
-                                    "Fat burning circuit with minimal rest",
-                                ].map((prompt, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => setFreeText(prompt)}
-                                        className="text-xs px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 transition-colors"
-                                    >
-                                        {prompt}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Free tier indicator */}
-                {!isPremium && !subLoading && (
-                    <div className="text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 mt-2">
-                        <div className="flex items-center gap-2">
-                            <Zap className="w-3.5 h-3.5 text-violet-500" />
-                            {usageData ? (
-                                <span>
-                                    <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/2 AI plans remaining
-                                </span>
-                            ) : (
-                                <span>Free tier: 2 AI plans/month</span>
-                            )}
-                        </div>
-                        <button
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Out of AI Credits</h3>
+                        <p className="text-sm text-slate-500 dark:text-zinc-400 max-w-sm mx-auto mb-6 leading-relaxed">
+                            You've used your 2 free AI workout plans for this month. Upgrade to Pro to generate unlimited personalized workout plans and crush your goals.
+                        </p>
+                        <Button
                             onClick={() => openPricing()}
-                            className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
+                            className="w-full max-w-xs mx-auto bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white shadow-lg shadow-violet-500/25 h-12"
                         >
-                            Upgrade
-                        </button>
+                            <Sparkles className="w-5 h-5 mr-2" /> Upgrade to Pro
+                        </Button>
                     </div>
+                ) : (
+                    <>
+                        {mode === 'survey' ? (
+                            <>
+                                {/* Goal Selection */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
+                                        What's your goal?
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {GOALS.map(g => {
+                                            const Icon = g.icon;
+                                            const isActive = selectedGoal === g.id;
+                                            return (
+                                                <button
+                                                    key={g.id}
+                                                    onClick={() => setSelectedGoal(g.id)}
+                                                    className={`p-3.5 rounded-xl border text-left transition-all ${isActive
+                                                            ? 'border-violet-500 bg-violet-500/10 shadow-sm shadow-violet-500/10'
+                                                            : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
+                                                        }`}
+                                                >
+                                                    <Icon className={`w-5 h-5 mb-2 ${isActive ? 'text-violet-500 dark:text-violet-400' : 'text-slate-500 dark:text-zinc-500'}`} />
+                                                    <p className={`font-medium text-sm ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'}`}>{g.label}</p>
+                                                    <p className="text-[11px] text-slate-500 dark:text-zinc-500 mt-0.5">{g.desc}</p>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Target Muscles */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
+                                        Target Muscles
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {MUSCLE_GROUPS.map(m => {
+                                            const isActive = selectedMuscles === m.id;
+                                            return (
+                                                <button
+                                                    key={m.id}
+                                                    onClick={() => setSelectedMuscles(m.id)}
+                                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive
+                                                            ? 'bg-violet-600 dark:bg-violet-500 text-white shadow-lg shadow-violet-500/25 border border-violet-600 dark:border-violet-500'
+                                                            : 'bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-zinc-700'
+                                                        }`}
+                                                >
+                                                    {m.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Duration */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
+                                        Time Available
+                                    </h3>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {DURATIONS.map(d => {
+                                            const isActive = selectedDuration === d.id;
+                                            return (
+                                                <button
+                                                    key={d.id}
+                                                    onClick={() => setSelectedDuration(d.id)}
+                                                    className={`p-3 rounded-xl border text-center transition-all ${isActive
+                                                            ? 'border-violet-500 bg-violet-500/10'
+                                                            : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-800'
+                                                        }`}
+                                                >
+                                                    <p className={`font-bold text-sm ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'}`}>{d.label}</p>
+                                                    <p className="text-[10px] text-slate-500 dark:text-zinc-500 mt-0.5">{d.desc}</p>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Equipment */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
+                                        Equipment
+                                    </h3>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {EQUIPMENT.map(e => {
+                                            const isActive = selectedEquipment === e.id;
+                                            return (
+                                                <button
+                                                    key={e.id}
+                                                    onClick={() => setSelectedEquipment(e.id)}
+                                                    className={`p-3 rounded-xl border text-center transition-all ${isActive
+                                                            ? 'border-violet-500 bg-violet-500/10'
+                                                            : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:bg-slate-50 dark:hover:bg-zinc-800'
+                                                        }`}
+                                                >
+                                                    <p className={`font-medium text-sm ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'}`}>{e.label}</p>
+                                                    <p className="text-[10px] text-slate-500 dark:text-zinc-500 mt-0.5">{e.desc}</p>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            /* Free Text Mode */
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-300 mb-3 uppercase tracking-wider">
+                                        Describe Your Ideal Workout
+                                    </h3>
+                                    <textarea
+                                        value={freeText}
+                                        onChange={(e) => setFreeText(e.target.value)}
+                                        placeholder="e.g., &quot;I want a chest and triceps workout. I have 45 minutes and my shoulder is a bit sore so avoid overhead pressing. Focus on hypertrophy.&quot;"
+                                        className="w-full h-40 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl p-4 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all resize-none"
+                                        autoFocus
+                                    />
+                                    <p className="text-xs text-slate-500 dark:text-zinc-600 mt-2">
+                                        Be specific about your goals, injuries, available equipment, and time constraints.
+                                    </p>
+                                </div>
+
+                                {/* Quick Prompt Suggestions */}
+                                <div>
+                                    <p className="text-xs text-zinc-500 mb-2 font-medium">Quick prompts:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            "Quick upper body pump, 30 minutes",
+                                            "Heavy leg day with squats and deadlifts",
+                                            "Full body workout for a beginner",
+                                            "Arms and shoulders, focus on size",
+                                            "Fat burning circuit with minimal rest",
+                                        ].map((prompt, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setFreeText(prompt)}
+                                                className="text-xs px-3 py-1.5 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600 transition-colors"
+                                            >
+                                                {prompt}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Free tier indicator */}
+                        {!isPremium && !subLoading && (
+                            <div className="text-xs text-slate-500 dark:text-zinc-500 flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 mt-2">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-3.5 h-3.5 text-violet-500" />
+                                    {usageData ? (
+                                        <span>
+                                            <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/2 AI plans remaining
+                                        </span>
+                                    ) : (
+                                        <span>Free tier: 2 AI plans/month</span>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => openPricing()}
+                                    className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
+                                >
+                                    Upgrade
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* Footer */}
-            <div className="flex-none px-4 py-3 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-slate-900">
-                <Button
-                    onClick={handleGenerate}
-                    disabled={!canGenerate || loading}
-                    className="w-full h-12 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white shadow-lg shadow-violet-900/25 text-base font-semibold gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                    {loading ? (
-                        <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Generating your plan...
-                        </>
-                    ) : (
-                        <>
-                            <Sparkles className="w-5 h-5" />
-                            Generate Workout Plan
-                        </>
-                    )}
-                </Button>
-            </div>
+            {!(!isPremium && usageData && usageData.remaining <= 0) && (
+                <div className="flex-none px-4 py-3 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-slate-900">
+                    <Button
+                        onClick={handleGenerate}
+                        disabled={!canGenerate || loading}
+                        className="w-full h-12 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white shadow-lg shadow-violet-900/25 text-base font-semibold gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Generating your plan...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="w-5 h-5" />
+                                Generate Workout Plan
+                            </>
+                        )}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
