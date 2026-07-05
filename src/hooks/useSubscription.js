@@ -91,6 +91,9 @@ export function useSubscription() {
         console.log('[Sub] All entitlements:', JSON.stringify(customerInfo.entitlements?.all || {}));
         console.log('[Sub] Active subscriptions:', JSON.stringify(customerInfo.activeSubscriptions || []));
         console.log('[Sub] All purchased products:', JSON.stringify(customerInfo.allPurchasedProductIdentifiers || []));
+        console.log('[Sub] Latest expiration date:', customerInfo.latestExpirationDate);
+        console.log('[Sub] First seen:', customerInfo.firstSeen);
+        console.log('[Sub] Request date:', customerInfo.requestDate);
 
         // ================================================================
         // METHOD 1: Check entitlements.active (the proper way)
@@ -135,12 +138,11 @@ export function useSubscription() {
             trialExpired = false; // Override - they DO have an active sub
             currentSubscription = {
                 plan_id: activeSubs[0],
-                current_period_start: null,
-                current_period_end: null
+                current_period_start: customerInfo.firstSeen || null,
+                current_period_end: customerInfo.latestExpirationDate || null
             };
-            // We can't determine trial vs paid from activeSubscriptions alone,
-            // but the user IS premium.
-            console.log('[Sub] ✅ PRO via activeSubscriptions fallback! Products:', activeSubs);
+            console.log('[Sub] ✅ PRO via activeSubscriptions fallback! Products:', activeSubs,
+                'Expires:', customerInfo.latestExpirationDate);
         }
 
         // ================================================================

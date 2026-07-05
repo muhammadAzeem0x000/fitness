@@ -14,7 +14,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 export function PricingDialog({ isOpen, onClose }) {
     const { user } = useAuth();
     const { toast } = useToast();
-    const { refreshSubscription, isTrialEligible } = useSubscription();
+    const { refreshSubscription, isTrialEligible, isPremium, subscription, isTrialing } = useSubscription();
 
     const [offerings, setOfferings] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -230,6 +230,25 @@ export function PricingDialog({ isOpen, onClose }) {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
+                                    {/* Show active plan info if user is already Pro */}
+                                    {isPremium && (
+                                        <div className="mb-4 p-5 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700/50 rounded-2xl text-center">
+                                            <div className="flex items-center justify-center gap-2 mb-2">
+                                                <Sparkles className="w-5 h-5 text-amber-500" />
+                                                <span className="font-bold text-amber-700 dark:text-amber-400 text-lg">You're a Pro Member!</span>
+                                            </div>
+                                            <p className="text-sm text-amber-600 dark:text-amber-400/80">
+                                                {isTrialing ? 'Your free trial is active.' : 'Your subscription is active.'} 
+                                                {subscription?.current_period_end && new Date(subscription.current_period_end).getFullYear() > 2000 
+                                                    ? ` ${isTrialing ? 'Trial ends' : 'Renews'} ${new Date(subscription.current_period_end).toLocaleDateString()}.`
+                                                    : ''
+                                                }
+                                            </p>
+                                            <p className="text-xs text-amber-500/70 dark:text-amber-400/50 mt-2">
+                                                Manage your subscription in Google Play Store → Subscriptions
+                                            </p>
+                                        </div>
+                                    )}
                                     {offerings?.availablePackages.map((pkg) => {
                                         const isAnnual = pkg.packageType === 'ANNUAL';
                                         

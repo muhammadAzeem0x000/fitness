@@ -39,6 +39,16 @@ const SectionRow = ({ label, children, border = true }) => (
 
 const SubscriptionBanner = ({ isPremium, isTrialExpired, isTrialing, subscription, openPricing, hasUsedTrial }) => {
     if (isPremium && !isTrialExpired) {
+        const endDate = subscription?.current_period_end;
+        const hasValidDate = endDate && new Date(endDate).getFullYear() > 2000;
+        
+        let statusText = 'Active Plan';
+        if (isTrialing && hasValidDate) {
+            statusText = `Trial ends ${new Date(endDate).toLocaleDateString()}`;
+        } else if (hasValidDate) {
+            statusText = `Renews ${new Date(endDate).toLocaleDateString()}`;
+        }
+
         return (
             <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-3xl p-5 text-white shadow-xl shadow-amber-500/20 mb-8 flex items-center justify-between animate-in fade-in slide-in-from-bottom-4">
                 <div>
@@ -46,7 +56,7 @@ const SubscriptionBanner = ({ isPremium, isTrialExpired, isTrialing, subscriptio
                         <Crown className="w-5 h-5 text-amber-100" />
                         <h3 className="font-bold text-lg tracking-tight">Pro Member</h3>
                     </div>
-                    <p className="text-amber-100 text-xs font-medium">Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</p>
+                    <p className="text-amber-100 text-xs font-medium">{statusText}</p>
                 </div>
                 <Button size="sm" onClick={openPricing} className="bg-white/20 hover:bg-white/30 text-white border-0 h-10 px-5 rounded-2xl font-semibold backdrop-blur-md transition-all active:scale-95">
                     Manage Plan
