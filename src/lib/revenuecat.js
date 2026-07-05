@@ -94,7 +94,10 @@ export async function checkEntitlement() {
   if (!isNativePlatform()) return true; // Free on web
   await ensureInitialized();
   const { customerInfo } = await Purchases.getCustomerInfo();
-  return Object.keys(customerInfo.entitlements.active).length > 0;
+  // Dual check: entitlements OR activeSubscriptions
+  const hasEntitlement = Object.keys(customerInfo.entitlements?.active || {}).length > 0;
+  const hasActiveSub = (customerInfo.activeSubscriptions || []).length > 0;
+  return hasEntitlement || hasActiveSub;
 }
 
 export async function restorePurchases() {

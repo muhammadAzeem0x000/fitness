@@ -57,10 +57,22 @@ export function PricingDialog({ isOpen, onClose }) {
         }
     }
 
+    /**
+     * Check if customerInfo indicates an active subscription.
+     * Checks BOTH entitlements AND activeSubscriptions for bulletproof detection.
+     */
+    const hasActiveSubscription = (customerInfo) => {
+        if (!customerInfo) return false;
+        // Check 1: entitlements.active
+        if (Object.keys(customerInfo.entitlements?.active || {}).length > 0) return true;
+        // Check 2: activeSubscriptions (fallback if entitlement not mapped in RC dashboard)
+        if ((customerInfo.activeSubscriptions || []).length > 0) return true;
+        return false;
+    };
+
     const handlePurchase = async (pkg) => {
         if (!user) {
             onClose();
-            // In a real scenario we'd navigate to auth, but usually this is protected.
             return;
         }
 
@@ -70,14 +82,14 @@ export function PricingDialog({ isOpen, onClose }) {
             // Ensure user is identified before purchase
             if (user?.id) await loginRevenueCat(user.id);
             const customerInfo = await purchasePackage(pkg);
-            if (customerInfo && Object.keys(customerInfo.entitlements.active).length > 0) {
+            
+            if (hasActiveSubscription(customerInfo)) {
                 toast.success("Welcome to MuscleBot Pro!");
-                await refreshSubscription();
-                onClose();
-            } else {
-                // Purchase succeeded but entitlements not immediately active — refresh anyway
-                await refreshSubscription();
             }
+            // Always refresh after purchase (even if entitlement check fails,
+            // the refreshSubscription uses the same bulletproof dual-check)
+            await refreshSubscription();
+            onClose();
         } catch (err) {
             if (!err.userCancelled) {
                 console.error('Purchase error:', err);
@@ -94,7 +106,11 @@ export function PricingDialog({ isOpen, onClose }) {
             // Ensure user is identified before restore
             if (user?.id) await loginRevenueCat(user.id);
             const customerInfo = await restorePurchases();
-            if (customerInfo && Object.keys(customerInfo.entitlements.active).length > 0) {
+            
+            console.log('[Restore] Active entitlements:', JSON.stringify(customerInfo?.entitlements?.active || {}));
+            console.log('[Restore] Active subscriptions:', JSON.stringify(customerInfo?.activeSubscriptions || []));
+            
+            if (hasActiveSubscription(customerInfo)) {
                 toast.success("Purchases restored successfully!");
                 await refreshSubscription();
                 onClose();
