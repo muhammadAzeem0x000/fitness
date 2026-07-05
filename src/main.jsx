@@ -25,7 +25,11 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 60 * 24, // 24 hours for offline availability
       retry: 1,
+      networkMode: 'offlineFirst',
     },
+    mutations: {
+      networkMode: 'offlineFirst',
+    }
   },
 })
 

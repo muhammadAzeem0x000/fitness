@@ -16,14 +16,23 @@ export function AuthProvider({ children }) {
         let mounted = true;
 
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
             if (mounted) {
+                if (error) {
+                    console.error("Auth session error:", error);
+                }
                 const sessionUser = session?.user ?? null;
                 setUser(sessionUser);
                 setLoading(false);
                 if (sessionUser) {
                     loginRevenueCat(sessionUser.id).catch(console.error);
                 }
+            }
+        }).catch((err) => {
+            console.error("Auth session exception:", err);
+            if (mounted) {
+                setUser(null);
+                setLoading(false);
             }
         });
 
