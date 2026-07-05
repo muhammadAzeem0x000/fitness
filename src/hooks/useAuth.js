@@ -18,16 +18,27 @@ export function AuthProvider({ children }) {
         // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (mounted) {
-                setUser(session?.user ?? null);
+                const sessionUser = session?.user ?? null;
+                setUser(sessionUser);
                 setLoading(false);
+                if (sessionUser) {
+                    loginRevenueCat(sessionUser.id).catch(console.error);
+                }
             }
         });
 
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (mounted) {
-                setUser(session?.user ?? null);
+                const sessionUser = session?.user ?? null;
+                setUser(sessionUser);
                 setLoading(false);
+                
+                if (sessionUser) {
+                    loginRevenueCat(sessionUser.id).catch(console.error);
+                } else {
+                    logoutRevenueCat().catch(console.error);
+                }
             }
         });
 
@@ -38,7 +49,11 @@ export function AuthProvider({ children }) {
     }, []);
 
     const signOut = async () => {
-        await logoutRevenueCat();
+        try {
+            await logoutRevenueCat();
+        } catch (e) {
+            console.error(e);
+        }
         await supabase.auth.signOut();
     };
 

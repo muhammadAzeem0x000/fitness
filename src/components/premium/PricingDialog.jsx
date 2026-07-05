@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X, Check, Sparkles, Zap, TrendingUp, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
-import { getOfferings, purchasePackage, restorePurchases } from '../../lib/revenuecat';
+import { getOfferings, purchasePackage, restorePurchases, loginRevenueCat } from '../../lib/revenuecat';
 import { isNativePlatform } from '../../lib/platform';
 import { usePricing } from '../../context/PricingContext';
 import { ElasticScroll } from '../ui/ElasticScroll';
@@ -67,11 +67,16 @@ export function PricingDialog({ isOpen, onClose }) {
         try {
             setPurchasing(pkg.identifier);
             setError(null);
+            // Ensure user is identified before purchase
+            if (user?.id) await loginRevenueCat(user.id);
             const customerInfo = await purchasePackage(pkg);
-            if (customerInfo?.entitlements.active['MuscleBot Pro']) {
+            if (customerInfo && Object.keys(customerInfo.entitlements.active).length > 0) {
                 toast.success("Welcome to MuscleBot Pro!");
                 await refreshSubscription();
                 onClose();
+            } else {
+                // Purchase succeeded but entitlements not immediately active — refresh anyway
+                await refreshSubscription();
             }
         } catch (err) {
             if (!err.userCancelled) {
@@ -86,8 +91,10 @@ export function PricingDialog({ isOpen, onClose }) {
     const handleRestore = async () => {
         try {
             setRestoring(true);
+            // Ensure user is identified before restore
+            if (user?.id) await loginRevenueCat(user.id);
             const customerInfo = await restorePurchases();
-            if (customerInfo?.entitlements.active['MuscleBot Pro']) {
+            if (customerInfo && Object.keys(customerInfo.entitlements.active).length > 0) {
                 toast.success("Purchases restored successfully!");
                 await refreshSubscription();
                 onClose();
