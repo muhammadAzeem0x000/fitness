@@ -226,8 +226,8 @@ export async function generateWorkoutPlan({
     readinessData = null,
     healthData = null
 }) {
-    if (!groqApiKey) {
-        throw new Error("Missing Groq API Key");
+    if (!apiKey) {
+        throw new Error("Missing DeepSeek API Key");
     }
 
     const { displayName, currentWeight, height, targetWeight } = userProfile;
@@ -314,6 +314,29 @@ If the score is High (>70), feel free to push them hard.
         `;
     }
 
+    // Dynamic exercise count based on both DURATION and GOAL
+    let isStrength = goal.toLowerCase().includes('strength');
+    let isFatLossOrEndurance = goal.toLowerCase().includes('fat') || goal.toLowerCase().includes('endurance') || goal.toLowerCase().includes('weight');
+    
+    let exerciseCountRule = "Generate 6-8 exercises.";
+    if (isStrength) {
+        if (duration === '30') exerciseCountRule = "Generate exactly 3-4 exercises. Prioritize heavy compound lifts with long rest periods.";
+        else if (duration === '45') exerciseCountRule = "Generate exactly 4-5 exercises. Prioritize heavy compound lifts with long rest periods.";
+        else if (duration === '60') exerciseCountRule = "Generate exactly 5-6 exercises. Prioritize heavy compound lifts with long rest periods.";
+        else if (duration === '90') exerciseCountRule = "Generate exactly 6-8 exercises. Prioritize heavy compound lifts with long rest periods.";
+    } else if (isFatLossOrEndurance) {
+        if (duration === '30') exerciseCountRule = "Generate exactly 5-7 exercises. Use circuit style or super-sets with short rest periods.";
+        else if (duration === '45') exerciseCountRule = "Generate exactly 7-9 exercises. Use circuit style or super-sets with short rest periods.";
+        else if (duration === '60') exerciseCountRule = "Generate exactly 9-12 exercises. Use circuit style or super-sets with short rest periods.";
+        else if (duration === '90') exerciseCountRule = "Generate exactly 12-15 exercises. Use circuit style or super-sets with short rest periods.";
+    } else {
+        // Hypertrophy / Muscle Growth (Balanced)
+        if (duration === '30') exerciseCountRule = "Generate exactly 4-5 exercises to fit a 30-minute hypertrophy window.";
+        else if (duration === '45') exerciseCountRule = "Generate exactly 5-7 exercises to fit a 45-minute hypertrophy window.";
+        else if (duration === '60') exerciseCountRule = "Generate exactly 7-9 exercises to fit a 60-minute hypertrophy window.";
+        else if (duration === '90') exerciseCountRule = "Generate exactly 9-11 exercises to fit a 90-minute hypertrophy window.";
+    }
+
     const systemPrompt = `You are an elite fitness coach. Generate a personalized workout plan.
 
 USER PROFILE:
@@ -334,7 +357,7 @@ ${exerciseListString}
 
 RULES:
 1. Use ONLY exact exercise names from the AVAILABLE EXERCISES list above.
-2. Generate 4-8 exercises depending on the time available.
+2. ${exerciseCountRule}
 3. PROGRESSIVE OVERLOAD: If the user did an exercise recently (check STRENGTH PROFILE), suggest increasing the weight by 2.5kg or increasing the reps by 1-2.
 4. Consider what the user trained recently to avoid overtraining the same muscles.
 5. Tailor sets, reps, and rest to the user's stated goal.
@@ -358,12 +381,12 @@ RESPONSE FORMAT (strict JSON):
 }`;
 
     try {
-        const completion = await groqClient.chat.completions.create({
+        const completion = await openai.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userRequest }
             ],
-            model: "llama-3.3-70b-versatile",
+            model: "deepseek-v4-flash",
             temperature: 0.5,
             max_tokens: 3000,
             response_format: { type: "json_object" }
@@ -405,8 +428,8 @@ RESPONSE FORMAT (strict JSON):
 // --- NEW: Phase 2 Nutrition AI Functions ---
 
 export async function getInSessionAdvice(currentExercises) {
-    if (!groqApiKey) {
-        throw new Error("Missing Groq API Key");
+    if (!apiKey) {
+        throw new Error("Missing DeepSeek API Key");
     }
 
     const systemPrompt = `You are a fitness coach. The user is in the middle of a workout and wants exercise suggestions.
@@ -430,9 +453,9 @@ Respond with ONLY valid JSON, no markdown, no code fences:
 }`;
 
     try {
-        const completion = await groqClient.chat.completions.create({
+        const completion = await openai.chat.completions.create({
             messages: [{ role: "system", content: systemPrompt }],
-            model: "llama-3.3-70b-versatile",
+            model: "deepseek-v4-flash",
             temperature: 0.7,
             max_tokens: 500,
             response_format: { type: "json_object" }
