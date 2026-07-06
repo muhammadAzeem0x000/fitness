@@ -648,7 +648,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                         )}
                     </Button>
                 </div>
-            </div>
+            )}
 
             {/* Exercise Details Modal */}
             <ExerciseDetailModal

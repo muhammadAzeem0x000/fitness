@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { Loader2, X } from 'lucide-react';
 import { generateMealPlan } from '../../lib/openai';
@@ -56,16 +58,37 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
     const ALLERGIES = ['Nuts', 'Dairy', 'Gluten', 'Shellfish', 'Eggs', 'Soy'];
     const DIETS = ['Standard', 'Vegetarian', 'Vegan', 'Keto', 'Paleo'];
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm transition-opacity animate-in fade-in">
-            {/* Click outside to close */}
-            <div className="absolute inset-0" onClick={onClose} />
+    return createPortal(
+        <AnimatePresence>
+            <div className="fixed inset-0 z-[100] flex items-end justify-center h-[100dvh]">
+                {/* Click outside to close */}
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm" 
+                    onClick={onClose} 
+                />
 
-            {/* Bottom Sheet */}
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl p-6 pb-safe animate-in slide-in-from-bottom duration-300">
-                <div className="flex justify-center mb-6">
-                    <div className="w-12 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
-                </div>
+                {/* Bottom Sheet */}
+                <motion.div 
+                    initial={{ y: '100%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '100%', opacity: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    drag="y"
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(e, { offset, velocity }) => {
+                        if (offset.y > 100 || velocity.y > 500) {
+                            onClose();
+                        }
+                    }}
+                    className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl p-6 pb-safe max-h-[90dvh] flex flex-col z-10"
+                >
+                    <div className="flex justify-center mb-6 shrink-0">
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full" />
+                    </div>
 
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -211,7 +234,8 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
                         )}
                     </Button>
                 </div>
+            </motion.div>
             </div>
-        </div>
+        </AnimatePresence>
     );
 }
