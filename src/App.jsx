@@ -6,6 +6,7 @@ import { Layout } from './components/layout/Layout';
 import { PageTransition } from './components/ui/PageTransition';
 import { Auth } from './components/auth/Auth';
 import { useAuth, AuthProvider } from './hooks/useAuth';
+import { SubscriptionProvider } from './hooks/useSubscription';
 import { useProfile } from './hooks/useProfile';
 import { UserPreferencesProvider } from './context/UserPreferencesContext';
 import LandingPage from './pages/LandingPage';
@@ -237,19 +238,21 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <UserPreferencesProvider>
-          <PricingProvider>
-            <Suspense fallback={<FullScreenLoader />}>
-              <Routes>
-                {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
-                <Route path="/share/:shareId" element={<SharedWorkout />} />
+        <SubscriptionProvider>
+          <UserPreferencesProvider>
+            <PricingProvider>
+              <Suspense fallback={<FullScreenLoader />}>
+                <Routes>
+                  {/* Public Shared Workout - Must be outside AppContent to avoid auth redirects */}
+                  <Route path="/share/:shareId" element={<SharedWorkout />} />
 
-                {/* All other routes */}
-                <Route path="/*" element={<AppContent />} />
-              </Routes>
-            </Suspense>
-          </PricingProvider>
-        </UserPreferencesProvider>
+                  {/* All other routes */}
+                  <Route path="/*" element={<AppContent />} />
+                </Routes>
+              </Suspense>
+            </PricingProvider>
+          </UserPreferencesProvider>
+        </SubscriptionProvider>
       </AuthProvider>
     </ThemeProvider>
   );

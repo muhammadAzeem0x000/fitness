@@ -54,7 +54,7 @@ const ProgressRing = ({ radius, stroke, progress, color }) => {
 
 export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSyncing }) => {
     const navigate = useNavigate();
-    const { isPremium } = useSubscription();
+    const { isPremium, isLoading } = useSubscription();
     const { openPricing } = usePricing();
     
     // Get today's metrics using local date (not UTC via toISOString)
@@ -90,6 +90,24 @@ export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSynci
     }
 
     const isConnected = localStorage.getItem('health_connected') === 'true';
+
+    // If loading, show skeleton
+    if (isLoading) {
+        return (
+            <div className="relative overflow-hidden bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm h-[140px] animate-pulse">
+                <div className="flex gap-4 items-center">
+                    <div className="flex-1 space-y-4 py-1">
+                        <div className="h-4 bg-slate-200 dark:bg-zinc-700 rounded w-3/4"></div>
+                        <div className="space-y-2">
+                            <div className="h-4 bg-slate-200 dark:bg-zinc-700 rounded"></div>
+                            <div className="h-4 bg-slate-200 dark:bg-zinc-700 rounded w-5/6"></div>
+                        </div>
+                    </div>
+                    <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-zinc-700"></div>
+                </div>
+            </div>
+        );
+    }
 
     // If not premium, show a locked state
     if (!isPremium) {

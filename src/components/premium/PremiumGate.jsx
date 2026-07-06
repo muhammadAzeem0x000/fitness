@@ -30,6 +30,18 @@ export function PremiumGate({
         return <>{children}</>;
     }
 
+    // While loading subscription state, show a generic loading or nothing
+    // This prevents flashing the 'Unlock Premium' gate before the state is known
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border border-slate-200 dark:border-zinc-800 rounded-2xl bg-white/50 dark:bg-zinc-900/50 min-h-[320px] animate-pulse">
+                <div className="w-16 h-16 rounded-2xl bg-slate-200 dark:bg-zinc-800 mb-6"></div>
+                <div className="h-6 w-48 bg-slate-200 dark:bg-zinc-800 rounded-md mb-2"></div>
+                <div className="h-4 w-64 bg-slate-200 dark:bg-zinc-800 rounded-md"></div>
+            </div>
+        );
+    }
+
     // User needs to upgrade - show gate
     if (fallback) {
         return <>{fallback}</>;

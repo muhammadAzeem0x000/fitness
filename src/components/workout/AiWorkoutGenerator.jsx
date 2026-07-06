@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 import { getExerciseDataBatch } from '../../lib/exerciseImages';
 import { useQuery } from '@tanstack/react-query';
+import { ExerciseDetailModal } from './ExerciseDetailModal';
 // Survey option definitions
 const GOALS = [
     { id: 'strength', label: 'Strength', icon: Dumbbell, desc: 'Heavy weight, low reps' },

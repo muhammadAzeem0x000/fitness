@@ -1,11 +1,21 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { loginRevenueCat, getOfferings, checkTrialEligibility, getCustomerInfo } from '../lib/revenuecat';
 import { isNativePlatform } from '../lib/platform';
 import { supabase } from '../lib/supabase';
 
+const SubscriptionContext = createContext(null);
+
+export function useSubscription() {
+    const context = useContext(SubscriptionContext);
+    if (!context) {
+        throw new Error('useSubscription must be used within a SubscriptionProvider');
+    }
+    return context;
+}
+
 /**
- * Hook to manage user subscription status.
+ * Provider to manage user subscription status globally.
  * 
  * BULLETPROOF FLOW:
  * 1. Wait for auth → get Supabase user ID
@@ -15,7 +25,7 @@ import { supabase } from '../lib/supabase';
  *    (covers the case where RevenueCat entitlement mapping is misconfigured)
  * 5. Sync result to Supabase
  */
-export function useSubscription() {
+export function SubscriptionProvider({ children }) {
     const { user, loading: authLoading } = useAuth();
     const [isPremium, setIsPremium] = useState(false);
     const [offerings, setOfferings] = useState(null);
@@ -231,13 +241,17 @@ export function useSubscription() {
         }
     }, [authLoading, user]);
 
-    return {
-        ...subscriptionData,
-        offerings,
-        isPremium,
-        isTrialEligible,
-        isLoading: authLoading || isLoading,
-        error: null,
-        refreshSubscription,
-    };
+    return (
+        <SubscriptionContext.Provider value={{
+            ...subscriptionData,
+            offerings,
+            isPremium,
+            isTrialEligible,
+            isLoading: authLoading || isLoading,
+            error: null,
+            refreshSubscription,
+        }}>
+            {children}
+        </SubscriptionContext.Provider>
+    );
 }
