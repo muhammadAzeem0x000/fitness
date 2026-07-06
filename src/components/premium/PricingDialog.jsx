@@ -14,7 +14,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 export function PricingDialog({ isOpen, onClose }) {
     const { user } = useAuth();
     const { toast } = useToast();
-    const { refreshSubscription, isTrialEligible, isPremium, subscription, isTrialing } = useSubscription();
+    const { refreshSubscription, isTrialEligible, isPremium, subscription, isTrialing, isCanceled } = useSubscription();
 
     const [offerings, setOfferings] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -244,9 +244,12 @@ export function PricingDialog({ isOpen, onClose }) {
                                                     : ''
                                                 }
                                             </p>
-                                            <p className="text-xs text-amber-500/70 dark:text-amber-400/50 mt-2">
-                                                Manage your subscription in Google Play Store → Subscriptions
-                                            </p>
+                                            <button
+                                                onClick={() => window.open('https://play.google.com/store/account/subscriptions?sku=musclebot_pro_monthly&package=com.musclebot.app', '_system')}
+                                                className="mt-3 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-semibold transition-colors"
+                                            >
+                                                Manage Subscription in Play Store →
+                                            </button>
                                         </div>
                                     )}
                                     {offerings?.availablePackages.map((pkg) => {

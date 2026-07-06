@@ -37,29 +37,40 @@ const SectionRow = ({ label, children, border = true }) => (
     </div>
 );
 
-const SubscriptionBanner = ({ isPremium, isTrialExpired, isTrialing, subscription, openPricing, hasUsedTrial }) => {
+const SubscriptionBanner = ({ isPremium, isTrialExpired, isTrialing, isCanceled, subscription, openPricing, hasUsedTrial }) => {
+    const openPlayStoreSubscriptions = () => {
+        // Deep link to Play Store subscription management
+        window.open('https://play.google.com/store/account/subscriptions?sku=musclebot_pro_monthly&package=com.musclebot.app', '_system');
+    };
+
     if (isPremium && !isTrialExpired) {
         const endDate = subscription?.current_period_end;
         const hasValidDate = endDate && new Date(endDate).getFullYear() > 2000;
         
         let statusText = 'Active Plan';
-        if (isTrialing && hasValidDate) {
-            statusText = `Trial ends ${new Date(endDate).toLocaleDateString()}`;
+        if (isCanceled && hasValidDate) {
+            statusText = `Canceled · Access until ${new Date(endDate).toLocaleDateString()}`;
+        } else if (isTrialing && hasValidDate) {
+            statusText = `Free Trial · Ends ${new Date(endDate).toLocaleDateString()}`;
         } else if (hasValidDate) {
             statusText = `Renews ${new Date(endDate).toLocaleDateString()}`;
         }
 
         return (
-            <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-3xl p-5 text-white shadow-xl shadow-amber-500/20 mb-8 flex items-center justify-between animate-in fade-in slide-in-from-bottom-4">
+            <div className={`rounded-3xl p-5 text-white shadow-xl mb-8 flex items-center justify-between animate-in fade-in slide-in-from-bottom-4 ${
+                isCanceled 
+                    ? 'bg-gradient-to-br from-slate-600 to-slate-700 shadow-slate-500/20' 
+                    : 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/20'
+            }`}>
                 <div>
                     <div className="flex items-center gap-2 mb-1.5">
                         <Crown className="w-5 h-5 text-amber-100" />
-                        <h3 className="font-bold text-lg tracking-tight">Pro Member</h3>
+                        <h3 className="font-bold text-lg tracking-tight">{isCanceled ? 'Pro (Canceled)' : 'Pro Member'}</h3>
                     </div>
-                    <p className="text-amber-100 text-xs font-medium">{statusText}</p>
+                    <p className={`text-xs font-medium ${isCanceled ? 'text-slate-300' : 'text-amber-100'}`}>{statusText}</p>
                 </div>
-                <Button size="sm" onClick={openPricing} className="bg-white/20 hover:bg-white/30 text-white border-0 h-10 px-5 rounded-2xl font-semibold backdrop-blur-md transition-all active:scale-95">
-                    Manage Plan
+                <Button size="sm" onClick={openPlayStoreSubscriptions} className="bg-white/20 hover:bg-white/30 text-white border-0 h-10 px-5 rounded-2xl font-semibold backdrop-blur-md transition-all active:scale-95">
+                    Manage
                 </Button>
             </div>
         );
@@ -302,6 +313,7 @@ export default function ProfilePage() {
                 isPremium={isPremium} 
                 isTrialExpired={isTrialExpired} 
                 isTrialing={isTrialing} 
+                isCanceled={isCanceled}
                 subscription={subscription} 
                 openPricing={openPricing} 
                 hasUsedTrial={hasUsedTrial} 
