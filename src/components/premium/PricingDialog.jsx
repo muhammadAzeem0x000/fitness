@@ -310,14 +310,14 @@ export function PricingDialog({ isOpen, onClose }) {
                                 </div>
                             )}
 
-                            {/* Restore Purchases - Subtle Link */}
+                            {/* Restore Purchases */}
                             <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
                                 <button 
                                     onClick={handleRestore}
                                     disabled={restoring}
-                                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-colors inline-flex items-center gap-1.5"
+                                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold transition-colors inline-flex items-center gap-1.5 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-full active:scale-95"
                                 >
-                                    {restoring ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                    {restoring ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                     Already bought? Restore Purchases
                                 </button>
                                 <p className="text-[10px] text-slate-400 mt-3 max-w-[280px] mx-auto leading-relaxed">

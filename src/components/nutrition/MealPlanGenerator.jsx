@@ -236,6 +236,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
                 </div>
             </motion.div>
             </div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

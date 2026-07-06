@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { X, Dumbbell, Target, Zap, ChevronRight } from 'lucide-react';
 import { getExerciseData, formatEquipment, formatTarget } from '../../lib/exerciseImages';
 
@@ -23,16 +25,38 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" 
-        onClick={onClose} 
-      />
-      
-      {/* Modal Content */}
-      <div className="relative w-full max-w-lg max-h-[85vh] bg-white dark:bg-zinc-900 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300 flex flex-col">
+  return createPortal(
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 h-[100dvh]">
+        {/* Backdrop */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+          onClick={onClose} 
+        />
+        
+        {/* Modal Content */}
+        <motion.div 
+          initial={{ y: '100%', opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: '100%', opacity: 0 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.2}
+          onDragEnd={(e, { offset, velocity }) => {
+              if (offset.y > 100 || velocity.y > 500) {
+                  onClose();
+              }
+          }}
+          className="relative w-full max-w-lg max-h-[85vh] sm:max-h-[90dvh] bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10"
+        >
+          {/* Drag Handle (Mobile Only) */}
+          <div className="w-full flex justify-center pt-3 pb-1 sm:hidden absolute top-0 left-0 z-20">
+              <div className="w-12 h-1.5 bg-white/30 rounded-full" />
+          </div>
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -152,7 +176,9 @@ export function ExerciseDetailModal({ isOpen, onClose, exerciseName }) {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
+    </AnimatePresence>,
+    document.body
   );
 }

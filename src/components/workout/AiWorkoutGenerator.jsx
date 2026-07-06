@@ -341,6 +341,13 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                         </Button>
                     </div>
                 </div>
+
+                {/* Exercise Details Modal */}
+                <ExerciseDetailModal
+                    isOpen={!!selectedExerciseForModal}
+                    onClose={() => setSelectedExerciseForModal(null)}
+                    exerciseName={selectedExerciseForModal}
+                />
             </div>
         );
     }
