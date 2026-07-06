@@ -81,6 +81,10 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
     const [error, setError] = useState(null);
     const [generatedPlan, setGeneratedPlan] = useState(null);
     const [showExerciseDetails, setShowExerciseDetails] = useState(true);
+
+    // Modal state
+    const [selectedExerciseForModal, setSelectedExerciseForModal] = useState(null);
+
     const scrollRef = useRef(null);
 
     // Fetch feature usage for free tier indicator
@@ -286,7 +290,7 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                                             <div className="flex items-start justify-between gap-2">
                                                 <h4 className="text-slate-900 dark:text-white font-medium text-sm leading-tight">{ex.name}</h4>
                                                 {ex.id && (
-                                                    <button onClick={() => window.open(`/exercises/${ex.id}`, '_blank')} className="text-slate-400 hover:text-violet-500 transition-colors">
+                                                    <button onClick={() => setSelectedExerciseForModal(ex.name)} className="text-slate-400 hover:text-violet-500 transition-colors p-1">
                                                         <Info className="w-4 h-4" />
                                                     </button>
                                                 )}
@@ -644,7 +648,14 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
                         )}
                     </Button>
                 </div>
-            )}
+            </div>
+
+            {/* Exercise Details Modal */}
+            <ExerciseDetailModal
+                isOpen={!!selectedExerciseForModal}
+                onClose={() => setSelectedExerciseForModal(null)}
+                exerciseName={selectedExerciseForModal}
+            />
         </div>
     );
 }
