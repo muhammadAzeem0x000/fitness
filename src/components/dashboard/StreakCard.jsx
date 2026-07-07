@@ -33,12 +33,19 @@ export function StreakCard({ workouts = [], workoutDays = [] }) {
             return count;
         };
 
-        // Sort workouts by date (newest first)
-        const sortedWorkouts = [...workouts].sort((a, b) =>
-            new Date(b.date) - new Date(a.date)
-        );
+        // Sort workouts by date (newest first) and deduplicate by day
+        const uniqueWorkouts = [];
+        const seenDays = new Set();
+        [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(w => {
+            const dateStr = new Date(w.date).toDateString();
+            if (!seenDays.has(dateStr)) {
+                seenDays.add(dateStr);
+                uniqueWorkouts.push(w);
+            }
+        });
+        const sortedWorkouts = uniqueWorkouts;
 
-        console.log('Most recent 5 workouts:', sortedWorkouts.slice(0, 5).map(w => w.date));
+        console.log('Most recent 5 unique workouts:', sortedWorkouts.slice(0, 5).map(w => w.date));
 
         let currentStreak = 0;
         let longestStreak = 0;
