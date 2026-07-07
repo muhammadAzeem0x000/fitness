@@ -153,6 +153,10 @@ export default function ProfilePage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
 
+    // Delete Account State
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     useEffect(() => {
         if (profile) {
             setDisplayName(profile.display_name || '');
@@ -227,13 +231,30 @@ export default function ProfilePage() {
             setConfirmPassword('');
         } catch (error) {
             hapticError();
-            toast.error(error.message || "Failed to update password");
+            toast.error("Failed to update password");
         } finally {
             setPasswordLoading(false);
         }
     };
 
-    const handleWeightLog = async () => {
+    const handleDeleteAccount = async () => {
+        setIsDeleting(true);
+        try {
+            hapticMedium();
+            const { error } = await supabase.rpc('delete_user_account');
+            if (error) throw error;
+            
+            toast.success("Account permanently deleted");
+            await signOut();
+        } catch (error) {
+            console.error("Delete account error:", error);
+            toast.error(error.message || "Failed to delete account");
+            setIsDeleting(false);
+            setShowDeleteConfirm(false);
+        }
+    };
+
+    const toggleWorkoutDay = (dayIndex) => {
         if (!currentWeightInput) return;
         try {
             const weightInKg = convertWeightToDb(currentWeightInput);
@@ -651,12 +672,50 @@ export default function ProfilePage() {
 
             {/* Account Management */}
             <Section title="Account" icon={User}>
-                <button
-                    onClick={handleSignOut}
-                    className="w-full p-4.5 py-4 text-[15px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2 text-center"
-                >
-                    <LogOut className="w-5 h-5" /> Sign Out
-                </button>
+                <div className="divide-y divide-slate-100 dark:divide-zinc-800/50">
+                    <button
+                        onClick={handleSignOut}
+                        className="w-full p-4 text-[15px] font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors flex items-center justify-center gap-2 text-center"
+                    >
+                        <LogOut className="w-5 h-5" /> Sign Out
+                    </button>
+                    
+                    {showDeleteConfirm ? (
+                        <div className="p-4 bg-red-50 dark:bg-red-500/10 animate-in fade-in zoom-in-95 duration-200">
+                            <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-3 text-center">
+                                Are you sure? This will permanently delete your account, workouts, and subscriptions. This action cannot be undone.
+                            </p>
+                            <div className="flex gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    className="flex-1 bg-white dark:bg-zinc-900 border-red-200 dark:border-red-900/50 text-slate-700 dark:text-zinc-300"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={isDeleting}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={handleDeleteAccount}
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                                    Yes, Delete
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                hapticMedium();
+                                setShowDeleteConfirm(true);
+                            }}
+                            className="w-full p-4 text-[15px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center text-center"
+                        >
+                            Delete Account
+                        </button>
+                    )}
+                </div>
             </Section>
 
             {/* Floating Save Button */}

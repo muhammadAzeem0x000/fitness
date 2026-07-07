@@ -54,6 +54,7 @@ const LeaderboardPage = lazyWithRetry(() => import('./pages/LeaderboardPage').th
 const AnalyticsPage = lazyWithRetry(() => import('./pages/AnalyticsPage'));
 const TermsOfService = lazyWithRetry(() => import('./pages/TermsOfService'));
 const PrivacyPolicy = lazyWithRetry(() => import('./pages/PrivacyPolicy'));
+const DeleteAccountPage = lazyWithRetry(() => import('./pages/DeleteAccountPage'));
 
 // Cool Logo Loader Component
 const Loader = () => (
@@ -183,9 +184,10 @@ const AppContent = () => {
           </PublicRoute>
         } />
 
-        {/* Legal Pages */}
+        {/* Legal & Compliance Pages */}
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/delete-account" element={<DeleteAccountPage />} />
 
         {/* Protected Routes Wrapper - Persistent Layout */}
         <Route element={<ProtectedLayout />}>
