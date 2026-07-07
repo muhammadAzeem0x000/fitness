@@ -19,6 +19,7 @@ import { initRevenueCat } from './lib/revenuecat';
 import { PremiumPromoPopup } from './components/premium/PremiumPromoPopup';
 import { PricingProvider } from './context/PricingContext';
 import { usePushNotifications } from './hooks/usePushNotifications';
+import { useNetwork } from './hooks/useNetwork';
 
 // Helper: retry a dynamic import by reloading the page once on failure (stale chunk fix)
 function lazyWithRetry(importFn) {
@@ -133,9 +134,10 @@ const ProtectedLayout = () => {
 // Onboarding Wrapper logic
 const AppContent = () => {
   const { user } = useAuth();
-  const { profile, isLoading: profileLoading } = useProfile(user?.id);
+  const { profile, isLoading: profileLoading, fetchStatus: profileFetchStatus } = useProfile(user?.id);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isOffline } = useNetwork();
 
   useHardwareBackButton();
   usePushNotifications(user?.id);
@@ -157,9 +159,12 @@ const AppContent = () => {
         navigate('/dashboard');
       }
     }
-  }, [user, profile, profileLoading, location.pathname, navigate]);
+  }, [user, profile, profileLoading, location.pathname, navigate, isOffline, profileFetchStatus]);
 
-  if (user && profileLoading) return <FullScreenLoader />;
+  // If the query is paused (no network) and we have no cached data, don't block the UI forever
+  const isProfileBlocked = profileLoading && !(isOffline && profileFetchStatus === 'paused');
+
+  if (user && isProfileBlocked) return <FullScreenLoader />;
 
   return (
     <Suspense fallback={<FullScreenLoader />}>

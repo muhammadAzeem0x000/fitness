@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 export function useProfile(userId) {
     const queryClient = useQueryClient();
 
-    const { data: profile, isLoading, error } = useQuery({
+    const { data: profile, isLoading, error, fetchStatus } = useQuery({
         queryKey: ['profile', userId],
         queryFn: async () => {
             if (!userId) return null;
@@ -61,6 +61,7 @@ export function useProfile(userId) {
         profile,
         isLoading,
         error,
+        fetchStatus,
         updateProfile: updateProfileMutation.mutateAsync,
         updateHeight: updateHeightMutation.mutateAsync
     };
