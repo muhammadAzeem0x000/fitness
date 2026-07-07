@@ -254,7 +254,7 @@ export default function ProfilePage() {
         }
     };
 
-    const toggleWorkoutDay = (dayIndex) => {
+    const handleWeightLog = async () => {
         if (!currentWeightInput) return;
         try {
             const weightInKg = convertWeightToDb(currentWeightInput);
