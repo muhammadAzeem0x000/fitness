@@ -13,7 +13,8 @@ import { useProfile } from '../hooks/useProfile';
 import { useNutrition } from '../hooks/useNutrition';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SAMPLE_WEEKLY_REPORT, SAMPLE_MONTHLY_REPORT } from '../lib/sampleReports';
-import { ReportSummaryCards } from '../components/ai/ReportSummaryCards';
+import { AiReportModal } from '../components/ai/AiReportModal';
+import remarkGfm from 'remark-gfm';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePricing } from '../context/PricingContext';
 import { checkFeatureUsage, incrementFeatureUsage } from '../lib/featureUsage';
@@ -36,18 +37,14 @@ export function AiCoach() {
     const [selectedReport, setSelectedReport] = useState(null);
     const [activeTab, setActiveTab] = useState('weekly');
     const [coachMode, setCoachMode] = useState('chat'); // 'reports' or 'chat'
-    const [showHistoryMobile, setShowHistoryMobile] = useState(true);
 
     useBackInterceptor(() => {
-        if (coachMode === 'reports') {
-            if (!showHistoryMobile) {
-                setShowHistoryMobile(true);
-                setSelectedReport(null);
-            } else {
-                setCoachMode('chat');
-            }
+        if (selectedReport) {
+            setSelectedReport(null);
+        } else if (coachMode === 'reports') {
+            setCoachMode('chat');
         }
-    }, coachMode === 'reports');
+    }, coachMode === 'reports' || !!selectedReport);
 
     // Fetch reports with React Query
     const { data: allReports = [] } = useQuery({
@@ -75,7 +72,6 @@ export function AiCoach() {
             if (location.state?.reportId) {
                 const targetReport = allReports.find(r => String(r.id) === String(location.state.reportId));
                 if (targetReport) {
-                    setShowHistoryMobile(false);
                     if (targetReport.report_type) {
                         setActiveTab(targetReport.report_type);
                     }
@@ -89,7 +85,6 @@ export function AiCoach() {
                 // Ensure we fetch latest so we don't open a stale report
                 queryClient.invalidateQueries({ queryKey: ['aiReports', user?.id] });
                 
-                setShowHistoryMobile(false);
                 if (allReports[0].report_type) {
                     setActiveTab(allReports[0].report_type);
                 }
@@ -105,13 +100,6 @@ export function AiCoach() {
     }, [location.state, allReports, navigate, location.pathname, queryClient, user?.id]);
 
     const isInitialMount = useRef(true);
-
-    // Auto-switch to report view on mobile when report selected or generated
-    useEffect(() => {
-        if (selectedReport) {
-            setShowHistoryMobile(false);
-        }
-    }, [selectedReport]);
 
 
     const tabs = [
@@ -191,7 +179,6 @@ export function AiCoach() {
                             onClick={() => {
                                 setActiveTab(tab.id);
                                 setSelectedReport(null); // Clear selection only on manual tab click
-                                setShowHistoryMobile(true); // Go back to list on tab change
                             }}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap
                             ${isActive ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800/50'}`}
@@ -203,164 +190,97 @@ export function AiCoach() {
                 })}
             </div>
 
-            {/* Main Content Area (Scrollable Panels) */}
-            <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 relative">
-                {/* Sidebar: History List (Visible if showHistoryMobile is true OR on Desktop) */}
-                <div className={`${showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-1 flex-col h-full min-h-0 gap-4`}>
-
-                    <div className="flex-1 min-h-0 bg-slate-50 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden flex flex-col">
-                        <div className="flex-none p-3 border-b border-slate-200 dark:border-zinc-800 bg-slate-100/80 dark:bg-zinc-900/80 backdrop-blur-sm">
-                            <h3 className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Past Reports</h3>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-                            {historyList.length > 0 ? (
-                                historyList.map((item) => (
+            {/* Main Content Area: List of Reports */}
+            <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4 md:gap-6 relative">
+                
+                {/* Reports List */}
+                <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+                    <div className="flex-none p-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-100/80 dark:bg-zinc-900/80 backdrop-blur-sm flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
+                            Your {activeTab} Reports
+                        </h3>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 custom-scrollbar">
+                        {historyList.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {historyList.map((item) => (
                                     <button
                                         key={item.id}
-                                        onClick={() => {
-                                            setSelectedReport(item);
-                                            setShowHistoryMobile(false);
-                                        }}
-                                        className={`w-full text-left p-3 rounded-lg text-sm transition-all border ${selectedReport?.id === item.id
-                                            ? 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-200 shadow-sm'
-                                            : 'border-transparent text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-200'
-                                            }`}
+                                        onClick={() => setSelectedReport(item)}
+                                        className="text-left p-4 rounded-xl border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-slate-950 hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-md transition-all group relative overflow-hidden"
                                     >
-                                        <div className="font-medium truncate">
-                                            {new Date(item.created_at).toLocaleDateString()}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="font-bold text-slate-900 dark:text-white text-lg">
+                                                {new Date(item.created_at).toLocaleDateString()}
+                                            </div>
+                                            <FileText className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" />
                                         </div>
-                                        <div className="text-xs opacity-60 mt-0.5">
-                                            {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        <div className="text-sm text-slate-500 dark:text-zinc-400">
+                                            Generated at {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </div>
                                     </button>
-                                ))
-                            ) : (
-                                <div className="p-8 text-center text-xs text-zinc-600 flex flex-col items-center gap-2">
-                                    <FileText className="w-8 h-8 opacity-20" />
-                                    No {activeTab} reports yet.
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center p-8 text-center max-w-md mx-auto">
+                                <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center mb-6 shadow-xl border border-slate-300 dark:border-zinc-700">
+                                    <Bot className="h-10 w-10 text-slate-500 dark:text-zinc-400" />
                                 </div>
-                            )}
-                        </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No Reports Yet</h3>
+                                <p className="text-slate-500 dark:text-zinc-400 leading-relaxed mb-6">
+                                    Master AI generates comprehensive strategy reports automatically based on your workouts and nutrition data.
+                                </p>
+                                
+                                {/* Show Sample Button if empty */}
+                                <Button 
+                                    onClick={() => setSelectedReport({
+                                        id: 'sample',
+                                        report_type: activeTab,
+                                        created_at: new Date().toISOString(),
+                                        report_text: activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT : SAMPLE_MONTHLY_REPORT,
+                                        isSample: true
+                                    })}
+                                    className="bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+                                >
+                                    <Sparkles className="w-4 h-4 mr-2" /> View Sample Report
+                                </Button>
+                            </div>
+                        )}
                     </div>
+                </div>
 
-                    {/* Free tier usage indicator */}
-                    {/* Automated Scheduling Info */}
+                {/* Automated Scheduling Info */}
+                <div className="flex-none md:w-64 flex flex-col gap-4">
                     {!isPremium && !subLoading ? (
-                        <div className="flex-none text-xs text-zinc-500 text-center p-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
-                            Automated AI reports are a Pro feature.
+                        <div className="text-sm text-zinc-500 text-center p-5 bg-zinc-900/50 rounded-xl border border-zinc-800">
+                            <Bot className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+                            <h4 className="font-bold text-white mb-1">Automated Analysis</h4>
+                            <p className="mb-4">Weekly and Monthly AI reports are a Pro feature.</p>
                             <button
                                 onClick={() => openPricing()}
-                                className="block w-full mt-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors shadow-sm"
+                                className="block w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors shadow-sm"
                             >
-                                Upgrade for Automatic Reports
+                                Upgrade Now
                             </button>
                         </div>
                     ) : (
-                        <div className="flex-none text-xs text-slate-500 dark:text-zinc-400 text-center p-3 bg-slate-50 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 flex items-center justify-center gap-2">
-                            <Bot className="w-4 h-4 text-blue-500" />
-                            Next {activeTab} report generates automatically in {activeTab === 'weekly' ? '7' : '30'} days.
-                        </div>
-                    )}
-                </div>
-
-                <div className={`${!showHistoryMobile ? 'flex' : 'hidden'} md:flex md:col-span-3 flex-col h-full min-h-0 space-y-4`}>
-
-                    {selectedReport ? (
-                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-white dark:bg-slate-950">
-                            <CardHeader className="flex-none border-b border-slate-200 dark:border-zinc-800/50 bg-blue-500/5 py-4">
-                                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                                    {/* Mobile Back Button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
-                                        onClick={() => setShowHistoryMobile(true)}
-                                    >
-                                        <ArrowLeft className="w-5 h-5" />
-                                    </Button>
-
-                                    <FileText className="h-5 w-5 text-blue-400 hidden md:block" />
-                                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Analysis
-                                    <div className="ml-auto flex items-center gap-2">
-                                        <span className="text-xs font-normal text-slate-600 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-900/80 px-2 py-1 rounded border border-slate-300 dark:border-zinc-800">
-                                            {new Date(selectedReport.created_at).toLocaleString()}
-                                        </span>
-                                    </div>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
-                                <ReactMarkdown>{selectedReport.report_text}</ReactMarkdown>
-                            </CardContent>
-                        </Card>
-                    ) : historyList.length === 0 ? (
-                        // Show sample report for new users
-                        <Card className="flex-1 flex flex-col min-h-0 border-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/10 bg-white dark:bg-slate-950">
-                            <CardHeader className="flex-none border-b border-slate-200 dark:border-zinc-800/50 bg-blue-500/5 py-4">
-                                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                                    {/* Mobile Back Button */}
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="md:hidden -ml-2 mr-1 h-8 w-8 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
-                                        onClick={() => setShowHistoryMobile(true)}
-                                    >
-                                        <ArrowLeft className="w-5 h-5" />
-                                    </Button>
-
-                                    <FileText className="h-5 w-5 text-blue-400 hidden md:block" />
-                                    Sample {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report
-                                    <span className="ml-auto px-2.5 py-1 text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-md">
-                                        Preview
-                                    </span>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex-1 overflow-y-auto p-0 custom-scrollbar flex flex-col">
-                                <div className="p-6 md:p-8 bg-gradient-to-b from-blue-50/80 to-white dark:from-blue-950/20 dark:to-slate-950 border-b border-slate-200 dark:border-zinc-800/50">
-                                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                                        <Sparkles className="w-6 h-6 text-blue-500" />
-                                        Unlock Your Progress with AI
-                                    </h3>
-                                    <p className="text-slate-600 dark:text-zinc-400 leading-relaxed max-w-2xl text-sm md:text-base">
-                                        Master AI analyzes your entire {activeTab} of workouts, nutrition logs, and recovery metrics to automatically generate a comprehensive strategy report. Identify weak points, celebrate consistencies, and receive actionable adjustments to break through plateaus faster.
-                                    </p>
-                                    {!isPremium && (
-                                        <Button
-                                            onClick={() => openPricing()}
-                                            className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 shadow-lg shadow-blue-500/25 transition-all"
-                                        >
-                                            <Sparkles className="w-4 h-4 mr-2" /> Upgrade to Automate Reports
-                                        </Button>
-                                    )}
-                                </div>
-                                <div className="p-6 md:p-8 prose dark:prose-invert max-w-none prose-headings:text-slate-900 dark:prose-headings:text-blue-100 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-slate-900 dark:prose-strong:text-white prose-li:text-slate-700 dark:prose-li:text-zinc-300">
-                                    <ReactMarkdown>
-                                        {activeTab === 'weekly' ? SAMPLE_WEEKLY_REPORT : SAMPLE_MONTHLY_REPORT}
-                                    </ReactMarkdown>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-zinc-800/50 rounded-xl bg-slate-50 dark:bg-zinc-900/20 text-center">
-                            {/* Mobile Back Button State for Empty */}
-                            <Button
-                                variant="ghost"
-                                className="md:hidden absolute top-4 left-4 text-slate-500 dark:text-zinc-400"
-                                onClick={() => setShowHistoryMobile(true)}
-                            >
-                                <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                            </Button>
-
-                            <div className="w-20 h-20 rounded-full bg-slate-200 dark:bg-zinc-900 flex items-center justify-center mb-6 shadow-xl border border-slate-300 dark:border-zinc-800">
-                                <Bot className="h-10 w-10 text-slate-500 dark:text-zinc-600" />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Ready to Analyze</h3>
-                            <p className="text-slate-500 dark:text-zinc-500 max-w-md mx-auto leading-relaxed">
-                                Select a report type from the tabs above to view past analysis from the sidebar.
-                            </p>
+                        <div className="text-sm text-slate-600 dark:text-zinc-400 p-5 bg-slate-50 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 text-center">
+                            <Bot className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+                            <p>Next <strong className="text-slate-900 dark:text-white">{activeTab}</strong> report generates automatically in <strong>{activeTab === 'weekly' ? '7' : '30'} days</strong>.</p>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* AI Report Modal overlay */}
+            <AiReportModal 
+                report={selectedReport} 
+                isOpen={!!selectedReport} 
+                onClose={() => setSelectedReport(null)} 
+            />
+
             </>
             )}
             </>
