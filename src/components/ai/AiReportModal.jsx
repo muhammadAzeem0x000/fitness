@@ -22,16 +22,16 @@ export function AiReportModal({ report, isOpen, onClose }) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-end sm:items-center p-0 sm:p-4"
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center p-4 md:p-6"
                     >
                         {/* Modal Content */}
                         <motion.div
-                            initial={{ y: '100%', opacity: 0.5 }}
+                            initial={{ y: '50px', opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: '100%', opacity: 0 }}
+                            exit={{ y: '50px', opacity: 0 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white dark:bg-slate-950 w-full sm:max-w-3xl sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] border border-slate-200 dark:border-zinc-800"
+                            className="bg-white dark:bg-slate-950 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] border border-slate-200 dark:border-zinc-800"
                         >
                             {/* Header */}
                             <div className="flex-none flex items-center justify-between p-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50">
