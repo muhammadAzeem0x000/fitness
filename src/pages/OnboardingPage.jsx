@@ -132,7 +132,7 @@ const OnboardingPage = () => {
                 .from('profiles')
                 .upsert({
                     id: user.id,
-                    display_name: data.displayName || 'Anonymous Athlete',
+                    display_name: data.displayName || `Athlete ${Math.floor(1000 + Math.random() * 9000)}`,
                     height: heightInCm,
                     current_weight: weightInKg,
                     goal_weight: goalWeightInKg,
