@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff, Utensils, Trophy } from 'lucide-react';
+import { Dumbbell, LogOut, LayoutDashboard, PlusCircle, BrainCircuit, User, Sparkles, Menu, X, WifiOff, Utensils, Trophy, Settings } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
@@ -161,13 +161,9 @@ export function Header() {
                     {/* Profile Trigger */}
                     <button
                         onClick={() => setIsProfileOpen(true)}
-                        className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-zinc-700 dark:to-zinc-900 border border-slate-300 dark:border-zinc-600 overflow-hidden flex items-center justify-center hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 hover:ring-offset-slate-50 dark:hover:ring-offset-slate-900 shadow-sm transition-all group shrink-0"
+                        className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
                     >
-                        {profile?.avatar_url ? (
-                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                        ) : (
-                            <User className="w-4 h-4 text-zinc-300 group-hover:text-white transition-colors" />
-                        )}
+                        <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
 
                     {/* Hamburger Menu Toggle (Mobile Only) */}

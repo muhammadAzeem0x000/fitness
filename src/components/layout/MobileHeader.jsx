@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, WifiOff, Sparkles, User } from 'lucide-react';
+import { ArrowLeft, WifiOff, Sparkles, User, Settings } from 'lucide-react';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { hapticLight } from '../../lib/haptics';
 import { useNetwork } from '../../hooks/useNetwork';
@@ -70,15 +70,9 @@ export function MobileHeader() {
                                 hapticLight();
                                 navigate('/profile');
                             }}
-                            className="p-1 -ml-1 rounded-full text-slate-600 dark:text-zinc-400 active:bg-slate-100 dark:active:bg-zinc-800 transition-colors"
+                            className="p-2 -ml-2 rounded-full text-slate-600 dark:text-zinc-400 active:text-slate-900 dark:active:text-white active:bg-slate-100 dark:active:bg-zinc-800 transition-colors"
                         >
-                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-zinc-800 flex items-center justify-center border border-slate-300 dark:border-zinc-700 overflow-hidden">
-                                {profile?.avatar_url ? (
-                                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                                ) : (
-                                    <User className="w-4 h-4 text-slate-500 dark:text-zinc-400" />
-                                )}
-                            </div>
+                            <Settings className="w-6 h-6" />
                         </button>
                     )}
                 </div>

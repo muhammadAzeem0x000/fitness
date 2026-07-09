@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useUserPreferences } from '../context/UserPreferencesContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Ruler, Weight, Target, ArrowRight, Check, Dumbbell, Calendar, Loader2 } from 'lucide-react';
+import { Ruler, Weight, Target, ArrowRight, Check, Dumbbell, Calendar, Loader2, User } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,8 +23,8 @@ const OnboardingPage = () => {
     // Persistence
     const [step, setStep] = useLocalStorage('onboarding_step', 1);
 
-    // Custom validation for step 1
     const step1Schema = z.object({
+        displayName: z.string().optional(),
         height: heightUnit === 'cm' ? z.string().min(1, "Height is required") : z.string().optional(),
         heightFt: heightUnit === 'ft' ? z.string().min(1, "Feet required") : z.string().optional(),
         heightIn: heightUnit === 'ft' ? z.string().min(1, "Inches required") : z.string().optional(),
@@ -41,6 +41,7 @@ const OnboardingPage = () => {
         formState: { errors }
     } = useForm({
         defaultValues: {
+            displayName: '',
             height: '',
             heightFt: '',
             heightIn: '',
@@ -131,6 +132,7 @@ const OnboardingPage = () => {
                 .from('profiles')
                 .upsert({
                     id: user.id,
+                    display_name: data.displayName || 'Anonymous Athlete',
                     height: heightInCm,
                     current_weight: weightInKg,
                     goal_weight: goalWeightInKg,
@@ -314,6 +316,21 @@ const OnboardingPage = () => {
                                 >
                                     {weightUnit === 'kg' ? 'KG / FT' : 'LBS / CM'}
                                 </button>
+                            </div>
+
+                            {/* Display Name Input */}
+                            <div className="space-y-2">
+                                <label className="text-sm text-zinc-400 flex items-center justify-between">
+                                    <span className="flex items-center gap-2"><User className="w-4 h-4" /> Display Name</span>
+                                    <span className="text-[10px] text-zinc-500 uppercase">Optional</span>
+                                </label>
+                                <input
+                                    {...register('displayName')}
+                                    type="text"
+                                    placeholder="How should we call you?"
+                                    className={`w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors`}
+                                />
+                                <p className="text-xs text-zinc-500">This is how you will appear on the Leaderboards.</p>
                             </div>
 
                             {/* Height Input */}

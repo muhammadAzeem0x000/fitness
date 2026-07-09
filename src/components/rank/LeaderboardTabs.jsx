@@ -64,6 +64,32 @@ export function LeaderboardTabs({ onCurrentRankUpdate }) {
 
     const activeTabConfig = TABS.find(t => t.id === activeTab);
 
+    const getAvatarColor = (name) => {
+        if (!name) return 'bg-slate-200 text-slate-500 dark:bg-zinc-800 dark:text-zinc-400 border-slate-300 dark:border-zinc-700';
+        const colors = [
+            'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 border-red-200 dark:border-red-900/50',
+            'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 border-orange-200 dark:border-orange-900/50',
+            'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-900/50',
+            'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400 border-green-200 dark:border-green-900/50',
+            'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50',
+            'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400 border-teal-200 dark:border-teal-900/50',
+            'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400 border-cyan-200 dark:border-cyan-900/50',
+            'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-900/50',
+            'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50',
+            'bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 border-violet-200 dark:border-violet-900/50',
+            'bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border-purple-200 dark:border-purple-900/50',
+            'bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-500/20 dark:text-fuchsia-400 border-fuchsia-200 dark:border-fuchsia-900/50',
+            'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400 border-pink-200 dark:border-pink-900/50',
+            'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 border-rose-200 dark:border-rose-900/50',
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        hash = Math.abs(hash);
+        return colors[hash % colors.length];
+    };
+
     const getRankIcon = (index) => {
         if (index === 0) return <Crown className="w-5 h-5 text-yellow-500 drop-shadow-sm" />;
         if (index === 1) return <Medal className="w-5 h-5 text-slate-300 drop-shadow-sm" />;
@@ -163,11 +189,11 @@ export function LeaderboardTabs({ onCurrentRankUpdate }) {
                                     {getRankIcon(index)}
                                 </div>
                                 
-                                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                                <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-xl shrink-0 overflow-hidden ${!row.avatarUrl ? getAvatarColor(row.name) : 'bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700'}`}>
                                     {row.avatarUrl ? (
                                         <img src={row.avatarUrl} alt={row.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-slate-400 text-sm font-bold">{row.name.charAt(0).toUpperCase()}</span>
+                                        <span className="text-sm font-bold opacity-90">{(row.name || '?').charAt(0).toUpperCase()}</span>
                                     )}
                                 </div>
                                 
