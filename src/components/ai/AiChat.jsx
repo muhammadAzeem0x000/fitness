@@ -246,7 +246,10 @@ export function AiChat() {
             setTimeout(() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
         } finally {
             setIsStreaming(false);
-            inputRef.current?.focus();
+            // Only auto-focus on desktop so mobile keyboards don't block the AI's response
+            if (window.innerWidth > 768) {
+                inputRef.current?.focus();
+            }
         }
     };
 
