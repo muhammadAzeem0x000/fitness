@@ -177,7 +177,34 @@ export function SubscriptionProvider({ children }) {
             // ============================================================
             // STEP 1: Ensure user is IDENTIFIED in RevenueCat first.
             // ============================================================
-            if (user?.id && isNativePlatform()) {
+            if (!isNativePlatform()) {
+                // On Web: RevenueCat SDK isn't available. Read the truth from Supabase instead.
+                if (user?.id) {
+                    const { data: subData } = await supabase
+                        .from('subscriptions')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .single();
+                    
+                    if (subData) {
+                        setIsPremium(subData.status === 'active' || subData.status === 'trialing');
+                        setSubscriptionData({
+                            subscription: {
+                                plan_id: subData.plan_id,
+                                current_period_start: subData.current_period_start,
+                                current_period_end: subData.current_period_end
+                            },
+                            isTrialing: subData.status === 'trialing',
+                            isCanceled: subData.cancel_at_period_end,
+                            isTrialExpired: subData.status === 'trial_expired'
+                        });
+                    }
+                }
+                setIsLoading(false);
+                return; // Stop here, do not fetch from RC and do NOT sync to Supabase
+            }
+
+            if (user?.id) {
                 try {
                     console.log('[Sub] Logging into RevenueCat with userId:', user.id);
                     await loginRevenueCat(user.id);
