@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 export function WebLayout({ children, mainRef }) {
     const location = useLocation();
-    const isFixedLayout = ['/ai-coach', '/log'].includes(location.pathname);
+    const isFixedLayout = ['/ai-coach'].includes(location.pathname);
 
     return (
         <div className="h-[100dvh] bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col">
@@ -15,7 +15,7 @@ export function WebLayout({ children, mainRef }) {
                 {isFixedLayout ? (
                     children
                 ) : (
-                    <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-8">
+                    <div className="max-w-6xl w-full mx-auto space-y-6 md:space-y-8">
                         {children}
                     </div>
                 )}

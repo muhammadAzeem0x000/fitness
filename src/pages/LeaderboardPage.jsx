@@ -12,7 +12,7 @@ export function LeaderboardPage() {
     const [currentGlobalRank, setCurrentGlobalRank] = useLocalStorage('cached_global_rank', null);
 
     return (
-        <div className="pt-8 px-4 pb-24 animate-in fade-in duration-500 max-w-2xl mx-auto">
+        <div className="pt-8 px-4 pb-24 animate-in fade-in duration-500 max-w-2xl mx-auto md:max-w-none md:mx-0">
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">

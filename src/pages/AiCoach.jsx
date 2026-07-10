@@ -111,15 +111,15 @@ export function AiCoach() {
     const historyList = allReports.filter(r => (r.report_type || 'weekly') === activeTab);
 
     return (
-        <div className="flex flex-col h-full p-4 md:px-4 gap-4 md:gap-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto w-full">
+        <div className="flex flex-col h-full p-4 md:px-4 gap-3 md:gap-4 animate-in fade-in duration-500 max-w-6xl mx-auto w-full">
             {/* Header (Fixed) */}
-            <div className="flex-none flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-none flex flex-col md:flex-row md:items-center justify-between gap-2">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Bot className="h-8 w-8 text-blue-500" />
+                    <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Bot className="h-6 w-6 text-blue-500" />
                         Master AI Coach
                     </h1>
-                    <p className="text-slate-500 dark:text-zinc-400 text-sm md:text-base mt-1">
+                    <p className="text-slate-500 dark:text-zinc-400 text-xs md:text-sm mt-0.5">
                         Your personal elite fitness strategist.
                     </p>
                 </div>
@@ -127,27 +127,27 @@ export function AiCoach() {
 
             <>
                 {/* Mode Switcher */}
-                <div className="flex p-1 bg-slate-100 dark:bg-zinc-900/80 rounded-xl gap-1 border border-slate-300 dark:border-zinc-800">
+                <div className="flex p-1 bg-slate-100 dark:bg-zinc-900/80 rounded-xl gap-1 border border-slate-300 dark:border-zinc-800 max-w-sm">
                     <button
                         onClick={() => setCoachMode('chat')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-xs md:text-sm font-medium transition-all ${
                             coachMode === 'chat'
                                 ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm'
                                 : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                         }`}
                     >
-                        <MessageSquare className={`w-4 h-4 ${coachMode === 'chat' ? 'text-violet-400' : ''}`} />
+                        <MessageSquare className={`w-3.5 h-3.5 md:w-4 md:h-4 ${coachMode === 'chat' ? 'text-violet-400' : ''}`} />
                         Chat
                     </button>
                     <button
                         onClick={() => setCoachMode('reports')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-xs md:text-sm font-medium transition-all ${
                             coachMode === 'reports'
                                 ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm'
                                 : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200'
                         }`}
                     >
-                        <FileText className={`w-4 h-4 ${coachMode === 'reports' ? 'text-blue-500' : ''}`} />
+                        <FileText className={`w-3.5 h-3.5 md:w-4 md:h-4 ${coachMode === 'reports' ? 'text-blue-500' : ''}`} />
                         Reports
                     </button>
                 </div>

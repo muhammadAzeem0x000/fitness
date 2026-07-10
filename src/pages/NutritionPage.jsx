@@ -149,7 +149,7 @@ export function NutritionPage() {
     } : null;
 
     return (
-        <div className="animate-in fade-in duration-500 max-w-lg mx-auto min-h-screen bg-slate-50 dark:bg-black pb-24 -mt-4 -mx-3 md:mx-auto">
+        <div className="animate-in fade-in duration-500 max-w-lg mx-auto md:max-w-none md:mx-0 min-h-screen bg-slate-50 dark:bg-black pb-24 -mt-4 -mx-3 md:mt-0 md:-mx-0 md:bg-transparent md:dark:bg-transparent">
             
             {/* Header / Date Picker */}
             <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-zinc-800 sticky top-0 z-30 pt-4 px-4 pb-4 shadow-sm">
