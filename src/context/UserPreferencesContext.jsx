@@ -9,6 +9,10 @@ export function UserPreferencesProvider({ children }) {
         heightUnit: 'cm', // 'cm' or 'ft'
     });
 
+    // Auto-heal any corrupted local storage states
+    const activeWeightUnit = preferences.weightUnit || 'kg';
+    const activeHeightUnit = activeWeightUnit === 'kg' ? 'cm' : 'ft';
+
     const toggleWeightUnit = () => {
         setPreferences(prev => {
             const isKg = prev.weightUnit === 'kg';
@@ -21,16 +25,14 @@ export function UserPreferencesProvider({ children }) {
     };
 
     const toggleHeightUnit = () => {
-        setPreferences(prev => ({
-            ...prev,
-            heightUnit: prev.heightUnit === 'cm' ? 'ft' : 'cm'
-        }));
+        // Obsolete, but kept for safety. Units are strictly bound.
+        toggleWeightUnit();
     };
 
     // Helper: Convert Kg to User's Unit
     const displayWeight = (kgValue) => {
         if (!kgValue) return 0;
-        if (preferences.weightUnit === 'kg') return parseFloat(kgValue.toFixed(1));
+        if (activeWeightUnit === 'kg') return parseFloat(kgValue.toFixed(1));
         return parseFloat((kgValue * 2.20462).toFixed(1));
     };
 
@@ -38,14 +40,14 @@ export function UserPreferencesProvider({ children }) {
     const convertWeightToDb = (inputValue) => {
         const val = parseFloat(inputValue);
         if (isNaN(val)) return 0;
-        if (preferences.weightUnit === 'kg') return val;
+        if (activeWeightUnit === 'kg') return val;
         return val / 2.20462;
     };
 
     // Helper: Convert Cm to User's Unit (Display string only for height usually)
     const displayHeight = (cmValue) => {
         if (!cmValue) return '';
-        if (preferences.heightUnit === 'cm') return `${Math.round(cmValue)}`;
+        if (activeHeightUnit === 'cm') return `${Math.round(cmValue)}`;
 
         // Convert to ft/in
         const totalInches = cmValue / 2.54;
@@ -54,13 +56,13 @@ export function UserPreferencesProvider({ children }) {
         return `${feet}'${inches}"`;
     };
 
-    const formatWeightLabel = () => preferences.weightUnit === 'kg' ? 'kg' : 'lbs';
-    const formatHeightLabel = () => preferences.heightUnit === 'cm' ? 'cm' : '';
+    const formatWeightLabel = () => activeWeightUnit === 'kg' ? 'kg' : 'lbs';
+    const formatHeightLabel = () => activeHeightUnit === 'cm' ? 'cm' : '';
 
     const value = {
-        preferences,
-        weightUnit: preferences.weightUnit,
-        heightUnit: preferences.heightUnit,
+        preferences: { ...preferences, weightUnit: activeWeightUnit, heightUnit: activeHeightUnit },
+        weightUnit: activeWeightUnit,
+        heightUnit: activeHeightUnit,
         toggleWeightUnit,
         toggleHeightUnit,
         displayWeight,
