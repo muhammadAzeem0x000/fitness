@@ -15,7 +15,7 @@ export function UserPreferencesProvider({ children }) {
             return {
                 ...prev,
                 weightUnit: isKg ? 'lbs' : 'kg',
-                heightUnit: isKg ? 'cm' : 'ft'
+                heightUnit: isKg ? 'ft' : 'cm'
             };
         });
     };
