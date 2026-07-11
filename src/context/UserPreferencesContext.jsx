@@ -80,7 +80,7 @@ export function UserPreferencesProvider({ children }) {
         },
         formatHeightValue: (cmValue) => {
             if (!cmValue) return { val1: '', val2: '' };
-            if (preferences.heightUnit === 'cm') {
+            if (activeHeightUnit === 'cm') {
                 return { val1: Math.round(cmValue), val2: '' };
             }
             const totalInches = cmValue / 2.54;
