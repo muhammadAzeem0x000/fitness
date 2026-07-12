@@ -173,20 +173,20 @@ export const ReadinessCard = ({ metrics = [], workoutLogs = [], syncNow, isSynci
                 <div className="relative z-10 grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-slate-100 dark:border-zinc-800/50">
                     <div className="flex flex-col items-center justify-center">
                         <Moon className="w-4 h-4 text-indigo-400 mb-1" />
-                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                            {todayMetrics.sleep_hours}h
+                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 text-center">
+                            {todayMetrics.sleep_hours ? `${todayMetrics.sleep_hours}h` : <span className="text-[10px] text-slate-400">No data</span>}
                         </span>
                     </div>
                     <div className="flex flex-col items-center justify-center border-l border-r border-slate-100 dark:border-zinc-800/50">
                         <Footprints className="w-4 h-4 text-emerald-400 mb-1" />
-                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                            {todayMetrics.steps.toLocaleString()}
+                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 text-center">
+                            {todayMetrics.steps ? todayMetrics.steps.toLocaleString() : <span className="text-[10px] text-slate-400">No data</span>}
                         </span>
                     </div>
                     <div className="flex flex-col items-center justify-center">
                         <Flame className="w-4 h-4 text-orange-400 mb-1" />
-                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                            {todayMetrics.active_calories} kcal
+                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 text-center">
+                            {todayMetrics.active_calories ? `${todayMetrics.active_calories} kcal` : <span className="text-[10px] text-slate-400">No data</span>}
                         </span>
                     </div>
                 </div>

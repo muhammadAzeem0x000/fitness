@@ -566,17 +566,23 @@ export default function ProfilePage() {
                                 <div className="grid grid-cols-3 gap-3">
                                     <div className="bg-white dark:bg-zinc-950/50 border border-slate-100 dark:border-white/5 rounded-2xl p-3.5 text-center shadow-sm">
                                         <Footprints className="w-5 h-5 text-emerald-500 mx-auto mb-1.5" />
-                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{todayHealth.steps.toLocaleString()}</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                                            {todayHealth.steps ? todayHealth.steps.toLocaleString() : <span className="text-sm text-slate-400 font-medium">No data</span>}
+                                        </p>
                                         <p className="text-[11px] font-medium text-slate-500">Steps</p>
                                     </div>
                                     <div className="bg-white dark:bg-zinc-950/50 border border-slate-100 dark:border-white/5 rounded-2xl p-3.5 text-center shadow-sm">
                                         <Moon className="w-5 h-5 text-indigo-500 mx-auto mb-1.5" />
-                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{todayHealth.sleep_hours}h</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                                            {todayHealth.sleep_hours ? `${todayHealth.sleep_hours}h` : <span className="text-sm text-slate-400 font-medium">No data</span>}
+                                        </p>
                                         <p className="text-[11px] font-medium text-slate-500">Sleep</p>
                                     </div>
                                     <div className="bg-white dark:bg-zinc-950/50 border border-slate-100 dark:border-white/5 rounded-2xl p-3.5 text-center shadow-sm">
                                         <Flame className="w-5 h-5 text-orange-500 mx-auto mb-1.5" />
-                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">{todayHealth.active_calories}</p>
+                                        <p className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                                            {todayHealth.active_calories ? todayHealth.active_calories : <span className="text-sm text-slate-400 font-medium">No data</span>}
+                                        </p>
                                         <p className="text-[11px] font-medium text-slate-500">Calories</p>
                                     </div>
                                 </div>
