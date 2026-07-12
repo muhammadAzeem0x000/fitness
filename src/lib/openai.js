@@ -483,27 +483,41 @@ export async function analyzeFoodInput(text) {
     const prompt = `
     You are a professional sports nutritionist and calorie estimator API.
     The user will provide a text describing what they ate.
-    You must estimate the calories, protein (g), carbs (g), and fats (g) for the entire meal described.
+    You must break it down into INDIVIDUAL food items, each with their own macros.
     
     IMPORTANT RULES:
     1. Be as accurate and realistic as possible. Do not aggressively over-estimate or under-estimate.
     2. Account for standard hidden calories (normal cooking oils, sauces).
     3. If the user doesn't specify portion size, assume a standard adult serving.
-    4. Enforce strict macro-calorie math: (Protein*4) + (Carbs*4) + (Fats*9) = Calories.
+    4. Enforce strict macro-calorie math per item: (Protein*4) + (Carbs*4) + (Fats*9) = Calories.
+    5. Break compound meals into their component foods (e.g. "2 eggs and toast" → 2 items).
     
     FEW-SHOT CALIBRATION EXAMPLES:
-    - "200g chicken breast": {"calories": 311, "protein": 62, "carbs": 0, "fats": 7, "food_name": "Chicken Breast (200g)"}
-    - "1 cup cooked white rice": {"calories": 206, "protein": 4, "carbs": 45, "fats": 0, "food_name": "White Rice (1 cup)"}
-    - "2 roti with chicken curry": {"calories": 510, "protein": 35, "carbs": 52, "fats": 18, "food_name": "2 Roti & Chicken Curry"}
+    Input: "200g chicken breast"
+    Output: {"foods":[{"name":"Chicken Breast","quantity":200,"unit":"g","prep":"grilled","calories":311,"protein":62,"carbs":0,"fats":7}],"food_name":"Chicken Breast (200g)"}
+    
+    Input: "2 eggs and toast with butter"
+    Output: {"foods":[{"name":"Eggs","quantity":2,"unit":"large","prep":"boiled","calories":155,"protein":12,"carbs":1,"fats":11},{"name":"Toast","quantity":1,"unit":"slice","prep":"toasted","calories":79,"protein":3,"carbs":13,"fats":1},{"name":"Butter","quantity":1,"unit":"tbsp","prep":"spread","calories":102,"protein":0,"carbs":0,"fats":12}],"food_name":"Eggs, Toast & Butter"}
+    
+    Input: "2 roti with chicken curry"
+    Output: {"foods":[{"name":"Roti","quantity":2,"unit":"piece","prep":"cooked","calories":220,"protein":6,"carbs":40,"fats":4},{"name":"Chicken Curry","quantity":1,"unit":"serving","prep":"cooked","calories":290,"protein":29,"carbs":12,"fats":14}],"food_name":"2 Roti & Chicken Curry"}
     
     CRITICAL INSTRUCTION: Return ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json.
     Format required:
     {
-      "calories": number,
-      "protein": number,
-      "carbs": number,
-      "fats": number,
-      "food_name": "A short 2-4 word summary of the meal"
+      "foods": [
+        {
+          "name": "Food name",
+          "quantity": number,
+          "unit": "g|ml|piece|slice|cup|tbsp|serving|large|medium|small",
+          "prep": "raw|boiled|fried|grilled|baked|steamed|toasted|cooked|spread",
+          "calories": number,
+          "protein": number,
+          "carbs": number,
+          "fats": number
+        }
+      ],
+      "food_name": "A short 2-4 word summary of the entire meal"
     }
     
     User Input: "${text}"
@@ -513,13 +527,13 @@ export async function analyzeFoodInput(text) {
         const response = await groqClient.chat.completions.create({
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
-            temperature: 0.1, // Lower temperature for consistency
-            max_tokens: 500,
+            temperature: 0.1,
+            max_tokens: 1000,
             response_format: { type: "json_object" }
         });
 
         const rawContent = response.choices[0]?.message?.content || "{}";
-        let cleanedContent = rawContent.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
+        let cleanedContent = rawContent.replace(new RegExp('<think>[\\s\\S]*?<\\/think>\\n?', 'g'), '').trim();
         
         const match = cleanedContent.match(/\{[\s\S]*\}/);
         let jsonContent = match ? match[0] : "{}";
@@ -532,16 +546,48 @@ export async function analyzeFoodInput(text) {
             parsed = JSON.parse(jsonContent);
         } catch (e) {
             console.error("Food JSON parse error:", e, jsonContent);
-            parsed = { calories: 0, protein: 0, carbs: 0, fats: 0, food_name: text };
+            // Fallback: wrap the whole input as a single food item
+            parsed = { foods: [{ name: text, quantity: 1, unit: "serving", prep: "as described", calories: 0, protein: 0, carbs: 0, fats: 0 }], food_name: text };
+        }
+
+        // Ensure foods array exists (backwards compat if AI returns old format)
+        if (!parsed.foods || !Array.isArray(parsed.foods)) {
+            parsed = {
+                foods: [{
+                    name: parsed.food_name || text,
+                    quantity: 1,
+                    unit: "serving",
+                    prep: "as described",
+                    calories: parsed.calories || 0,
+                    protein: parsed.protein || 0,
+                    carbs: parsed.carbs || 0,
+                    fats: parsed.fats || 0
+                }],
+                food_name: parsed.food_name || text
+            };
         }
         
-        // Validation bounds
-        if (parsed.protein > 300) parsed.protein = 300;
-        if (parsed.carbs > 500) parsed.carbs = 500;
-        if (parsed.fats > 200) parsed.fats = 200;
+        // Validate and clamp each food item — prevent negatives and unrealistic values
+        parsed.foods = parsed.foods.map(food => ({
+            ...food,
+            quantity: Math.max(0, food.quantity || 1),
+            protein: Math.max(0, Math.min(food.protein || 0, 300)),
+            carbs: Math.max(0, Math.min(food.carbs || 0, 500)),
+            fats: Math.max(0, Math.min(food.fats || 0, 200)),
+            // Recalculate calories from macros using 4/4/9 rule
+            calories: Math.round(
+                (Math.max(0, Math.min(food.protein || 0, 300)) * 4) +
+                (Math.max(0, Math.min(food.carbs || 0, 500)) * 4) +
+                (Math.max(0, Math.min(food.fats || 0, 200)) * 9)
+            )
+        }));
 
-        // Enforce 4/4/9 strict mathematical accuracy
-        parsed.calories = Math.round((parsed.protein * 4) + (parsed.carbs * 4) + (parsed.fats * 9));
+        // Calculate totals from individual items (code-calculated, not AI)
+        parsed.calories = parsed.foods.reduce((sum, f) => sum + f.calories, 0);
+        parsed.protein = parsed.foods.reduce((sum, f) => sum + f.protein, 0);
+        parsed.carbs = parsed.foods.reduce((sum, f) => sum + f.carbs, 0);
+        parsed.fats = parsed.foods.reduce((sum, f) => sum + f.fats, 0);
+
         return parsed;
     } catch (error) {
         console.error("Error parsing food input:", error);
@@ -642,6 +688,64 @@ You MUST respond ONLY with a valid JSON object. Do not include markdown formatti
 
     } catch (error) {
         console.error("Error generating meal plan:", error);
+        throw error;
+    }
+}
+
+/**
+ * Regenerates a single meal within a plan without regenerating the entire plan.
+ * Takes the current meal's constraints and returns a new meal that fits the same slot.
+ */
+export async function regenerateSingleMeal({ mealType, targetCalories, targetProtein, targetCarbs, targetFats, diet, exclusions, cuisine, complexity, currentMealName }) {
+    if (!groqApiKey) throw new Error("Missing Groq API Key");
+
+    const prompt = `You are a world-class AI Sports Nutritionist.
+Generate ONE replacement meal for the "${mealType}" slot.
+
+CONSTRAINTS:
+- Target Calories: ~${targetCalories} kcal
+- Target Macros: ~${targetProtein}g Protein, ~${targetCarbs}g Carbs, ~${targetFats}g Fats
+- Diet Type: ${diet || 'Standard'}
+- Exclusions: ${exclusions?.length > 0 ? exclusions.join(', ') : 'None'}
+- Cuisine: ${cuisine || 'Any'}
+- Complexity: ${complexity || 'Quick & Easy'}
+- DO NOT repeat this meal: "${currentMealName}"
+
+Respond ONLY with a valid JSON object:
+{
+  "type": "${mealType}",
+  "name": "Meal name",
+  "description": "Short description of ingredients and prep",
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fats": number
+}`;
+
+    try {
+        const response = await groqClient.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.5,
+            max_tokens: 500,
+            response_format: { type: "json_object" }
+        });
+
+        const rawContent = response.choices[0]?.message?.content || "{}";
+        let cleanedContent = rawContent.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        const jsonContent = match ? match[0] : "{}";
+        const meal = JSON.parse(jsonContent);
+
+        // Clamp negatives and enforce 4/4/9
+        meal.protein = Math.max(0, Math.min(meal.protein || 0, 300));
+        meal.carbs = Math.max(0, Math.min(meal.carbs || 0, 500));
+        meal.fats = Math.max(0, Math.min(meal.fats || 0, 200));
+        meal.calories = Math.round((meal.protein * 4) + (meal.carbs * 4) + (meal.fats * 9));
+
+        return meal;
+    } catch (error) {
+        console.error("Error regenerating single meal:", error);
         throw error;
     }
 }

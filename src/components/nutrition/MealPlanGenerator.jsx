@@ -118,7 +118,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
                     <div>
                         <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 mb-3 block">Duration</label>
                         <div className="flex gap-2 bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl">
-                            {[1, 7, 14].map(num => (
+                            {[1, 7].map(num => (
                                 <button
                                     key={num}
                                     onClick={() => { hapticLight(); setDays(num); }}
@@ -127,7 +127,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
                                             : 'text-slate-500 dark:text-zinc-400'
                                         }`}
                                 >
-                                    {num === 1 ? '1 Day' : num === 7 ? '1 Week' : '2 Weeks'}
+                                    {num === 1 ? '1 Day' : '1 Week'}
                                 </button>
                             ))}
                         </div>
@@ -243,7 +243,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
                             </>
                         ) : (
                             <>
-                                ✨ Generate {days === 1 ? 'Day' : days === 7 ? 'Week' : '14-Day'} Plan
+                                ✨ Generate {days === 1 ? 'Day' : 'Week'} Plan
                             </>
                         )}
                     </Button>

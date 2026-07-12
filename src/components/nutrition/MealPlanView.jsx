@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
-import { Calendar, Plus, CheckCircle2, ChevronDown, ChevronRight, Check } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, ChevronDown, ChevronRight, Check, RotateCcw, Loader2 } from 'lucide-react';
 import { hapticLight, hapticSuccess } from '../../lib/haptics';
 import { useMealPlan } from '../../hooks/useMealPlan';
 import { useAuth } from '../../hooks/useAuth';
+import { regenerateSingleMeal } from '../../lib/openai';
 
-export function MealPlanView({ planData, date, onLogEaten }) {
+export function MealPlanView({ planData, date, onLogEaten, onPlanUpdate }) {
     const { user } = useAuth();
     const { savePlanToDb, isSaving, plannedMeals } = useMealPlan(user?.id, date);
     const [expandedDays, setExpandedDays] = useState([0]); // Expand first day by default
     const [savedState, setSavedState] = useState(false);
+    const [replacingMeal, setReplacingMeal] = useState(null); // { dayIndex, mealIndex }
 
     if (!planData || !planData.days) return null;
 
@@ -56,6 +58,43 @@ export function MealPlanView({ planData, date, onLogEaten }) {
         }
     };
 
+    const handleReplaceMeal = async (dayIndex, mealIndex) => {
+        const meal = planData.days[dayIndex].meals[mealIndex];
+        setReplacingMeal({ dayIndex, mealIndex });
+
+        try {
+            const newMeal = await regenerateSingleMeal({
+                mealType: meal.type,
+                targetCalories: meal.calories,
+                targetProtein: meal.protein,
+                targetCarbs: meal.carbs,
+                targetFats: meal.fats,
+                currentMealName: meal.name,
+            });
+
+            // Swap the meal in-place
+            const updatedPlan = { ...planData };
+            updatedPlan.days = updatedPlan.days.map((day, di) => {
+                if (di !== dayIndex) return day;
+                return {
+                    ...day,
+                    meals: day.meals.map((m, mi) => mi === mealIndex ? { ...newMeal, type: meal.type } : m)
+                };
+            });
+
+            // Notify parent of updated plan
+            if (onPlanUpdate) {
+                onPlanUpdate(updatedPlan);
+            }
+            hapticSuccess();
+        } catch (error) {
+            console.error("Failed to replace meal:", error);
+            alert("Failed to replace meal. Please try again.");
+        } finally {
+            setReplacingMeal(null);
+        }
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-zinc-800">
@@ -65,6 +104,7 @@ export function MealPlanView({ planData, date, onLogEaten }) {
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-zinc-400">
                         Avg ~{planData.days[0].meals.reduce((sum, m) => sum + m.calories, 0)} kcal/day
+                        <span className="text-[9px] italic ml-1 text-slate-400 dark:text-zinc-600">estimated</span>
                     </p>
                 </div>
                 <Button 
@@ -103,48 +143,72 @@ export function MealPlanView({ planData, date, onLogEaten }) {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium text-slate-600 dark:text-zinc-300">{dayTotalCals} kcal</span>
+                                    <span className="text-sm font-medium text-slate-600 dark:text-zinc-300">~{dayTotalCals} kcal</span>
                                     {isExpanded ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
                                 </div>
                             </button>
                             
                             {isExpanded && (
                                 <div className="p-4 pt-0 space-y-3 bg-slate-50 dark:bg-zinc-900/50 border-t border-slate-100 dark:border-zinc-800">
-                                    {dayData.meals.map((meal, mIndex) => (
-                                        <Card key={mIndex} className="border-0 shadow-sm bg-white dark:bg-slate-900 mt-3">
-                                            <CardContent className="p-4">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider">{meal.type}</span>
-                                                        <h4 className="font-semibold text-slate-800 dark:text-slate-200 mt-1">{meal.name}</h4>
+                                    {dayData.meals.map((meal, mIndex) => {
+                                        const isReplacing = replacingMeal?.dayIndex === dayIndex && replacingMeal?.mealIndex === mIndex;
+                                        
+                                        return (
+                                            <Card key={mIndex} className={`border-0 shadow-sm bg-white dark:bg-slate-900 mt-3 ${isReplacing ? 'opacity-60 animate-pulse' : ''}`}>
+                                                <CardContent className="p-4">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div>
+                                                            <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider">{meal.type}</span>
+                                                            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mt-1">{meal.name}</h4>
+                                                        </div>
+                                                        <span className="text-sm font-bold bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded text-slate-700 dark:text-slate-300">
+                                                            ~{meal.calories} kcal
+                                                        </span>
                                                     </div>
-                                                    <span className="text-sm font-bold bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded text-slate-700 dark:text-slate-300">
-                                                        {meal.calories} kcal
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{meal.description}</p>
-                                                
-                                                <div className="flex justify-between items-end">
-                                                    <div className="flex gap-3 text-xs font-medium text-slate-500">
-                                                        <span>P: {meal.protein}g</span>
-                                                        <span>C: {meal.carbs}g</span>
-                                                        <span>F: {meal.fats}g</span>
-                                                    </div>
+                                                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{meal.description}</p>
                                                     
-                                                    {dayIndex === 0 && (
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="outline" 
-                                                            className="h-8 text-xs bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800"
-                                                            onClick={() => onLogEaten(meal)}
-                                                        >
-                                                            <CheckCircle2 className="w-3 h-3 mr-1" /> Log Eaten
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                                    <div className="flex justify-between items-end">
+                                                        <div>
+                                                            <div className="flex gap-3 text-xs font-medium text-slate-500">
+                                                                <span>P: {meal.protein}g</span>
+                                                                <span>C: {meal.carbs}g</span>
+                                                                <span>F: {meal.fats}g</span>
+                                                            </div>
+                                                            <span className="text-[9px] italic text-slate-400 dark:text-zinc-600">AI estimated</span>
+                                                        </div>
+
+                                                        <div className="flex gap-2">
+                                                            {/* Replace single meal */}
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-8 text-xs border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                                                                onClick={() => handleReplaceMeal(dayIndex, mIndex)}
+                                                                disabled={isReplacing}
+                                                            >
+                                                                {isReplacing ? (
+                                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                                ) : (
+                                                                    <><RotateCcw className="w-3 h-3 mr-1" /> Replace</>
+                                                                )}
+                                                            </Button>
+
+                                                            {dayIndex === 0 && (
+                                                                <Button 
+                                                                    size="sm" 
+                                                                    variant="outline" 
+                                                                    className="h-8 text-xs bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800"
+                                                                    onClick={() => onLogEaten(meal)}
+                                                                >
+                                                                    <CheckCircle2 className="w-3 h-3 mr-1" /> Log Eaten
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
