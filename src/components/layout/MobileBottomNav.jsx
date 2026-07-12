@@ -100,7 +100,7 @@ export function MobileBottomNav() {
                 <NavItem to="/dashboard" icon={LayoutDashboard} label="Insights" />
                 <NavItem to="/log" icon={PlusCircle} label="Workout" />
                 <NavItem to="/nutrition" icon={Utensils} label="Nutrition" />
-                <NavItem to="/leaderboard" icon={Trophy} label="Ranks" />
+                {/* <NavItem to="/leaderboard" icon={Trophy} label="Ranks" /> */}
                 <NavItem to="/ai-coach" icon={BrainCircuit} label="AI Coach" />
             </div>
         </nav>

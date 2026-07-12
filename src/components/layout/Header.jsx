@@ -115,12 +115,12 @@ export function Header() {
                         label="Nutrition"
                         description="Track macros and generate AI meal plans"
                     />
-                    <NavLink
+                    {/* <NavLink
                         to="/leaderboard"
                         icon={Trophy}
                         label="Ranks"
                         description="View global leaderboards and achievements"
-                    />
+                    /> */}
                 </nav>
 
                 {/* Right: Actions */}
@@ -200,11 +200,11 @@ export function Header() {
                         icon={Utensils}
                         label="Nutrition"
                     />
-                    <MobileNavLink
+                    {/* <MobileNavLink
                         to="/leaderboard"
                         icon={Trophy}
                         label="Ranks"
-                    />
+                    /> */}
 
                     {/* Theme Toggle (Mobile Menu) */}
                     <div className="flex items-center justify-between px-4 py-3 mt-2 border-t border-slate-200 dark:border-zinc-800/50">
