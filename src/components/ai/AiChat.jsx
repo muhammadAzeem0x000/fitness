@@ -49,11 +49,11 @@ export function AiChat() {
     const { openPricing } = usePricing();
     const navigate = useNavigate();
 
-    // Fetch feature usage for free tier indicator
+    // Fetch feature usage for indicator
     const { data: usageData } = useQuery({
         queryKey: ['featureUsage', user?.id, 'ai_chat'],
-        queryFn: () => checkFeatureUsage(user.id, 'ai_chat', 5, 30),
-        enabled: !!user?.id && !isPremium,
+        queryFn: () => checkFeatureUsage(user.id, 'ai_chat', isPremium ? 10 : 5, isPremium ? 1 : 30),
+        enabled: !!user?.id,
     });
 
     const queryClient = useQueryClient();
@@ -171,20 +171,22 @@ export function AiChat() {
 
         setError(null);
 
-        // Check quota for free users
-        if (!isPremium) {
-            try {
-                const quota = await checkFeatureUsage(user.id, 'ai_chat', 5, 30);
-                if (!quota.allowed) {
-                    const resetDate = quota.resetDate.toLocaleDateString();
-                    setError(`limit_reached:You've reached your free limit of 5 AI messages this month. Your limit resets on ${resetDate}.`);
-                    setTimeout(() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
-                    return;
-                }
-            } catch (err) {
-                // If feature_usage table doesn't exist yet, allow the message
-                console.warn('Feature usage check failed:', err);
+        try {
+            const limit = isPremium ? 10 : 5;
+            const period = isPremium ? 1 : 30;
+            const quota = await checkFeatureUsage(user.id, 'ai_chat', limit, period);
+            if (!quota.allowed) {
+                const resetDate = quota.resetDate.toLocaleDateString();
+                const errorMsg = isPremium 
+                    ? `limit_reached:You've reached your Premium limit of 10 AI messages today. Your limit resets tomorrow.`
+                    : `limit_reached:You've reached your free limit of 5 AI messages this month. Your limit resets on ${resetDate}.`;
+                setError(errorMsg);
+                setTimeout(() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                return;
             }
+        } catch (err) {
+            // If feature_usage table doesn't exist yet, allow the message
+            console.warn('Feature usage check failed:', err);
         }
 
         // Add user message
@@ -229,14 +231,12 @@ export function AiChat() {
                 return newMsgs;
             });
 
-            // Increment usage for free users
-            if (!isPremium) {
-                try {
-                    await incrementFeatureUsage(user.id, 'ai_chat');
-                    queryClient.invalidateQueries(['featureUsage', user.id, 'ai_chat']);
-                } catch (err) {
-                    console.warn('Feature usage increment failed:', err);
-                }
+            // Increment usage for all users
+            try {
+                await incrementFeatureUsage(user.id, 'ai_chat');
+                queryClient.invalidateQueries(['featureUsage', user.id, 'ai_chat']);
+            } catch (err) {
+                console.warn('Feature usage increment failed:', err);
             }
         } catch (err) {
             console.error('Chat error:', err);
@@ -387,37 +387,43 @@ export function AiChat() {
             {/* Input Area */}
             <div className="flex-none px-4 pb-4 pt-2">
                 <div className="max-w-3xl mx-auto w-full flex flex-col gap-2">
-                    {!isPremium && usageData && usageData.remaining <= 0 ? (
+                    {usageData && usageData.remaining <= 0 ? (
                         <div className="bg-violet-500/10 border border-violet-500/30 rounded-xl p-4 text-center animate-in fade-in zoom-in-95">
                             <Sparkles className="w-6 h-6 text-violet-500 mx-auto mb-2" />
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Out of AI Credits</h3>
                             <p className="text-xs text-slate-500 dark:text-zinc-400 mb-3">
-                                You've used all 5 of your free monthly messages. Upgrade to Pro for unlimited chats.
+                                {isPremium 
+                                    ? "You've used all 10 of your daily messages. Please try again tomorrow."
+                                    : "You've used all 5 of your free monthly messages. Upgrade to Pro for more chats."}
                             </p>
-                            <Button onClick={() => openPricing()} className="w-full bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/25">
-                                Upgrade to Pro
-                            </Button>
+                            {!isPremium && (
+                                <Button onClick={() => openPricing()} className="w-full bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/25">
+                                    Upgrade to Pro
+                                </Button>
+                            )}
                         </div>
                     ) : (
                         <>
-                            {!isPremium && !subLoading && (
+                            {!subLoading && (
                                 <div className="text-[11px] text-slate-500 dark:text-zinc-500 flex items-center justify-between w-full px-2">
                                     <div className="flex items-center gap-1.5">
                                         <Sparkles className="w-3 h-3 text-violet-500" />
                                         {usageData ? (
                                             <span>
-                                                <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/5 messages remaining
+                                                <strong className={usageData.remaining > 0 ? "text-slate-700 dark:text-zinc-300 font-semibold" : "text-red-500 font-semibold"}>{usageData.remaining}</strong>/{isPremium ? '10 daily' : '5 monthly'} messages remaining
                                             </span>
                                         ) : (
-                                            <span>Free tier: 5 messages/month</span>
+                                            <span>{isPremium ? '10 messages/day' : 'Free tier: 5 messages/month'}</span>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => openPricing()}
-                                        className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
-                                    >
-                                        Upgrade
-                                    </button>
+                                    {!isPremium && (
+                                        <button
+                                            onClick={() => openPricing()}
+                                            className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors"
+                                        >
+                                            Upgrade
+                                        </button>
+                                    )}
                                 </div>
                             )}
                             <div className="flex gap-2 items-end">

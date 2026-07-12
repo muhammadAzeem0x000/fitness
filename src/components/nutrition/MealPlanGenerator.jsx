@@ -31,6 +31,19 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
         hapticLight();
 
         try {
+            const limit = isPremium ? 2 : 1;
+            const period = isPremium ? 1 : 30;
+            const quota = await checkFeatureUsage(user.id, 'ai_meal_plan', limit, period);
+            if (!quota.allowed) {
+                const resetDate = quota.resetDate.toLocaleDateString();
+                const errorMsg = isPremium
+                    ? `You've reached your Premium limit of 2 AI meal plans today. Your limit resets tomorrow.`
+                    : `You've reached your free limit of 1 AI meal plan this month. Your limit resets on ${resetDate}.`;
+                toast.error(errorMsg);
+                setIsGenerating(false);
+                return;
+            }
+
             const result = await generateMealPlan({
                 targets,
                 goal,
@@ -42,6 +55,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
                 days,
                 foodHistory
             });
+            await incrementFeatureUsage(user.id, 'ai_meal_plan');
             hapticSuccess();
             onGenerated(result); // Pass back up to save or display
             onClose();

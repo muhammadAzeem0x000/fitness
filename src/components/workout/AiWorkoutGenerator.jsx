@@ -87,11 +87,11 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
 
     const scrollRef = useRef(null);
 
-    // Fetch feature usage for free tier indicator
+    // Fetch feature usage for indicator
     const { data: usageData } = useQuery({
         queryKey: ['featureUsage', user?.id, 'ai_workout_plan'],
-        queryFn: () => checkFeatureUsage(user.id, 'ai_workout_plan', 2, 30),
-        enabled: !!user?.id && !isPremium,
+        queryFn: () => checkFeatureUsage(user.id, 'ai_workout_plan', isPremium ? 3 : 2, isPremium ? 1 : 30),
+        enabled: !!user?.id,
     });
 
     useBackInterceptor(() => {
@@ -111,18 +111,21 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
         setError(null);
 
         try {
-            // Check quota for free users
-            if (!isPremium) {
-                const quota = await checkFeatureUsage(user.id, 'ai_workout_plan', 2, 30);
-                if (!quota.allowed) {
-                    const resetDate = quota.resetDate.toLocaleDateString();
-                    setError(`limit_reached:You've reached your free limit of 2 AI workout plans this month. Your limit resets on ${resetDate}.`);
-                    setLoading(false);
-                    setTimeout(() => {
-                        scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 50);
-                    return;
-                }
+            // Check quota
+            const limit = isPremium ? 3 : 2;
+            const period = isPremium ? 1 : 30;
+            const quota = await checkFeatureUsage(user.id, 'ai_workout_plan', limit, period);
+            if (!quota.allowed) {
+                const resetDate = quota.resetDate.toLocaleDateString();
+                const errorMsg = isPremium
+                    ? `limit_reached:You've reached your Premium limit of 3 AI workout plans today. Your limit resets tomorrow.`
+                    : `limit_reached:You've reached your free limit of 2 AI workout plans this month. Your limit resets on ${resetDate}.`;
+                setError(errorMsg);
+                setLoading(false);
+                setTimeout(() => {
+                    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+                return;
             }
 
             // Get latest weight
@@ -176,10 +179,8 @@ export function AiWorkoutGenerator({ onStartWorkout, onClose }) {
 
             setGeneratedPlan(plan);
 
-            // Increment usage for free users
-            if (!isPremium) {
-                await incrementFeatureUsage(user.id, 'ai_workout_plan');
-            }
+            // Increment usage for all users
+            await incrementFeatureUsage(user.id, 'ai_workout_plan');
         } catch (err) {
             console.error('AI Workout Generation Error:', err);
             setError(err.message || 'Failed to generate workout plan');
