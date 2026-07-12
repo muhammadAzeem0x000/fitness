@@ -15,3 +15,15 @@ export const getUserStats = (profile, weightHistory) => {
         goalWeight: profile?.goal_weight || 0
     };
 };
+
+export const validatePhysicalStats = (weightKg, heightCm) => {
+    if (weightKg !== null && weightKg !== undefined && weightKg !== 0 && !isNaN(weightKg)) {
+        if (weightKg < 20) return "Weight seems too low. Please enter a valid weight.";
+        if (weightKg > 400) return "Weight seems too high. Please enter a valid weight.";
+    }
+    if (heightCm !== null && heightCm !== undefined && heightCm !== 0 && !isNaN(heightCm)) {
+        if (heightCm < 50) return "Height seems too low. Please enter a valid height.";
+        if (heightCm > 300) return "Height seems too high. Please enter a valid height.";
+    }
+    return null;
+};

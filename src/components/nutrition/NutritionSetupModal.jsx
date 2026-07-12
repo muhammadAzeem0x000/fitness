@@ -8,6 +8,7 @@ import { useProfile } from '../../hooks/useProfile';
 import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useToast } from '../../context/ToastContext';
 import { hapticSuccess, hapticError } from '../../lib/haptics';
+import { validatePhysicalStats } from '../../lib/fitnessUtils';
 
 const SectionRow = ({ label, children }) => (
     <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-zinc-800 last:border-0">
@@ -102,6 +103,14 @@ export function NutritionSetupModal({ isOpen, onClose }) {
         try {
             const newWeight = convertWeightToDb(currentWeightInput);
             const newHeight = convertHeightToCm(heightVal1, heightVal2, preferences.heightUnit);
+
+            const validationError = validatePhysicalStats(newWeight, newHeight);
+            if (validationError) {
+                hapticError();
+                toast.error(validationError);
+                setLoading(false);
+                return;
+            }
 
             await updateProfile({
                 age: parseInt(age),

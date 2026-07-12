@@ -10,6 +10,7 @@ import { Ruler, Weight, Target, ArrowRight, Check, Dumbbell, Calendar, Loader2, 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { validatePhysicalStats } from '../lib/fitnessUtils';
 
 const OnboardingPage = () => {
     const navigate = useNavigate();
@@ -126,6 +127,22 @@ const OnboardingPage = () => {
 
             const weightInKg = convertWeightToDb(data.currentWeight);
             const goalWeightInKg = convertWeightToDb(data.goalWeight);
+
+            const validationError = validatePhysicalStats(weightInKg, heightInCm);
+            if (validationError) {
+                setSubmitError(validationError);
+                setLoading(false);
+                setStep(1);
+                return;
+            }
+            
+            const goalValidationError = validatePhysicalStats(goalWeightInKg, null);
+            if (goalValidationError) {
+                setSubmitError("Goal " + goalValidationError.toLowerCase());
+                setLoading(false);
+                setStep(1);
+                return;
+            }
 
             // 1. Profile Upsert (with independent workout_days)
             const { error: profileError } = await supabase

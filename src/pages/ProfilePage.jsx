@@ -16,6 +16,7 @@ import { usePricing } from '../context/PricingContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hapticLight, hapticSuccess, hapticError, hapticMedium } from '../lib/haptics';
 import { requestHealthPermissions, openHealthSettings } from '../lib/wearables';
+import { validatePhysicalStats } from '../lib/fitnessUtils';
 
 const Section = ({ title, children, icon: Icon }) => (
     <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -185,6 +186,14 @@ export default function ProfilePage() {
             const newGoalWeight = convertWeightToDb(goalWeightInput);
             const newHeight = convertHeightToCm(heightVal1, heightVal2, preferences.heightUnit);
 
+            const validationError = validatePhysicalStats(newGoalWeight, newHeight);
+            if (validationError) {
+                hapticError();
+                toast.error(validationError);
+                setLoading(false);
+                return;
+            }
+
             await updateProfile({
                 display_name: displayName,
                 avatar_url: avatarUrl,
@@ -258,6 +267,14 @@ export default function ProfilePage() {
         if (!currentWeightInput) return;
         try {
             const weightInKg = convertWeightToDb(currentWeightInput);
+            
+            const validationError = validatePhysicalStats(weightInKg, null);
+            if (validationError) {
+                hapticError();
+                toast.error(validationError);
+                return;
+            }
+
             await addWeightEntry(weightInKg);
             hapticSuccess();
             toast.success("Weight logged successfully!");

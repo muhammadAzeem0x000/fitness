@@ -15,6 +15,7 @@ import { useUserPreferences } from '../../context/UserPreferencesContext';
 import { useBackInterceptor } from '../../hooks/useHardwareBackButton';
 import { usePricing } from '../../context/PricingContext';
 import { ElasticScroll } from '../ui/ElasticScroll';
+import { validatePhysicalStats } from '../../lib/fitnessUtils';
 
 export function UserProfileDialog({ isOpen, onClose }) {
     useBackInterceptor(() => {
@@ -96,6 +97,12 @@ export function UserProfileDialog({ isOpen, onClose }) {
             const newGoalWeight = convertWeightToDb(goalWeightInput);
             const newHeight = convertHeightToCm(heightVal1, heightVal2, preferences.heightUnit);
             
+            const validationError = validatePhysicalStats(newGoalWeight, newHeight);
+            if (validationError) {
+                toast.error(validationError);
+                return;
+            }
+
             await updateProfile({
                 display_name: displayName,
                 avatar_url: avatarUrl,
@@ -147,6 +154,13 @@ export function UserProfileDialog({ isOpen, onClose }) {
         if (!currentWeightInput) return;
         try {
             const weightInKg = convertWeightToDb(currentWeightInput);
+            
+            const validationError = validatePhysicalStats(weightInKg, null);
+            if (validationError) {
+                toast.error(validationError);
+                return;
+            }
+
             await addWeightEntry(weightInKg);
             toast.success("Weight logged successfully!");
             setCurrentWeightInput('');
