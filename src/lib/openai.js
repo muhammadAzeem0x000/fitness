@@ -596,6 +596,54 @@ export async function analyzeFoodInput(text) {
 }
 
 /**
+ * Recalculates the macros for a single food item when unit or prep method changes.
+ */
+export async function recalculateFoodItem({ name, quantity, unit, prep }) {
+    if (!groqApiKey) throw new Error("Missing Groq API Key");
+
+    const prompt = `You are a sports nutritionist AI. 
+Calculate the nutritional macros for this specific food item:
+Name: ${name}
+Quantity: ${quantity}
+Unit: ${unit}
+Preparation: ${prep}
+
+Respond ONLY with a valid JSON object matching exactly this structure (use numbers, not strings):
+{
+  "protein": number,
+  "carbs": number,
+  "fats": number
+}
+Do not include any text, markdown formatting, or <think> tags. Just the JSON object.`;
+
+    try {
+        const response = await groqClient.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.1,
+            max_tokens: 150,
+            response_format: { type: "json_object" }
+        });
+
+        const rawContent = response.choices[0]?.message?.content || "{}";
+        let cleanedContent = rawContent.replace(new RegExp('<think>[\\\\s\\\\S]*?<\\\\/think>\\\\n?', 'g'), '').trim();
+        const match = cleanedContent.match(/\{[\s\S]*\}/);
+        const jsonContent = match ? match[0] : "{}";
+        const parsed = JSON.parse(jsonContent);
+
+        const protein = Math.max(0, Math.min(parsed.protein || 0, 300));
+        const carbs = Math.max(0, Math.min(parsed.carbs || 0, 500));
+        const fats = Math.max(0, Math.min(parsed.fats || 0, 200));
+        const calories = Math.round((protein * 4) + (carbs * 4) + (fats * 9));
+
+        return { protein, carbs, fats, calories };
+    } catch (error) {
+        console.error("Error recalculating food item:", error);
+        throw error;
+    }
+}
+
+/**
  * Generates a meal plan (1, 7, or 14 days) based on target macros and preferences.
  */
 export async function generateMealPlan(params) {

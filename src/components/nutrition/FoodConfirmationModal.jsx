@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '../ui/Button';
-import { X, ChevronDown, AlertTriangle, Sparkles } from 'lucide-react';
+import { X, ChevronDown, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { hapticLight, hapticSuccess } from '../../lib/haptics';
+import { recalculateFoodItem } from '../../lib/openai';
 
 const UNITS = ['g', 'ml', 'piece', 'slice', 'cup', 'tbsp', 'serving', 'large', 'medium', 'small'];
 const PREPS = ['raw', 'boiled', 'fried', 'grilled', 'baked', 'steamed', 'toasted', 'cooked', 'spread', 'as described'];
@@ -18,6 +19,16 @@ export function FoodConfirmationModal({ isOpen, onClose, parsedData, mealType, o
     const [foods, setFoods] = useState(() => 
         (parsedData?.foods || []).map(f => ({ ...f, _origQuantity: f.quantity }))
     );
+    const [recalculatingIndices, setRecalculatingIndices] = useState(new Set());
+
+    // Sync foods when parsedData changes (e.g. on new modal open)
+    useEffect(() => {
+        if (parsedData?.foods) {
+            setFoods(parsedData.foods.map(f => ({ ...f, _origQuantity: f.quantity })));
+        } else {
+            setFoods([]);
+        }
+    }, [parsedData]);
 
     // Recalculate totals from individual food items (code-calculated)
     const totals = useMemo(() => {
@@ -38,13 +49,57 @@ export function FoodConfirmationModal({ isOpen, onClose, parsedData, mealType, o
         }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
     }, [foods]);
 
-    const updateFood = (index, field, value) => {
+    const updateFood = async (index, field, value) => {
         hapticLight();
+        
+        const shouldRecalculate = (field === 'unit' || field === 'prep');
+        
         setFoods(prev => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
             return updated;
         });
+
+        if (shouldRecalculate) {
+            setRecalculatingIndices(prev => {
+                const newSet = new Set(prev);
+                newSet.add(index);
+                return newSet;
+            });
+
+            try {
+                // Get the updated food item details
+                const updatedFood = foods[index];
+                const newMacros = await recalculateFoodItem({
+                    name: updatedFood.name,
+                    quantity: updatedFood.quantity,
+                    unit: field === 'unit' ? value : updatedFood.unit,
+                    prep: field === 'prep' ? value : updatedFood.prep
+                });
+
+                setFoods(prev => {
+                    const updated = [...prev];
+                    updated[index] = {
+                        ...updated[index],
+                        protein: newMacros.protein,
+                        carbs: newMacros.carbs,
+                        fats: newMacros.fats,
+                        calories: newMacros.calories,
+                        _origQuantity: updated[index].quantity // Reset original quantity so scale becomes 1
+                    };
+                    return updated;
+                });
+            } catch (error) {
+                console.error("Failed to recalculate food item:", error);
+                // On error, we just leave the previous macros
+            } finally {
+                setRecalculatingIndices(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(index);
+                    return newSet;
+                });
+            }
+        }
     };
 
     const handleConfirm = () => {
@@ -131,8 +186,11 @@ export function FoodConfirmationModal({ isOpen, onClose, parsedData, mealType, o
                     <div className="flex-1 overflow-y-auto hide-scrollbar space-y-3 min-h-0 pb-2">
                         {foods.map((food, index) => (
                             <div key={index} className="bg-slate-50 dark:bg-zinc-800/50 rounded-xl p-3 border border-slate-100 dark:border-zinc-700/50">
-                                <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 mb-2">
+                                <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 mb-2 flex items-center justify-between">
                                     {food.name}
+                                    {recalculatingIndices.has(index) && (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-500" />
+                                    )}
                                 </div>
                                 
                                 {/* Editable row: quantity, unit, prep */}
@@ -217,9 +275,14 @@ export function FoodConfirmationModal({ isOpen, onClose, parsedData, mealType, o
                             </Button>
                             <Button
                                 onClick={handleConfirm}
-                                className="flex-1 h-12 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-violet-500/20"
+                                disabled={recalculatingIndices.size > 0}
+                                className="flex-1 h-12 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-lg shadow-violet-500/20"
                             >
-                                ✓ Confirm & Log
+                                {recalculatingIndices.size > 0 ? (
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Recalculating...</>
+                                ) : (
+                                    '✓ Confirm & Log'
+                                )}
                             </Button>
                         </div>
                     </div>
