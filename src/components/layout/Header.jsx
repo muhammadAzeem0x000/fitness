@@ -20,12 +20,10 @@ export function Header() {
     const location = useLocation();
     const navigate = useNavigate();
     const { openPricing } = usePricing();
-    const { isPremium, isLoading: subLoading, subscription, isTrialExpired } = useSubscription();
+    const { isPremium, isLoading: subLoading, subscription, isTrialExpired, hasUsedTrial } = useSubscription();
     const { isOffline } = useNetwork();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    const hasUsedTrial = false;
 
     const NavLink = ({ to, icon: Icon, label, description, isPrimary }) => {
         const isActive = location.pathname === to;

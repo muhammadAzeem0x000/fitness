@@ -24,10 +24,8 @@ export function UserProfileDialog({ isOpen, onClose }) {
     const { user, signOut } = useAuth();
     const { profile, updateProfile } = useProfile(user?.id);
     const { addWeightEntry } = useWeight(user?.id);
-    const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
+    const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled, hasUsedTrial } = useSubscription();
     const { openPricing } = usePricing();
-    
-    const hasUsedTrial = false;
 
     const { preferences, convertWeightToDb, displayWeight, formatWeightLabel, convertHeightToCm, formatHeightValue } = useUserPreferences();
     const isFeet = preferences.heightUnit === 'ft';

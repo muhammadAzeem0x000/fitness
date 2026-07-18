@@ -98,9 +98,7 @@ export default function ProfilePage() {
     const { profile, updateProfile } = useProfile(user?.id);
     const { addWeightEntry } = useWeight(user?.id);
     const { openPricing } = usePricing();
-    const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled } = useSubscription();
-
-    const hasUsedTrial = false;
+    const { subscription, isPremium, isTrialing, isTrialExpired, isCanceled, hasUsedTrial } = useSubscription();
 
     const { convertWeightToDb, displayWeight, formatWeightLabel, preferences, convertHeightToCm, formatHeightValue } = useUserPreferences();
 

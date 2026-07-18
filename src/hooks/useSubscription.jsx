@@ -30,6 +30,7 @@ export function SubscriptionProvider({ children }) {
     const [isPremium, setIsPremium] = useState(false);
     const [offerings, setOfferings] = useState(null);
     const [isTrialEligible, setIsTrialEligible] = useState(false);
+    const [hasUsedTrial, setHasUsedTrial] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [subscriptionData, setSubscriptionData] = useState({
         subscription: null,
@@ -49,9 +50,10 @@ export function SubscriptionProvider({ children }) {
             else if (trialExpired) status = 'trial_expired';
             else if (canceled) status = 'canceled';
 
-            const { error } = await supabase
-                .from('subscriptions')
-                .upsert({
+            // Mark trial as used if user is trialing or trial has expired
+            const trialUsed = trialing || trialExpired;
+
+            const upsertData = {
                     user_id: userId,
                     status,
                     plan_id: currentSubscription?.plan_id || null,
@@ -61,7 +63,16 @@ export function SubscriptionProvider({ children }) {
                     revenuecat_app_user_id: rcAppUserId || null,
                     revenuecat_entitlement_id: entitlementId || null,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id' });
+                };
+
+            // Only set has_used_trial to true, never reset to false
+            if (trialUsed) {
+                upsertData.has_used_trial = true;
+            }
+
+            const { error } = await supabase
+                .from('subscriptions')
+                .upsert(upsertData, { onConflict: 'user_id' });
 
             if (error) {
                 console.error('[Sub] Supabase sync error:', error);
@@ -188,6 +199,9 @@ export function SubscriptionProvider({ children }) {
                     
                     if (subData) {
                         setIsPremium(subData.status === 'active' || subData.status === 'trialing');
+                        const usedTrial = !!subData.has_used_trial;
+                        setHasUsedTrial(usedTrial);
+                        if (usedTrial) setIsTrialEligible(false);
                         setSubscriptionData({
                             subscription: {
                                 plan_id: subData.plan_id,
@@ -228,6 +242,24 @@ export function SubscriptionProvider({ children }) {
             const parsed = parseCustomerInfo(customerInfo);
 
             setIsPremium(parsed.proIsActive);
+
+            // Derive hasUsedTrial from RevenueCat data:
+            // If user is currently trialing or trial has expired, they've used their trial
+            let trialUsed = parsed.trialing || parsed.trialExpired;
+
+            // Also check Supabase as a fallback (covers reinstalls, RC data gaps)
+            if (!trialUsed && user?.id) {
+                try {
+                    const { data: subRow } = await supabase
+                        .from('subscriptions')
+                        .select('has_used_trial')
+                        .eq('user_id', user.id)
+                        .single();
+                    if (subRow?.has_used_trial) trialUsed = true;
+                } catch (_) { /* ignore */ }
+            }
+            if (trialUsed) setHasUsedTrial(true);
+
             setSubscriptionData({
                 subscription: parsed.currentSubscription,
                 isTrialing: parsed.trialing,
@@ -251,8 +283,10 @@ export function SubscriptionProvider({ children }) {
             if (currentOfferings?.current?.availablePackages?.length > 0) {
                 const productIdentifiers = currentOfferings.current.availablePackages.map(pkg => pkg.product.identifier);
                 const eligibility = await checkTrialEligibility(productIdentifiers);
-                const isAnyEligible = Object.values(eligibility).some(res => res?.status === 2 || res?.status === 0);
-                setIsTrialEligible(isAnyEligible);
+                // status === 2 means ELIGIBLE. Do NOT treat status === 0 (UNKNOWN) as eligible.
+                const isAnyEligible = Object.values(eligibility).some(res => res?.status === 2);
+                // Override: if trial has been used, never show trial-eligible UI
+                setIsTrialEligible(trialUsed ? false : isAnyEligible);
             }
         } catch (error) {
             console.error('[Sub] Failed RevenueCat fetch:', error);
@@ -274,6 +308,7 @@ export function SubscriptionProvider({ children }) {
             offerings,
             isPremium,
             isTrialEligible,
+            hasUsedTrial,
             isLoading: authLoading || isLoading,
             error: null,
             refreshSubscription,

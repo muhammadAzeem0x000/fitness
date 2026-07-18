@@ -8,7 +8,7 @@ const SESSION_INTERVAL = 3;
 
 export function PremiumPromoPopup() {
     const [isOpen, setIsOpen] = useState(false);
-    const { isPremium, isTrialEligible, isLoading } = useSubscription();
+    const { isPremium, isTrialEligible, hasUsedTrial, isLoading } = useSubscription();
     const { openPricing } = usePricing();
 
     useEffect(() => {
@@ -86,7 +86,7 @@ export function PremiumPromoPopup() {
                         Unlock Your Full Potential
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-zinc-400 text-center mb-6">
-                        {isTrialEligible 
+                        {isTrialEligible && !hasUsedTrial
                             ? 'Start your 14-day free trial today to get the most out of your fitness journey.' 
                             : 'Upgrade to Premium and get the most out of your fitness journey.'}
                     </p>
@@ -128,7 +128,7 @@ export function PremiumPromoPopup() {
                         }}
                         className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
-                        {isTrialEligible ? 'Start 14-Day Free Trial' : 'View Premium Plans'}
+                        {isTrialEligible && !hasUsedTrial ? 'Start 14-Day Free Trial' : 'View Premium Plans'}
                         <Sparkles className="w-4 h-4" />
                     </button>
                     
