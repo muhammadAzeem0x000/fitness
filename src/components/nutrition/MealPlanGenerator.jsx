@@ -5,8 +5,15 @@ import { Button } from '../ui/Button';
 import { Loader2, X } from 'lucide-react';
 import { generateMealPlan } from '../../lib/openai';
 import { hapticLight, hapticSuccess } from '../../lib/haptics';
+import { useAuth } from '../../hooks/useAuth';
+import { useSubscription } from '../../hooks/useSubscription';
+import { useToast } from '../../context/ToastContext';
+import { checkFeatureUsage, incrementFeatureUsage } from '../../lib/featureUsage';
 
 export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodHistory }) {
+    const { user } = useAuth();
+    const { isPremium } = useSubscription();
+    const { toast } = useToast();
     const [isGenerating, setIsGenerating] = useState(false);
 
     // Form state
@@ -61,7 +68,7 @@ export function MealPlanGenerator({ isOpen, onClose, onGenerated, targets, foodH
             onClose();
         } catch (error) {
             console.error(error);
-            alert("Failed to generate meal plan. Please try again.");
+            toast.error("Failed to generate meal plan. Please try again.");
         } finally {
             setIsGenerating(false);
         }
