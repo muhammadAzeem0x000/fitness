@@ -498,19 +498,24 @@ export function UserProfileDialog({ isOpen, onClose }) {
 
                                     <div className="flex items-center justify-between">
                                         <div className="text-xs text-slate-500 dark:text-zinc-400">
-                                            {isCanceled ? (
-                                                <span className="text-red-400">Canceled (Expires {new Date(subscription?.current_period_end).toLocaleDateString()})</span>
-                                            ) : isTrialExpired ? (
-                                                <span className="text-red-400">Expired on {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                                            ) : isTrialing ? (
-                                                <span className="text-blue-400">Trial ends {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                                            ) : isPremium ? (
-                                                <span>Renews {new Date(subscription?.current_period_end).toLocaleDateString()}</span>
-                                            ) : hasUsedTrial ? (
-                                                <span>Upgrade to unlock premium features</span>
-                                            ) : (
-                                                <span>Start your 14-day free trial</span>
-                                            )}
+                                            {(() => {
+                                                const endDate = subscription?.current_period_end;
+                                                const hasValidDate = endDate && new Date(endDate).getFullYear() > 2000;
+                                                
+                                                if (isCanceled) {
+                                                    return <span className="text-red-400">Canceled{hasValidDate ? ` (Expires ${new Date(endDate).toLocaleDateString()})` : ''}</span>;
+                                                } else if (isTrialExpired) {
+                                                    return <span className="text-red-400">Trial ended — subscribe to continue</span>;
+                                                } else if (isTrialing) {
+                                                    return <span className="text-blue-400">{hasValidDate ? `Trial ends ${new Date(endDate).toLocaleDateString()}` : 'Free trial active'}</span>;
+                                                } else if (isPremium) {
+                                                    return <span>{hasValidDate ? `Renews ${new Date(endDate).toLocaleDateString()}` : 'Pro plan active'}</span>;
+                                                } else if (hasUsedTrial) {
+                                                    return <span>Upgrade to unlock premium features</span>;
+                                                } else {
+                                                    return <span>Start your 14-day free trial</span>;
+                                                }
+                                            })()}
                                         </div>
 
                                         {isPremium && !isTrialExpired ? (
