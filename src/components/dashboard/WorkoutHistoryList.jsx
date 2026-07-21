@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { History, ChevronRight, Calendar, Dumbbell, Loader2, X } from 'lucide-react';
 import { WorkoutDetailsDialog } from './WorkoutDetailsDialog';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useWorkouts } from '../../hooks/useWorkouts';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -10,6 +11,9 @@ export function WorkoutHistoryList({ workouts }) {
     const [displayedCount, setDisplayedCount] = useState(6);
     const scrollContainerRef = useRef(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [workoutToDelete, setWorkoutToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const { user } = useAuth();
     const { deleteWorkoutLog } = useWorkouts(user?.id);
 
@@ -27,13 +31,25 @@ export function WorkoutHistoryList({ workouts }) {
             if (scrollTop + clientHeight >= scrollHeight - 20) {
                 if (hasMore && !isLoadingMore) {
                     setIsLoadingMore(true);
-                    // Simulate network delay for effect (or just for smoother feel)
                     setTimeout(() => {
                         setDisplayedCount(prev => prev + 6);
                         setIsLoadingMore(false);
                     }, 500);
                 }
             }
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!workoutToDelete) return;
+        try {
+            setIsDeleting(true);
+            await deleteWorkoutLog(workoutToDelete.id);
+        } catch (err) {
+            console.error('Failed to delete workout:', err);
+        } finally {
+            setIsDeleting(false);
+            setWorkoutToDelete(null);
         }
     };
 
@@ -85,11 +101,10 @@ export function WorkoutHistoryList({ workouts }) {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button 
+                                            type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm('Are you sure you want to permanently delete this workout?')) {
-                                                    deleteWorkoutLog(workout.id);
-                                                }
+                                                setWorkoutToDelete(workout);
                                             }}
                                             className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:text-zinc-600 dark:hover:text-red-400 dark:hover:bg-red-500/10 rounded-full transition-colors z-10"
                                             title="Delete workout"
@@ -122,6 +137,19 @@ export function WorkoutHistoryList({ workouts }) {
                 isOpen={!!selectedWorkout}
                 onClose={() => setSelectedWorkout(null)}
                 workout={selectedWorkout}
+            />
+
+            {/* Custom Modern Glassmorphic Delete Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={!!workoutToDelete}
+                onClose={() => setWorkoutToDelete(null)}
+                onConfirm={handleDeleteConfirm}
+                title="Delete Workout"
+                description={`Are you sure you want to permanently delete your "${workoutToDelete?.type || 'Workout'}" log? This action cannot be undone.`}
+                confirmText="Delete Workout"
+                cancelText="Keep Workout"
+                variant="danger"
+                isLoading={isDeleting}
             />
         </>
     );
