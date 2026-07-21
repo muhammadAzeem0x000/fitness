@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Card, CardContent } from '../ui/Card';
 import { useMuscleIntensity } from '../../hooks/useMuscleIntensity';
 import { MUSCLE_LABELS } from '../../data/muscleMapping';
-import Model from 'react-body-highlighter';
+import { anteriorData, posteriorData } from 'react-body-highlighter/src/assets';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Eye, RotateCcw, X, Info, Flame, Calendar, Dumbbell, Activity } from 'lucide-react';
 
@@ -14,14 +14,13 @@ const HEAT_COLORS = {
 };
 
 const HEAT_LABELS = ['Rested', 'Active', 'Productive', 'Fatigued'];
-const HEAT_RANGES = ['0 sets', '1-4 sets', '5-9 sets', '10+ sets'];
 
 function getHeatColor(level, isDark) {
     const c = HEAT_COLORS[level] || HEAT_COLORS[0];
     return isDark ? c.dark : c.light;
 }
 
-// Map our internal muscle groups to react-body-highlighter's expected strings
+// Map internal muscle groups to Highlighter keys
 const MUSCLE_MAP = {
     chest: ['chest'],
     shoulders: ['front-deltoids', 'back-deltoids'],
@@ -39,11 +38,140 @@ const MUSCLE_MAP = {
     calves: ['calves']
 };
 
-// Create a reverse map to instantly find the app key from the SVG muscle part
 const REVERSE_MUSCLE_MAP = Object.entries(MUSCLE_MAP).reduce((acc, [appKey, reactKeys]) => {
     reactKeys.forEach(rk => acc[rk] = appKey);
     return acc;
 }, {});
+
+// Helper to look up active muscle color
+const getMuscleColor = (muscleName, data, highlightedColors, bodyColor) => {
+    if (!data || !Array.isArray(data)) return bodyColor;
+    const matched = data.find(item => item.muscles && item.muscles.includes(muscleName));
+    if (matched && matched.frequency > 0) {
+        const index = Math.min(matched.frequency - 1, highlightedColors.length - 1);
+        return highlightedColors[index] || bodyColor;
+    }
+    return bodyColor;
+};
+
+// Anatomically Proportioned Low-Poly SVG Polygons for Hands & Feet
+const ANTERIOR_EXTREMITIES = [
+    // Left Hand (Front) - natural arm angle extension with thumb and tapered finger tips
+    {
+        id: 'front-left-hand',
+        muscle: 'forearm',
+        points: '0 100, -2.5 102.5, -5.0 105.0, -3.0 107.0, -3.5 112.5, -2.8 115.0, -1.2 114.2, 0.5 111.5, 3.2 106.5, 6.93877551 101.22449'
+    },
+    // Right Hand (Front) - natural arm angle extension with thumb and tapered finger tips
+    {
+        id: 'front-right-hand',
+        muscle: 'forearm',
+        points: '93.06122449 101.22449, 96.8 106.5, 99.5 111.5, 101.2 114.2, 102.8 115.0, 103.5 112.5, 103.0 107.0, 105.0 105.0, 102.5 102.5, 100 100.408163'
+    },
+    // Left Foot (Front) - athletic flared foot stance with lateral ankle curve, instep arch and toe base
+    {
+        id: 'front-left-foot',
+        muscle: 'calves',
+        points: '20.8163265 195.510204, 17.5 201.0, 16.0 207.0, 21.0 208.5, 27.0 208.0, 27.5 202.0, 27.3469388 194.693878'
+    },
+    // Right Foot (Front) - athletic flared foot stance with lateral ankle curve, instep arch and toe base
+    {
+        id: 'front-right-foot',
+        muscle: 'calves',
+        points: '72.6530612 195.102041, 72.5 202.0, 73.0 208.0, 79.0 208.5, 84.0 207.0, 82.5 201.0, 79.5918367 195.510204'
+    }
+];
+
+const POSTERIOR_EXTREMITIES = [
+    // Left Hand (Back) - dorsal hand view following arm trajectory
+    {
+        id: 'back-left-hand',
+        muscle: 'forearm',
+        points: '0 106.382979, -2.5 108.5, -5.0 111.0, -3.0 113.0, -3.5 118.5, -2.8 121.0, -1.2 120.2, 0.5 117.5, 3.2 112.5, 6.80851064 108.510638'
+    },
+    // Right Hand (Back) - dorsal hand view following arm trajectory
+    {
+        id: 'back-right-hand',
+        muscle: 'forearm',
+        points: '93.1914894 108.93617, 96.8 112.5, 99.5 117.5, 101.2 120.2, 102.8 121.0, 103.5 118.5, 103.0 113.0, 105.0 111.0, 102.5 108.5, 100 106.382979'
+    },
+    // Left Foot (Back) - anatomical heel calcaneus and Achilles stance
+    {
+        id: 'back-left-foot',
+        muscle: 'calves',
+        points: '28.5106383 213.617021, 24.5 218.0, 24.0 224.0, 31.0 225.0, 34.0 220.0, 33.6170213 201.702128'
+    },
+    // Right Foot (Back) - anatomical heel calcaneus and Achilles stance
+    {
+        id: 'back-right-foot',
+        muscle: 'calves',
+        points: '67.2340426 202.12766, 66.0 220.0, 69.0 225.0, 76.0 224.0, 75.5 218.0, 71.9148936 213.191489'
+    }
+];
+
+const AnatomicalBodyModel = memo(function AnatomicalBodyModel({
+    data = [],
+    bodyColor = '#3f3f46',
+    highlightedColors = ['#3b82f6', '#f59e0b', '#ef4444'],
+    onClick,
+    style,
+    type = 'anterior',
+}) {
+    const isAnterior = type === 'anterior';
+    const rawData = isAnterior ? anteriorData : posteriorData;
+    const extremities = isAnterior ? ANTERIOR_EXTREMITIES : POSTERIOR_EXTREMITIES;
+    const viewBox = isAnterior ? '-8 -3 116 218' : '-8 -3 116 236';
+
+    const handleClick = (muscle) => {
+        if (onClick) onClick({ muscle });
+    };
+
+    return (
+        <div style={style} className="rbh-wrapper">
+            <svg
+                className="rbh w-full h-full"
+                viewBox={viewBox}
+                preserveAspectRatio="xMidYMid meet"
+            >
+                {/* Main Muscle Polygons */}
+                {rawData.map((exercise) =>
+                    exercise.svgPoints.map((points, index) => {
+                        const fillColor = getMuscleColor(exercise.muscle, data, highlightedColors, bodyColor);
+                        return (
+                            <polygon
+                                key={`${exercise.muscle}-${index}`}
+                                points={points}
+                                onClick={() => handleClick(exercise.muscle)}
+                                style={{
+                                    cursor: 'pointer',
+                                    fill: fillColor,
+                                    transition: 'fill 0.3s ease, filter 0.25s ease',
+                                }}
+                            />
+                        );
+                    })
+                )}
+
+                {/* Seamless Low-Poly Hands & Feet Polygons */}
+                {extremities.map((item) => {
+                    const fillColor = getMuscleColor(item.muscle, data, highlightedColors, bodyColor);
+                    return (
+                        <polygon
+                            key={item.id}
+                            points={item.points}
+                            onClick={() => handleClick(item.muscle)}
+                            style={{
+                                cursor: 'pointer',
+                                fill: fillColor,
+                                transition: 'fill 0.3s ease, filter 0.25s ease',
+                            }}
+                        />
+                    );
+                })}
+            </svg>
+        </div>
+    );
+});
 
 export function BodyHeatmap3D({ workouts = [] }) {
     const [timeRange, setTimeRange] = useState(7);
@@ -64,7 +192,6 @@ export function BodyHeatmap3D({ workouts = [] }) {
     const selectedData = selectedMuscle ? muscleData[selectedMuscle] : null;
     const selectedLabel = selectedMuscle ? MUSCLE_LABELS[selectedMuscle] : null;
 
-    // Aggregate stats for the grid
     const topMuscles = Object.entries(muscleData)
         .filter(([, d]) => d.sets > 0)
         .sort((a, b) => b[1].sets - a[1].sets)
@@ -93,7 +220,6 @@ export function BodyHeatmap3D({ workouts = [] }) {
     ];
 
     const handleModelClick = useCallback(({ muscle }) => {
-        // Map the clicked SVG path back to our grouped app key
         const appKey = REVERSE_MUSCLE_MAP[muscle];
         if (appKey) {
             setSelectedMuscle(prev => prev === appKey ? null : appKey);
@@ -102,7 +228,6 @@ export function BodyHeatmap3D({ workouts = [] }) {
         }
     }, []);
 
-    // Custom hover style injection
     useEffect(() => {
         const style = document.createElement('style');
         style.textContent = `
@@ -207,7 +332,7 @@ export function BodyHeatmap3D({ workouts = [] }) {
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.4, ease: 'easeOut' }}
                             >
-                                <Model
+                                <AnatomicalBodyModel
                                     data={modelData}
                                     style={{ height: '400px', width: '100%', maxWidth: '280px', filter: isDark ? 'drop-shadow(0 0 20px rgba(255,255,255,0.06))' : 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
                                     type={viewAngle}
@@ -337,7 +462,6 @@ export function BodyHeatmap3D({ workouts = [] }) {
                                                     : 'bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 hover:shadow-sm hover:-translate-y-0.5'
                                             }`}
                                         >
-                                            {/* Progress bar background line */}
                                             <div className="absolute bottom-0 left-0 h-1 bg-slate-100 dark:bg-zinc-800 w-full" />
                                             <div 
                                                 className="absolute bottom-0 left-0 h-1 transition-all duration-1000 ease-out" 
