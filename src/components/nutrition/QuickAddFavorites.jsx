@@ -22,8 +22,8 @@ export function QuickAddFavorites({ frequentFoods = [], onAdd }) {
             </div>
 
             {/* Horizontal Scroll List with Fade Gradient */}
-            <div className="relative">
-                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4 snap-x">
+            <div className="relative w-full overflow-hidden">
+                <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 pb-2 -mx-4 px-4 snap-x">
                     {frequentFoods.map((food, idx) => (
                         <button
                             key={idx}
@@ -37,7 +37,7 @@ export function QuickAddFavorites({ frequentFoods = [], onAdd }) {
                                     fats: food.fats
                                 });
                             }}
-                            className="snap-start flex-none group flex flex-col justify-between p-3.5 min-w-[170px] max-w-[210px] rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-zinc-900/90 dark:to-zinc-950/90 border border-slate-200/80 dark:border-zinc-800/80 hover:border-amber-500/40 dark:hover:border-amber-500/40 shadow-sm hover:shadow-md transition-all duration-300 text-left active:scale-[0.98]"
+                            className="snap-start flex-none group flex flex-col justify-between p-3 sm:p-3.5 min-w-[145px] xs:min-w-[160px] sm:min-w-[170px] max-w-[180px] sm:max-w-[210px] rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-zinc-900/90 dark:to-zinc-950/90 border border-slate-200/80 dark:border-zinc-800/80 hover:border-amber-500/40 dark:hover:border-amber-500/40 shadow-sm hover:shadow-md transition-all duration-300 text-left active:scale-[0.98]"
                         >
                             {/* Card Header & Name */}
                             <div className="mb-3">

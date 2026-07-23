@@ -152,8 +152,8 @@ export function NutritionPage() {
         const percentage = target ? Math.min(100, Math.round((consumed / target) * 100)) : 0;
         
         return (
-            <div className="flex flex-col items-center">
-                <div className="relative w-20 h-20 flex items-center justify-center">
+            <div className="flex flex-col items-center min-w-0">
+                <div className="relative w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                         <circle 
                             cx="50" cy="50" r="40" 
@@ -171,18 +171,18 @@ export function NutritionPage() {
                         />
                     </svg>
                     <div className="absolute flex flex-col items-center justify-center">
-                        <span className="text-base font-black text-slate-900 dark:text-white leading-none">
+                        <span className="text-xs sm:text-base font-black text-slate-900 dark:text-white leading-none">
                             {consumed}
                         </span>
-                        <span className="text-[9px] font-semibold text-slate-400 dark:text-zinc-500 mt-0.5">
+                        <span className="text-[8px] sm:text-[9px] font-semibold text-slate-400 dark:text-zinc-500 mt-0.5">
                             / {target || 0}
                         </span>
                     </div>
                 </div>
-                <span className="mt-2 text-xs font-bold text-slate-700 dark:text-zinc-300">
+                <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-bold text-slate-700 dark:text-zinc-300 truncate max-w-full text-center">
                     {label}
                 </span>
-                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500">
+                <span className="text-[9px] sm:text-[10px] font-semibold text-slate-400 dark:text-zinc-500">
                     {percentage}%
                 </span>
             </div>
@@ -275,8 +275,8 @@ export function NutritionPage() {
                     <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                         
                         {/* Macro Overview Card */}
-                        <div className="relative overflow-hidden bg-white dark:bg-slate-900/90 rounded-3xl p-5 shadow-lg border border-slate-200/80 dark:border-zinc-800/80 backdrop-blur-md">
-                            <div className="flex justify-between items-center mb-5">
+                        <div className="relative overflow-hidden bg-white dark:bg-slate-900/90 rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200/80 dark:border-zinc-800/80 backdrop-blur-md">
+                            <div className="flex justify-between items-center mb-4 sm:mb-5">
                                 <div>
                                     <h3 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
                                         Daily Progress
@@ -286,13 +286,13 @@ export function NutritionPage() {
                                     </p>
                                 </div>
                                 {targets?.isTrainingDay && (
-                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wide bg-gradient-to-r from-violet-600/15 via-indigo-600/15 to-purple-600/15 border border-violet-500/30 text-violet-600 dark:text-violet-400 px-3 py-1.5 rounded-full shadow-sm">
+                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wide bg-gradient-to-r from-violet-600/15 via-indigo-600/15 to-purple-600/15 border border-violet-500/30 text-violet-600 dark:text-violet-400 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-sm shrink-0">
                                         🏋️ Training Day (+250 kcal)
                                     </span>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-4 gap-2 max-w-md mx-auto">
+                            <div className="grid grid-cols-4 gap-1.5 sm:gap-3 max-w-md mx-auto w-full px-0.5">
                                 <MacroRing label="Calories" consumed={dailyTotals.calories} target={targets?.calories} colorClass="stroke-emerald-500" glowColor="rgba(16,185,129,0.3)" />
                                 <MacroRing label="Protein" consumed={dailyTotals.protein} target={targets?.protein} colorClass="stroke-blue-500" glowColor="rgba(59,130,246,0.3)" />
                                 <MacroRing label="Carbs" consumed={dailyTotals.carbs} target={targets?.carbs} colorClass="stroke-amber-500" glowColor="rgba(245,158,11,0.3)" />
@@ -301,10 +301,10 @@ export function NutritionPage() {
                             
                             {/* Remaining Budget Chips */}
                             {remainingBudget && (
-                                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-zinc-800/80">
-                                    <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold">
+                                <div className="mt-4 sm:mt-5 pt-3.5 sm:pt-4 border-t border-slate-100 dark:border-zinc-800/80">
+                                    <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold">
                                         <span className="text-slate-500 dark:text-zinc-400">Remaining:</span>
-                                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                                        <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
                                             {remainingBudget.calories} kcal
                                         </span>
                                         <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
@@ -326,7 +326,7 @@ export function NutritionPage() {
 
                         <div className="space-y-6">
                             {/* AI Food Logger Card */}
-                            <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-5 shadow-lg border border-slate-200/80 dark:border-zinc-800/80 relative z-20 overflow-visible">
+                            <div className="bg-white dark:bg-slate-900/90 rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-200/80 dark:border-zinc-800/80 relative z-20 overflow-visible">
                                 <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-violet-500/15 via-indigo-500/10 to-transparent rounded-bl-full pointer-events-none rounded-tr-3xl" />
                                 
                                 <div className="flex items-center justify-between mb-4 relative z-10">
@@ -340,26 +340,26 @@ export function NutritionPage() {
                                 
                                 <QuickAddFavorites frequentFoods={frequentFoods} onAdd={handleQuickAdd} />
 
-                                <form onSubmit={handleLogFood} className="space-y-3.5 relative z-10">
-                                    <div className="flex gap-2.5">
+                                <form onSubmit={handleLogFood} className="space-y-3.5 relative z-10 w-full max-w-full">
+                                    <div className="flex gap-2 sm:gap-2.5 w-full items-center">
                                         {/* Meal Type Dropdown (Opens upward) */}
-                                        <div className="relative w-1/3 min-w-[110px]">
+                                        <div className="relative shrink-0 w-[100px] xs:w-[115px] sm:w-[130px]">
                                             <button
                                                 type="button"
                                                 onClick={() => { hapticLight(); setIsMealDropdownOpen(!isMealDropdownOpen); }}
-                                                className="w-full flex items-center justify-between px-3 py-3 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60 rounded-2xl text-sm font-semibold text-slate-900 dark:text-slate-100 hover:border-violet-400 focus:ring-2 focus:ring-violet-500 outline-none transition-colors"
+                                                className="w-full flex items-center justify-between px-2.5 sm:px-3 py-3 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60 rounded-2xl text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 hover:border-violet-400 focus:ring-2 focus:ring-violet-500 outline-none transition-colors"
                                             >
-                                                <span className="flex items-center gap-1.5 truncate">
+                                                <span className="flex items-center gap-1 sm:gap-1.5 truncate">
                                                     <span>{MEAL_ICONS[mealType] || '🍎'}</span>
-                                                    <span>{mealType}</span>
+                                                    <span className="truncate">{mealType}</span>
                                                 </span>
-                                                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isMealDropdownOpen ? 'rotate-180' : ''}`} />
+                                                <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0 transition-transform ${isMealDropdownOpen ? 'rotate-180' : ''}`} />
                                             </button>
                                             
                                             {isMealDropdownOpen && (
                                                 <>
                                                     <div className="fixed inset-0 z-40" onClick={() => setIsMealDropdownOpen(false)} />
-                                                    <div className="absolute bottom-full left-0 mb-2 w-40 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 p-1.5">
+                                                    <div className="absolute bottom-full left-0 mb-2 w-36 sm:w-40 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 p-1.5">
                                                         {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map(type => (
                                                             <button
                                                                 key={type}
@@ -369,9 +369,9 @@ export function NutritionPage() {
                                                                     setMealType(type);
                                                                     setIsMealDropdownOpen(false);
                                                                 }}
-                                                                className={`w-full flex items-center gap-2.5 text-left px-3 py-2.5 text-sm font-bold rounded-xl transition-all ${mealType === type ? 'bg-violet-500/15 text-violet-600 dark:text-violet-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-700/80'}`}
+                                                                className={`w-full flex items-center gap-2 sm:gap-2.5 text-left px-2.5 sm:px-3 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all ${mealType === type ? 'bg-violet-500/15 text-violet-600 dark:text-violet-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-700/80'}`}
                                                             >
-                                                                <span className="text-base">{MEAL_ICONS[type]}</span>
+                                                                <span className="text-sm sm:text-base">{MEAL_ICONS[type]}</span>
                                                                 <span>{type}</span>
                                                             </button>
                                                         ))}
@@ -386,7 +386,7 @@ export function NutritionPage() {
                                             value={foodInput}
                                             onChange={(e) => setFoodInput(e.target.value)}
                                             placeholder="e.g. 2 eggs and toast"
-                                            className="flex-1 px-4 py-3 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60 rounded-2xl text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500 outline-none transition-colors"
+                                            className="flex-1 min-w-0 w-full px-3 sm:px-4 py-3 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60 rounded-2xl text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500 outline-none transition-colors"
                                         />
                                     </div>
 
