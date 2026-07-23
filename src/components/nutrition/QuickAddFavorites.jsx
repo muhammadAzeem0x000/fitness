@@ -21,9 +21,9 @@ export function QuickAddFavorites({ frequentFoods = [], onAdd }) {
                 </span>
             </div>
 
-            {/* Horizontal Scroll List with Fade Gradient */}
-            <div className="relative w-full overflow-hidden">
-                <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 pb-2 -mx-4 px-4 snap-x">
+            {/* Horizontal Scroll List */}
+            <div className="relative w-full">
+                <div className="flex overflow-x-auto hide-scrollbar gap-2.5 sm:gap-3 pb-2 pt-0.5 px-0.5 snap-x">
                     {frequentFoods.map((food, idx) => (
                         <button
                             key={idx}
