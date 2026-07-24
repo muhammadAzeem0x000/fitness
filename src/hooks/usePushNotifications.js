@@ -4,6 +4,8 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from '../lib/supabase';
 import { getPlatform } from '../lib/platform';
 
+const REPORT_NOTIFICATION_CHANNEL_ID = 'ai_reports';
+
 export function usePushNotifications(userId) {
     const [token, setToken] = useState(null);
     const navigate = useNavigate();
@@ -12,6 +14,19 @@ export function usePushNotifications(userId) {
         // Only run on native Android/iOS
         if (getPlatform() !== 'android' && getPlatform() !== 'ios') return;
         if (!userId) return;
+
+        let cancelled = false;
+        const listenerHandles = [];
+
+        const retainListener = async (listenerPromise) => {
+            const handle = await listenerPromise;
+            if (cancelled) {
+                await handle.remove();
+            } else {
+                listenerHandles.push(handle);
+            }
+            return handle;
+        };
 
         const registerPush = async () => {
             try {
@@ -27,11 +42,21 @@ export function usePushNotifications(userId) {
                     return;
                 }
 
-                // Register with Apple / Google to receive token
-                await PushNotifications.register();
+                if (getPlatform() === 'android') {
+                    await PushNotifications.createChannel({
+                        id: REPORT_NOTIFICATION_CHANNEL_ID,
+                        name: 'AI Progress Reports',
+                        description: 'Weekly and monthly AI progress report notifications',
+                        importance: 4,
+                        visibility: 1,
+                        vibration: true,
+                    });
+                }
 
-                // Listeners
-                await PushNotifications.addListener('registration', async (tokenData) => {
+                // register() emits the registration event, so listeners must be
+                // attached first or a fast token response can be lost.
+                await retainListener(PushNotifications.addListener('registration', async (tokenData) => {
+                    if (cancelled) return;
                     console.log('Push registration success, token: ' + tokenData.value);
                     setToken(tokenData.value);
 
@@ -47,25 +72,27 @@ export function usePushNotifications(userId) {
                     if (error) {
                         console.error('Error saving push token to DB:', error);
                     }
-                });
+                }));
 
-                await PushNotifications.addListener('registrationError', (err) => {
+                await retainListener(PushNotifications.addListener('registrationError', (err) => {
                     console.error('Push registration error: ', err.error);
-                });
+                }));
 
-                await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                await retainListener(PushNotifications.addListener('pushNotificationReceived', (notification) => {
                     console.log('Push received: ', notification);
-                });
+                }));
 
-                await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                await retainListener(PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
                     console.log('Push action performed: ', notification);
                     // The payload from firebase v1 comes through under notification.notification.data
                     const data = notification.notification?.data || {};
                     if (data.route) {
                         navigate(data.route, { state: { openLatestReport: true, reportId: data.reportId } });
                     }
-                });
+                }));
 
+                if (cancelled) return;
+                await PushNotifications.register();
             } catch (err) {
                 console.error('Failed to initialize push notifications:', err);
             }
@@ -74,9 +101,10 @@ export function usePushNotifications(userId) {
         registerPush();
 
         return () => {
-            PushNotifications.removeAllListeners();
+            cancelled = true;
+            Promise.allSettled(listenerHandles.map((handle) => handle.remove()));
         };
-    }, [userId]);
+    }, [userId, navigate]);
 
     return { token };
 }
