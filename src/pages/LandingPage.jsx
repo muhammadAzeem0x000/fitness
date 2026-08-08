@@ -127,6 +127,7 @@ export default function LandingPage() {
                                     width="1280"
                                     height="1024"
                                     alt="MuscleBot showing dark and light muscle activity maps"
+                                    loading="eager"
                                     fetchPriority="high"
                                     decoding="async"
                                 />
@@ -183,7 +184,8 @@ export default function LandingPage() {
                                         width="1120"
                                         height="896"
                                         alt="MuscleBot AI Coach chat and reports screens"
-                                        loading="lazy"
+                                        loading="eager"
+                                        fetchPriority="high"
                                         decoding="async"
                                     />
                                 </div>
@@ -209,7 +211,8 @@ export default function LandingPage() {
                                         width="1120"
                                         height="896"
                                         alt="MuscleBot nutrition tracking and meal planning screens"
-                                        loading="lazy"
+                                        loading="eager"
+                                        fetchPriority="high"
                                         decoding="async"
                                     />
                                 </div>
@@ -241,7 +244,8 @@ export default function LandingPage() {
                                     width="720"
                                     height="1280"
                                     alt="MuscleBot weight and training volume charts"
-                                    loading="lazy"
+                                    loading="eager"
+                                    fetchPriority="high"
                                     decoding="async"
                                 />
                             </div>
@@ -287,7 +291,7 @@ export default function LandingPage() {
                                 width="40"
                                 height="40"
                                 alt=""
-                                loading="lazy"
+                                loading="eager"
                                 decoding="async"
                             />
                             <span>MuscleBot</span>
