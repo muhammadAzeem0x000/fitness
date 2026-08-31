@@ -1,15 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+    Activity,
     ArrowRight,
     BrainCircuit,
+    Dumbbell,
     Flame,
     Sparkles,
     Star,
+    Utensils,
+    BarChart3,
+    CheckCircle2,
+    Compass,
+    TrendingUp,
+    Zap,
     Menu,
     X
 } from 'lucide-react';
 import './LandingPage.css';
+
+// Key Value Pillars
+const pillars = [
+    {
+        icon: Dumbbell,
+        title: 'Plan with Precision',
+        description: 'AI-generated routines built dynamically around your recovery, equipment, and strength goals.',
+    },
+    {
+        icon: Utensils,
+        title: 'Zero-Friction Nutrition',
+        description: 'Log meals in seconds via natural language or photo scanner with automated macro synthesis.',
+    },
+    {
+        icon: Activity,
+        title: 'Live Muscle Heatmap',
+        description: 'Interactive 3D biometrics showing targeted muscle groups, current fatigue, and readiness.',
+    },
+    {
+        icon: BarChart3,
+        title: 'Predictive Overload',
+        description: 'Scientific 1RM and volume trajectory tracking that ensures consistent weekly progression.',
+    },
+];
+
+// Step-by-step Process: How It Works & How It Helps
+const processSteps = [
+    {
+        step: '01',
+        tag: 'CALIBRATE',
+        title: 'Set Your Profile & Biometrics',
+        description: 'Define your primary goals (Hypertrophy, Strength, Cutting), available gym equipment, split frequency, and dietary preferences.',
+        benefitLabel: 'HOW IT HELPS',
+        benefitText: 'Eliminates generic cookie-cutter routines with an exact baseline tailored to your schedule and physiology.',
+        icon: Compass,
+    },
+    {
+        step: '02',
+        tag: 'EXECUTE & LOG',
+        title: 'Train with Zero-Friction Logging',
+        description: 'Follow guided sets with smart autofill weights, integrated rest timers, voice/text food logging, and instant plate calculators.',
+        benefitLabel: 'HOW IT HELPS',
+        benefitText: 'Saves 15+ minutes per session vs traditional notes apps so your full focus remains on lifting intensity.',
+        icon: Zap,
+    },
+    {
+        step: '03',
+        tag: 'SYNTHESIZE',
+        title: 'Real-Time Recovery & AI Analysis',
+        description: 'Every logged set recalculates your muscle fatigue heatmap, volume distribution, and estimated recovery window.',
+        benefitLabel: 'HOW IT HELPS',
+        benefitText: 'Prevents systemic overtraining and isolates lagging body parts with data-driven feedback.',
+        icon: BrainCircuit,
+    },
+    {
+        step: '04',
+        tag: 'PROGRESS',
+        title: 'Scale Strength & Hit Milestones',
+        description: 'Receive weekly AI performance reports, level up your lifter rank on global leaderboards, and shatter personal records.',
+        benefitLabel: 'HOW IT HELPS',
+        benefitText: 'Enforces progressive overload science for reliable, unbroken weekly gains without plateaus.',
+        icon: TrendingUp,
+    },
+];
 
 export default function LandingPage() {
     const navigate = useNavigate();
@@ -224,6 +296,88 @@ export default function LandingPage() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                {/* 2. STATS & PROOF RIBBON */}
+                <section className="landing-stats-ribbon" aria-label="MuscleBot performance statistics">
+                    <div className="landing-shell">
+                        <div className="landing-stats-grid">
+                            <div className="landing-stat-item">
+                                <h3 className="landing-stat-value">500K+</h3>
+                                <p className="landing-stat-label">Workouts & Sets Logged</p>
+                            </div>
+                            <div className="landing-stat-divider" />
+                            <div className="landing-stat-item">
+                                <h3 className="landing-stat-value">99.4%</h3>
+                                <p className="landing-stat-label">AI Macro Accuracy</p>
+                            </div>
+                            <div className="landing-stat-divider" />
+                            <div className="landing-stat-item">
+                                <h3 className="landing-stat-value">4.9 / 5.0</h3>
+                                <p className="landing-stat-label">App Store & Web Rating</p>
+                            </div>
+                            <div className="landing-stat-divider" />
+                            <div className="landing-stat-item">
+                                <h3 className="landing-stat-value">3.2x</h3>
+                                <p className="landing-stat-label">Faster Strength Progression</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* 3. PROCESS SECTION: HOW IT WORKS & HOW IT HELPS */}
+                <section className="landing-process-section" id="how-it-works" aria-labelledby="process-title">
+                    <div className="landing-shell">
+                        <div className="landing-section-heading landing-section-heading--centered">
+                            <p className="landing-section-label">THE 4-STEP TRANSFORMATION</p>
+                            <h2 id="process-title">How It Works & How It Accelerates Your Gains</h2>
+                            <p className="landing-section-subtitle">
+                                Moving from guesswork to scientific progression shouldn't require five different apps. 
+                                Here is how MuscleBot streamlines your entire training lifestyle.
+                            </p>
+                        </div>
+
+                        <div className="landing-process-grid">
+                            {processSteps.map((step) => (
+                                <div className="landing-process-card" key={step.step}>
+                                    <div className="landing-process-header">
+                                        <span className="landing-process-number">{step.step}</span>
+                                        <span className="landing-process-tag">{step.tag}</span>
+                                        <span className="landing-process-icon">
+                                            {React.createElement(step.icon, { size: 20 })}
+                                        </span>
+                                    </div>
+                                    <h3 className="landing-process-title">{step.title}</h3>
+                                    <p className="landing-process-desc">{step.description}</p>
+                                    
+                                    <div className="landing-process-benefit">
+                                        <span className="benefit-badge">
+                                            <CheckCircle2 size={13} className="text-emerald-400" />
+                                            {step.benefitLabel}
+                                        </span>
+                                        <p>{step.benefitText}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* 4. PILLARS / CORE VALUE OVERVIEW */}
+                <section className="landing-pillars" aria-label="Core fitness pillars">
+                    <div className="landing-shell landing-pillar-grid">
+                        {pillars.map(({ icon, title, description }) => (
+                            <article className="landing-pillar" key={title}>
+                                <span className="landing-pillar-icon" aria-hidden="true">
+                                    {React.createElement(icon, { size: 20, strokeWidth: 1.8 })}
+                                </span>
+                                <div>
+                                    <h3>{title}</h3>
+                                    <p>{description}</p>
+                                </div>
+                            </article>
+                        ))}
                     </div>
                 </section>
             </main>
