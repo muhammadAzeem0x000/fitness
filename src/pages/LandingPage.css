@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MUSCLEBOT MODERN SAAS LANDING PAGE STYLES - MILESTONE 5
+   MUSCLEBOT MODERN SAAS LANDING PAGE STYLES
    ========================================================================== */
 
 .musclebot-landing {
@@ -202,7 +202,58 @@
     color: var(--landing-ink);
 }
 
-/* Buttons */
+/* Mobile Toggle */
+.landing-mobile-menu-toggle {
+    display: none;
+    color: var(--landing-ink);
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--landing-line);
+}
+
+/* Mobile Drawer */
+.landing-mobile-drawer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    background: rgba(13, 18, 28, 0.98);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--landing-line-bright);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.landing-mobile-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.landing-mobile-links a {
+    color: var(--landing-ink-muted);
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.landing-mobile-links a:hover {
+    color: var(--landing-ink);
+}
+
+.landing-mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+/* ==========================================================================
+   BUTTONS & CTAS
+   ========================================================================== */
+
 .landing-button {
     display: inline-flex;
     align-items: center;
@@ -290,56 +341,20 @@
     color: var(--landing-ink);
 }
 
+.landing-button--light {
+    background: #ffffff;
+    color: #0b1120;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.15);
+    font-weight: 700;
+}
+
+.landing-button--light:hover {
+    background: #f8fafc;
+    box-shadow: 0 14px 40px rgba(255, 255, 255, 0.25);
+}
+
 .w-full {
     width: 100%;
-}
-
-/* Mobile Toggle */
-.landing-mobile-menu-toggle {
-    display: none;
-    color: var(--landing-ink);
-    padding: 8px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--landing-line);
-}
-
-/* Mobile Drawer */
-.landing-mobile-drawer {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 24px;
-    background: rgba(13, 18, 28, 0.98);
-    backdrop-filter: blur(24px);
-    border-bottom: 1px solid var(--landing-line-bright);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-}
-
-.landing-mobile-links {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.landing-mobile-links a {
-    color: var(--landing-ink-muted);
-    text-decoration: none;
-    font-size: 1.05rem;
-    font-weight: 600;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.landing-mobile-links a:hover {
-    color: var(--landing-ink);
-}
-
-.landing-mobile-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 8px;
 }
 
 /* ==========================================================================
@@ -1389,6 +1404,280 @@
     color: #ffffff;
 }
 
+/* ==========================================================================
+   10. FAQ ACCORDION
+   ========================================================================== */
+
+.landing-faq-section {
+    padding: 100px 0;
+    position: relative;
+    border-top: 1px solid var(--landing-line);
+}
+
+.landing-faq-accordion {
+    max-width: 780px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.landing-faq-item {
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--landing-line);
+    overflow: hidden;
+    transition: background 180ms ease, border-color 180ms ease;
+}
+
+.landing-faq-item.active {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(59, 130, 246, 0.35);
+}
+
+.landing-faq-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    text-align: left;
+    font-size: 1.02rem;
+    font-weight: 650;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.faq-chevron {
+    color: #94a3b8;
+    transition: transform 240ms ease;
+    flex-shrink: 0;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+.landing-faq-content {
+    padding: 0 24px 22px;
+}
+
+.landing-faq-content p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #94a3b8;
+    line-height: 1.65;
+}
+
+/* ==========================================================================
+   11. FINAL HIGH-CONVERSION CTA
+   ========================================================================== */
+
+.landing-final-section {
+    padding: 60px 0 120px;
+}
+
+.landing-final-card {
+    position: relative;
+    overflow: hidden;
+    padding: 80px 48px;
+    border-radius: 30px;
+    background: 
+        radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.35), transparent 70%),
+        linear-gradient(145deg, #111b33 0%, #0c1222 100%);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 50px rgba(37, 99, 235, 0.2);
+}
+
+.landing-final-card-glow {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 36px 36px;
+    pointer-events: none;
+}
+
+.landing-final-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    color: #ffffff;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.landing-final-card h2 {
+    margin: 12px 0 0;
+    font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #ffffff;
+    line-height: 1.1;
+    position: relative;
+    z-index: 1;
+}
+
+.landing-final-card > p:not(.landing-section-label) {
+    max-width: 600px;
+    margin: 18px auto 0;
+    font-size: 1.05rem;
+    color: #cbd5e1;
+    line-height: 1.65;
+    position: relative;
+    z-index: 1;
+}
+
+.landing-final-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 36px;
+    position: relative;
+    z-index: 1;
+}
+
+.landing-final-signin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 650;
+    transition: all 180ms ease;
+}
+
+.landing-final-signin:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1.5px);
+}
+
+.landing-final-microtext {
+    margin-top: 20px !important;
+    font-size: 0.8rem !important;
+    color: #94a3b8 !important;
+}
+
+/* ==========================================================================
+   12. MULTI-COLUMN SAAS FOOTER
+   ========================================================================== */
+
+.landing-footer {
+    border-top: 1px solid var(--landing-line);
+    background: #05070a;
+    padding: 80px 0 40px;
+}
+
+.landing-footer-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 60px;
+}
+
+.landing-footer-brand-col {
+    max-width: 320px;
+}
+
+.landing-brand--footer {
+    margin-bottom: 16px;
+}
+
+.landing-footer-tagline {
+    margin: 0 0 20px;
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+
+.landing-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #34d399;
+}
+
+.status-dot-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+.landing-footer-col h4 {
+    margin: 0 0 18px;
+    font-size: 0.85rem;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+
+.landing-footer-col ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.landing-footer-col a,
+.landing-footer-col button {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: color 160ms ease;
+    text-align: left;
+    padding: 0;
+}
+
+.landing-footer-col a:hover,
+.landing-footer-col button:hover {
+    color: #ffffff;
+}
+
+.landing-footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.landing-footer-bottom p {
+    margin: 0;
+}
+
+/* ==========================================================================
+   13. ANIMATIONS & MICRO-INTERACTIONS
+   ========================================================================== */
+
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.6; transform: scale(0.95); }
@@ -1408,6 +1697,11 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==========================================================================
+   14. RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+
+/* Tablets & Small Laptops (max-width: 1024px) */
 @media (max-width: 1024px) {
     .landing-hero-grid {
         grid-template-columns: 1fr;
@@ -1451,8 +1745,14 @@
     .landing-pricing-card--popular:hover {
         transform: translateY(-5px);
     }
+
+    .landing-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
 }
 
+/* Mobile Devices (max-width: 768px) */
 @media (max-width: 768px) {
     .landing-shell {
         width: min(100% - 32px, 1200px);
@@ -1529,8 +1829,32 @@
         grid-template-columns: 1fr;
     }
 
+    .landing-final-card {
+        padding: 50px 24px;
+    }
+
+    .landing-final-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .landing-final-actions button {
+        width: 100%;
+    }
+
+    .landing-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .landing-footer-bottom {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
     .chip-top-right,
     .chip-bottom-left {
-        display: none;
+        display: none; /* Hide floating telemetry chips on small mobile to avoid overlaying the mockup */
     }
 }

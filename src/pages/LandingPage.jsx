@@ -5,22 +5,25 @@ import {
     ArrowRight,
     BrainCircuit,
     Dumbbell,
-    Flame,
     Sparkles,
-    Star,
     Utensils,
-    BarChart3,
     Check,
-    CheckCircle2,
-    Compass,
-    Lock,
-    Shield,
-    Smartphone,
-    TrendingUp,
-    Trophy,
     Zap,
+    ChevronDown,
+    Star,
+    Trophy,
+    Smartphone,
+    BarChart3,
+    Clock,
+    Shield,
     Menu,
-    X
+    X,
+    Flame,
+    Layers,
+    CheckCircle2,
+    Lock,
+    Compass,
+    TrendingUp
 } from 'lucide-react';
 import './LandingPage.css';
 
@@ -116,9 +119,34 @@ const testimonials = [
     },
 ];
 
+// FAQ Items
+const faqs = [
+    {
+        question: "How does the AI Coach tailor workouts to my recovery?",
+        answer: "MuscleBot computes muscle fatigue coefficients after every set you log. When creating or adapting your routines, the AI analyzes which muscle groups have fully recovered vs which need rest, adjusting volume, exercise selection, and rep ranges accordingly."
+    },
+    {
+        question: "Can I log my workouts and food while offline in the gym?",
+        answer: "Yes! MuscleBot is built with full offline caching and local persistence. You can record sets, reps, and nutrition in basement gyms with zero cellular signal. Everything synchronizes automatically once your device reconnects."
+    },
+    {
+        question: "How does natural language nutrition logging work?",
+        answer: "Instead of searching endless generic food databases, simply type or speak your meal (e.g., '200g grilled chicken breast with 1 cup jasmine rice and avocado'). Our AI parser accurately breaks down calories, protein, carbs, and fats immediately."
+    },
+    {
+        question: "Can I switch or cancel my plan at any time?",
+        answer: "Absolutely. There are no lock-in contracts or cancellation penalties. You can easily upgrade, downgrade, or cancel your subscription at any time directly through your profile settings or mobile app store."
+    },
+    {
+        question: "Does MuscleBot sync across mobile and web?",
+        answer: "Yes, your profile, workout logs, nutrition history, and custom routines are securely stored in the cloud and synced in real-time across iOS, Android, and Web browsers."
+    },
+];
+
 export default function LandingPage() {
     const navigate = useNavigate();
     const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
+    const [openFaq, setOpenFaq] = useState(0); // first item open by default
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -136,6 +164,10 @@ export default function LandingPage() {
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const toggleFaq = (index) => {
+        setOpenFaq(openFaq === index ? -1 : index);
+    };
 
     return (
         <div className="musclebot-landing">
@@ -373,7 +405,7 @@ export default function LandingPage() {
                         </div>
 
                         <div className="landing-process-grid">
-                            {processSteps.map((step) => (
+                            {processSteps.map((step, idx) => (
                                 <div className="landing-process-card" key={step.step}>
                                     <div className="landing-process-header">
                                         <span className="landing-process-number">{step.step}</span>
@@ -734,7 +766,154 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </section>
+
+                {/* 8. FREQUENTLY ASKED QUESTIONS (FAQ) */}
+                <section className="landing-faq-section" id="faq" aria-labelledby="faq-title">
+                    <div className="landing-shell">
+                        <div className="landing-section-heading landing-section-heading--centered">
+                            <p className="landing-section-label">GOT QUESTIONS?</p>
+                            <h2 id="faq-title">Frequently Asked Questions</h2>
+                            <p className="landing-section-subtitle">
+                                Everything you need to know about the product, billing, and AI capabilities.
+                            </p>
+                        </div>
+
+                        <div className="landing-faq-accordion">
+                            {faqs.map((faq, index) => {
+                                const isOpen = openFaq === index;
+                                return (
+                                    <div
+                                        key={faq.question}
+                                        className={`landing-faq-item ${isOpen ? 'active' : ''}`}
+                                    >
+                                        <button
+                                            className="landing-faq-trigger"
+                                            type="button"
+                                            onClick={() => toggleFaq(index)}
+                                            aria-expanded={isOpen}
+                                        >
+                                            <span>{faq.question}</span>
+                                            <ChevronDown
+                                                size={18}
+                                                className={`faq-chevron ${isOpen ? 'rotate-180' : ''}`}
+                                            />
+                                        </button>
+                                        {isOpen && (
+                                            <div className="landing-faq-content">
+                                                <p>{faq.answer}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                {/* 9. FINAL HIGH-CONVERSION CTA */}
+                <section className="landing-final-section" aria-labelledby="final-cta-title">
+                    <div className="landing-shell">
+                        <div className="landing-final-card">
+                            <div className="landing-final-card-glow" />
+                            <span className="landing-final-icon" aria-hidden="true">
+                                <Sparkles size={22} strokeWidth={1.8} />
+                            </span>
+                            <p className="landing-section-label">START YOUR TRANSFORMATION</p>
+                            <h2 id="final-cta-title">Make Every Single Session Count.</h2>
+                            <p>
+                                Join thousands of lifters who replaced spreadsheet chaos and guesswork with AI training intelligence.
+                            </p>
+                            <div className="landing-final-actions">
+                                <button
+                                    className="landing-button landing-button--light landing-button--large"
+                                    type="button"
+                                    onClick={() => navigateToAuth('signup')}
+                                >
+                                    <span>Create Your Account Free</span>
+                                    <ArrowRight aria-hidden="true" size={18} strokeWidth={2.2} />
+                                </button>
+                                <button
+                                    className="landing-final-signin"
+                                    type="button"
+                                    onClick={() => navigateToAuth('login')}
+                                >
+                                    Sign In to Existing Account
+                                </button>
+                            </div>
+                            <p className="landing-final-microtext">
+                                Free 7-day trial · No credit card required · Instant access
+                            </p>
+                        </div>
+                    </div>
+                </section>
             </main>
+
+            {/* 10. MULTI-COLUMN SAAS FOOTER */}
+            <footer className="landing-footer">
+                <div className="landing-shell">
+                    <div className="landing-footer-grid">
+                        {/* Brand Column */}
+                        <div className="landing-footer-brand-col">
+                            <a className="landing-brand landing-brand--footer" href="#landing-main">
+                                <img
+                                    src="/landing/brand-mark.webp"
+                                    width="32"
+                                    height="32"
+                                    alt="MuscleBot Logo"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                                <span>MuscleBot</span>
+                            </a>
+                            <p className="landing-footer-tagline">
+                                The intelligent operating system for training, nutrition, and progressive overload.
+                            </p>
+                            <div className="landing-status-badge">
+                                <span className="status-dot-pulse" />
+                                <span>All Systems Operational</span>
+                            </div>
+                        </div>
+
+                        {/* Product Links */}
+                        <div className="landing-footer-col">
+                            <h4>Product</h4>
+                            <ul>
+                                <li><a href="#features">AI Coach</a></li>
+                                <li><a href="#features">Muscle Heatmaps</a></li>
+                                <li><a href="#features">Nutrition Scanner</a></li>
+                                <li><a href="#analytics">Volume Analytics</a></li>
+                                <li><a href="#pricing">Pricing Plans</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Platform & Resources */}
+                        <div className="landing-footer-col">
+                            <h4>Platform</h4>
+                            <ul>
+                                <li><button type="button" onClick={() => navigateToAuth('signup')}>Web App</button></li>
+                                <li><button type="button" onClick={() => navigateToAuth('signup')}>iOS & Android</button></li>
+                                <li><a href="#how-it-works">How It Works</a></li>
+                                <li><a href="#faq">Help & FAQ</a></li>
+                            </ul>
+                        </div>
+
+                        {/* Legal */}
+                        <div className="landing-footer-col">
+                            <h4>Legal & Support</h4>
+                            <ul>
+                                <li><button type="button" onClick={() => navigate('/privacy')}>Privacy Policy</button></li>
+                                <li><button type="button" onClick={() => navigate('/terms')}>Terms of Service</button></li>
+                                <li><button type="button" onClick={() => navigate('/delete-account')}>Delete Account</button></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="landing-footer-bottom">
+                        <p>© {new Date().getFullYear()} MuscleBot Inc. All rights reserved.</p>
+                        <p className="landing-footer-builtwith">Built for dedicated athletes worldwide.</p>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
