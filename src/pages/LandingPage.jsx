@@ -10,9 +10,13 @@ import {
     Star,
     Utensils,
     BarChart3,
+    Check,
     CheckCircle2,
     Compass,
+    Lock,
+    Smartphone,
     TrendingUp,
+    Trophy,
     Zap,
     Menu,
     X
@@ -378,6 +382,145 @@ export default function LandingPage() {
                                 </div>
                             </article>
                         ))}
+                    </div>
+                </section>
+
+                {/* 5. BENTO GRID FEATURES SHOWCASE */}
+                <section className="landing-product" id="features" aria-labelledby="product-title">
+                    <div className="landing-shell">
+                        <div className="landing-section-heading">
+                            <div>
+                                <p className="landing-section-label">UNIFIED CAPABILITIES</p>
+                                <h2 id="product-title">Engineered for Lifters Who Demand Results.</h2>
+                            </div>
+                            <p className="landing-section-lead">
+                                Every tool in MuscleBot connects with the rest of the ecosystem. Your training informs your nutrition, and your nutrition informs your recovery.
+                            </p>
+                        </div>
+
+                        {/* Bento Row 1: AI Coach & Nutrition */}
+                        <div className="landing-feature-grid">
+                            <article className="landing-feature-card landing-feature-card--coach">
+                                <div className="landing-feature-copy">
+                                    <div className="landing-feature-badge-row">
+                                        <span className="landing-feature-icon" aria-hidden="true">
+                                            <BrainCircuit size={20} strokeWidth={1.8} />
+                                        </span>
+                                        <span className="landing-feature-badge">ADAPTIVE INTELLIGENCE</span>
+                                    </div>
+                                    <p className="landing-feature-label">AI Coach & Routine Builder</p>
+                                    <h3>A personal coach grounded in your real lifting history.</h3>
+                                    <p>
+                                        Ask questions about your logged volume, request instant routine modifications when equipment is occupied, and receive weekly AI progress audits that highlight undertrained muscles.
+                                    </p>
+                                    <ul className="landing-feature-bullets">
+                                        <li><Check size={14} /> Smart split generator for 3, 4, 5, or 6-day weeks</li>
+                                        <li><Check size={14} /> Injury avoidance & joint-friendly swaps</li>
+                                        <li><Check size={14} /> Real-time fatigue & RPE calibration</li>
+                                    </ul>
+                                </div>
+                                <div className="landing-feature-image">
+                                    <img
+                                        src="/landing/ai-coach-1120.webp"
+                                        srcSet="/landing/ai-coach-640.webp 640w, /landing/ai-coach-1120.webp 1120w"
+                                        sizes="(max-width: 767px) calc(100vw - 64px), (max-width: 1200px) 56vw, 680px"
+                                        width="1120"
+                                        height="896"
+                                        alt="MuscleBot AI Coach chat and reports screens"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                </div>
+                            </article>
+
+                            <article className="landing-feature-card landing-feature-card--nutrition">
+                                <div className="landing-feature-copy">
+                                    <div className="landing-feature-badge-row">
+                                        <span className="landing-feature-icon" aria-hidden="true">
+                                            <Utensils size={20} strokeWidth={1.8} />
+                                        </span>
+                                        <span className="landing-feature-badge">MACRO SYNTHESIS</span>
+                                    </div>
+                                    <p className="landing-feature-label">Smart Nutrition Log</p>
+                                    <h3>Log meals the natural way you speak and eat.</h3>
+                                    <p>
+                                        Describe what you ate in natural language or capture meals quickly. MuscleBot balances your caloric budget, protein targets, and meal timing around your workouts.
+                                    </p>
+                                    <ul className="landing-feature-bullets">
+                                        <li><Check size={14} /> Natural language instant parser</li>
+                                        <li><Check size={14} /> Dynamic macro adjustment based on daily training</li>
+                                        <li><Check size={14} /> Meal planner tailored to your budget & diet</li>
+                                    </ul>
+                                </div>
+                                <div className="landing-feature-image">
+                                    <img
+                                        src="/landing/nutrition-1120.webp"
+                                        srcSet="/landing/nutrition-640.webp 640w, /landing/nutrition-1120.webp 1120w"
+                                        sizes="(max-width: 767px) calc(100vw - 64px), (max-width: 1200px) 38vw, 450px"
+                                        width="1120"
+                                        height="896"
+                                        alt="MuscleBot nutrition tracking and meal planning screens"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                </div>
+                            </article>
+                        </div>
+
+                        {/* Bento Row 2: Deep Analytics Full Card */}
+                        <article className="landing-progress-card" id="analytics">
+                            <div className="landing-progress-copy">
+                                <div className="landing-feature-badge-row">
+                                    <span className="landing-feature-icon" aria-hidden="true">
+                                        <Activity size={20} strokeWidth={1.8} />
+                                    </span>
+                                    <span className="landing-feature-badge">PROGRESS VISUALIZATION</span>
+                                </div>
+                                <p className="landing-feature-label">Performance Analytics</p>
+                                <h3>Data you can understand in 5 seconds.</h3>
+                                <p>
+                                    Follow tonnage volume curves, 1RM estimated trajectory, body composition trends, and recovery cycles. Stop wondering if your program is working—let the numbers prove it.
+                                </p>
+                                <div className="landing-tags-grid">
+                                    <span className="landing-tag-pill">Volume Tonnage (kg/lbs)</span>
+                                    <span className="landing-tag-pill">Estimated 1RM Trends</span>
+                                    <span className="landing-tag-pill">3D Muscle Activation Heatmap</span>
+                                    <span className="landing-tag-pill">Body Weight & Macro Overlays</span>
+                                    <span className="landing-tag-pill">Lifter XP & Global Rankings</span>
+                                </div>
+                            </div>
+                            <div className="landing-progress-image">
+                                <img
+                                    src="/landing/progress-720.webp"
+                                    srcSet="/landing/progress-420.webp 420w, /landing/progress-720.webp 720w"
+                                    sizes="(max-width: 767px) calc(100vw - 64px), 410px"
+                                    width="720"
+                                    height="1280"
+                                    alt="MuscleBot weight and training volume charts"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                            </div>
+                        </article>
+
+                        {/* Bento Mini Row: Extra High-Value Highlights */}
+                        <div className="landing-mini-grid">
+                            <div className="landing-mini-card">
+                                <div className="mini-card-icon"><Smartphone size={20} /></div>
+                                <h4>Offline First & Sync</h4>
+                                <p>Train anywhere with zero signal. Logs persist locally and synchronize automatically once reconnected.</p>
+                            </div>
+                            <div className="landing-mini-card">
+                                <div className="mini-card-icon"><Trophy size={20} /></div>
+                                <h4>Gamified Streaks & Ranks</h4>
+                                <p>Earn lifter XP, climb regional leaderboards, and maintain daily discipline with achievement badges.</p>
+                            </div>
+                            <div className="landing-mini-card">
+                                <div className="mini-card-icon"><Lock size={20} /></div>
+                                <h4>Privacy & Data Ownership</h4>
+                                <p>Your biometric and training records are encrypted and exportable anytime in standard CSV formats.</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </main>
