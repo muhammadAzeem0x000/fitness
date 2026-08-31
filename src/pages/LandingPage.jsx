@@ -14,6 +14,7 @@ import {
     CheckCircle2,
     Compass,
     Lock,
+    Shield,
     Smartphone,
     TrendingUp,
     Trophy,
@@ -87,8 +88,37 @@ const processSteps = [
     },
 ];
 
+// Testimonials
+const testimonials = [
+    {
+        quote: "The 3D muscle recovery heatmap completely changed how I program my push/pull split. I haven't hit a plateau in 6 months.",
+        name: "Marcus Vance",
+        role: "Competitive Powerlifter",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        rating: 5,
+        stat: "+45 lbs on Bench Press",
+    },
+    {
+        quote: "Logging meals with natural language is a game changer. I just type '3 scrambled eggs with toast' and macros are recorded instantly.",
+        name: "Elena Rostova",
+        role: "Hyrox Competitor & Coach",
+        avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+        rating: 5,
+        stat: "99.4% Macro Consistency",
+    },
+    {
+        quote: "MuscleBot replaces three different fitness apps for me. AI Coach answers questions about my volume better than my old PT.",
+        name: "David Chen",
+        role: "Software Architect & Lifter",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+        rating: 5,
+        stat: "140+ Day Workout Streak",
+    },
+];
+
 export default function LandingPage() {
     const navigate = useNavigate();
+    const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -520,6 +550,187 @@ export default function LandingPage() {
                                 <h4>Privacy & Data Ownership</h4>
                                 <p>Your biometric and training records are encrypted and exportable anytime in standard CSV formats.</p>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* 6. SOCIAL PROOF & TESTIMONIALS */}
+                <section className="landing-testimonials-section" aria-labelledby="testimonials-title">
+                    <div className="landing-shell">
+                        <div className="landing-section-heading landing-section-heading--centered">
+                            <p className="landing-section-label">COMMUNITY PROOF</p>
+                            <h2 id="testimonials-title">Loved by Athletes, Lifters, and Coaches</h2>
+                            <p className="landing-section-subtitle">
+                                Read why dedicated lifters switched to MuscleBot as their primary fitness operating system.
+                            </p>
+                        </div>
+
+                        <div className="landing-testimonials-grid">
+                            {testimonials.map((t) => (
+                                <div className="landing-testimonial-card" key={t.name}>
+                                    <div className="testimonial-stars">
+                                        {[...Array(t.rating)].map((_, i) => (
+                                            <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />
+                                        ))}
+                                    </div>
+                                    <p className="testimonial-quote">"{t.quote}"</p>
+                                    
+                                    <div className="testimonial-footer">
+                                        <img className="testimonial-avatar" src={t.avatar} alt={t.name} width="44" height="44" />
+                                        <div>
+                                            <h4 className="testimonial-name">{t.name}</h4>
+                                            <p className="testimonial-role">{t.role}</p>
+                                        </div>
+                                    </div>
+                                    <div className="testimonial-stat-badge">
+                                        <Zap size={12} />
+                                        <span>{t.stat}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* 7. PRICING SECTION */}
+                <section className="landing-pricing-section" id="pricing" aria-labelledby="pricing-title">
+                    <div className="landing-shell">
+                        <div className="landing-section-heading landing-section-heading--centered">
+                            <p className="landing-section-label">SIMPLE, TRANSPARENT PRICING</p>
+                            <h2 id="pricing-title">Invest in Your Health with Zero Risk</h2>
+                            <p className="landing-section-subtitle">
+                                Start free forever, or unlock full AI coaching, 3D recovery heatmaps, and advanced volume analytics.
+                            </p>
+
+                            {/* Billing Switcher */}
+                            <div className="landing-billing-switcher" role="radiogroup" aria-label="Billing frequency">
+                                <button
+                                    className={`billing-toggle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
+                                    type="button"
+                                    onClick={() => setBillingCycle('monthly')}
+                                >
+                                    Monthly
+                                </button>
+                                <button
+                                    className={`billing-toggle-btn ${billingCycle === 'annual' ? 'active' : ''}`}
+                                    type="button"
+                                    onClick={() => setBillingCycle('annual')}
+                                >
+                                    <span>Annual</span>
+                                    <span className="annual-save-badge">Save 40%</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Pricing Cards Grid */}
+                        <div className="landing-pricing-grid">
+                            {/* Tier 1: Starter */}
+                            <div className="landing-pricing-card">
+                                <div className="pricing-card-header">
+                                    <h3 className="pricing-tier-name">Starter Free</h3>
+                                    <p className="pricing-tier-desc">Essential workout & nutrition tracking for everyday lifters.</p>
+                                </div>
+                                <div className="pricing-price-wrap">
+                                    <span className="pricing-currency">$</span>
+                                    <span className="pricing-amount">0</span>
+                                    <span className="pricing-period">/ forever</span>
+                                </div>
+                                <button
+                                    className="landing-button landing-button--outline w-full"
+                                    type="button"
+                                    onClick={() => navigateToAuth('signup')}
+                                >
+                                    Get Started Free
+                                </button>
+                                <div className="pricing-features-list">
+                                    <p className="pricing-features-header">Included in Starter:</p>
+                                    <ul>
+                                        <li><Check size={16} className="text-blue-400" /> Core workout logger & rest timer</li>
+                                        <li><Check size={16} className="text-blue-400" /> Basic nutrition & daily calorie log</li>
+                                        <li><Check size={16} className="text-blue-400" /> 2D muscle target map</li>
+                                        <li><Check size={16} className="text-blue-400" /> Body weight tracking chart</li>
+                                        <li><Check size={16} className="text-blue-400" /> Offline logging support</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Tier 2: Pro Athlete (Featured) */}
+                            <div className="landing-pricing-card landing-pricing-card--popular">
+                                <div className="popular-badge">
+                                    <Sparkles size={13} />
+                                    MOST POPULAR
+                                </div>
+                                <div className="pricing-card-header">
+                                    <h3 className="pricing-tier-name">Pro Athlete</h3>
+                                    <p className="pricing-tier-desc">The complete AI coaching, recovery, and hypertrophy engine.</p>
+                                </div>
+                                <div className="pricing-price-wrap">
+                                    <span className="pricing-currency">$</span>
+                                    <span className="pricing-amount">{billingCycle === 'annual' ? '5.99' : '9.99'}</span>
+                                    <span className="pricing-period">/ month</span>
+                                </div>
+                                <p className="pricing-billing-subtext">
+                                    {billingCycle === 'annual' ? 'Billed annually ($71.88/yr) · 7-day free trial' : 'Billed monthly · Cancel anytime'}
+                                </p>
+                                <button
+                                    className="landing-button landing-button--primary landing-button--glow w-full"
+                                    type="button"
+                                    onClick={() => navigateToAuth('signup')}
+                                >
+                                    <span>Start 7-Day Free Trial</span>
+                                    <ArrowRight size={16} />
+                                </button>
+                                <div className="pricing-features-list">
+                                    <p className="pricing-features-header">Everything in Starter, plus:</p>
+                                    <ul>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Unlimited AI Coach Chat</strong> & Routine Generator</li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>3D Interactive Muscle Heatmaps</strong> & Readiness</li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Smart AI Meal Planner</strong> & Macro Scanner</li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Advanced Volume & 1RM</strong> Trajectory Analytics</li>
+                                        <li><Check size={16} className="text-emerald-400" /> Global Leaderboards, Streaks & XP Ranks</li>
+                                        <li><Check size={16} className="text-emerald-400" /> Cloud Sync & Unlimited History Backup</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Tier 3: Lifetime Elite */}
+                            <div className="landing-pricing-card">
+                                <div className="pricing-card-header">
+                                    <h3 className="pricing-tier-name">Lifetime Elite</h3>
+                                    <p className="pricing-tier-desc">Permanent access for dedicated athletes and trainers.</p>
+                                </div>
+                                <div className="pricing-price-wrap">
+                                    <span className="pricing-currency">$</span>
+                                    <span className="pricing-amount">99</span>
+                                    <span className="pricing-period">/ one-time</span>
+                                </div>
+                                <p className="pricing-billing-subtext">Pay once, own MuscleBot Pro forever</p>
+                                <button
+                                    className="landing-button landing-button--outline w-full"
+                                    type="button"
+                                    onClick={() => navigateToAuth('signup')}
+                                >
+                                    Get Lifetime Access
+                                </button>
+                                <div className="pricing-features-list">
+                                    <p className="pricing-features-header">Everything in Pro, plus:</p>
+                                    <ul>
+                                        <li><Check size={16} className="text-purple-400" /> <strong>Lifetime Pro Membership</strong> (Zero recurring fees)</li>
+                                        <li><Check size={16} className="text-purple-400" /> All future AI engine updates included</li>
+                                        <li><Check size={16} className="text-purple-400" /> VIP Discord Athlete badge & direct feedback</li>
+                                        <li><Check size={16} className="text-purple-400" /> Early beta access to new biometrics features</li>
+                                        <li><Check size={16} className="text-purple-400" /> Priority cloud sync speed</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Micro-guarantee banner */}
+                        <div className="landing-pricing-guarantee">
+                            <Shield size={18} className="text-blue-400" />
+                            <span>
+                                <strong>Risk-Free Guarantee:</strong> 7-day free trial on Pro. Cancel anytime with a single click in your settings.
+                            </span>
                         </div>
                     </div>
                 </section>
