@@ -925,7 +925,7 @@ export default function LandingPage() {
                             </p>
                             <div className="landing-final-actions">
                                 <button
-                                    className="landing-button landing-button--light landing-button--large"
+                                    className="landing-final-btn-primary"
                                     type="button"
                                     onClick={() => navigateToAuth('signup')}
                                 >
