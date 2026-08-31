@@ -5,25 +5,23 @@ import {
     ArrowRight,
     BrainCircuit,
     Dumbbell,
-    Sparkles,
-    Utensils,
-    Check,
-    Zap,
-    ChevronDown,
+    Flame,
     Star,
-    Trophy,
-    Smartphone,
+    Utensils,
     BarChart3,
-    Clock,
+    Check,
+    CheckCircle2,
+    Compass,
+    Lock,
     Shield,
+    Smartphone,
+    TrendingUp,
+    Trophy,
+    Zap,
     Menu,
     X,
-    Flame,
-    Layers,
-    CheckCircle2,
-    Lock,
-    Compass,
-    TrendingUp
+    ChevronDown,
+    Globe
 } from 'lucide-react';
 import './LandingPage.css';
 
@@ -91,7 +89,7 @@ const processSteps = [
     },
 ];
 
-// Testimonials
+// Extended Community Proof / Testimonials for Marquee Track
 const testimonials = [
     {
         quote: "The 3D muscle recovery heatmap completely changed how I program my push/pull split. I haven't hit a plateau in 6 months.",
@@ -117,10 +115,50 @@ const testimonials = [
         rating: 5,
         stat: "140+ Day Workout Streak",
     },
+    {
+        quote: "The automated 1RM calculation and recovery readiness scores keep my athletes peaking on meet day without injury.",
+        name: "Coach Tariq Malik",
+        role: "Strength & Conditioning Coach",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+        rating: 5,
+        stat: "12 Athletes Trained",
+    },
+    {
+        quote: "As a busy doctor, I don't have hours to plan workouts. MuscleBot generates the exact 45-min session I need based on today's fatigue.",
+        name: "Dr. Sarah Jenkins",
+        role: "Emergency Physician",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+        rating: 5,
+        stat: "4x Workouts / Week",
+    },
+    {
+        quote: "The offline gym logging is flawless. I train in a basement garage with no cellular service and everything syncs when I get home.",
+        name: "Zayn Ahmed",
+        role: "Natural Bodybuilder",
+        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80",
+        rating: 5,
+        stat: "-8% Body Fat in 12 Wks",
+    },
 ];
+
+// Country & Currency Localization Configuration
+const COUNTRY_PRICING = {
+    PK: { code: 'PK', name: 'Pakistan', currency: 'Rs', monthly: '400', yearly: '3,200', note: 'PKR billing' },
+    IN: { code: 'IN', name: 'India', currency: '₹', monthly: '499', yearly: '3,999', note: 'INR billing' },
+    US: { code: 'US', name: 'United States', currency: '$', monthly: '4.99', yearly: '39.99', note: 'USD billing' },
+    GB: { code: 'GB', name: 'United Kingdom', currency: '£', monthly: '4.49', yearly: '35.99', note: 'GBP billing' },
+    EU: { code: 'EU', name: 'Europe', currency: '€', monthly: '4.99', yearly: '39.99', note: 'EUR billing' },
+    AE: { code: 'AE', name: 'UAE', currency: 'AED', monthly: '19', yearly: '149', note: 'AED billing' },
+    SA: { code: 'SA', name: 'Saudi Arabia', currency: 'SAR', monthly: '19', yearly: '149', note: 'SAR billing' },
+    DEFAULT: { code: 'PK', name: 'Pakistan (Default)', currency: 'Rs', monthly: '400', yearly: '3,200', note: 'Local pricing' },
+};
 
 // FAQ Items
 const faqs = [
+    {
+        question: "How do the free monthly AI credits work?",
+        answer: "Every free user gets 10 AI generation and analysis credits each month that automatically refresh on the 1st of every month. You can use these for AI coach questions, meal scanning, and custom workout creation."
+    },
     {
         question: "How does the AI Coach tailor workouts to my recovery?",
         answer: "MuscleBot computes muscle fatigue coefficients after every set you log. When creating or adapting your routines, the AI analyzes which muscle groups have fully recovered vs which need rest, adjusting volume, exercise selection, and rep ranges accordingly."
@@ -145,10 +183,14 @@ const faqs = [
 
 export default function LandingPage() {
     const navigate = useNavigate();
-    const [billingCycle, setBillingCycle] = useState('annual'); // 'monthly' | 'annual'
-    const [openFaq, setOpenFaq] = useState(0); // first item open by default
+    const [openFaq, setOpenFaq] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    
+    // IP-based Location & Pricing State
+    const [selectedCountry, setSelectedCountry] = useState('PK');
+    const [pricing, setPricing] = useState(COUNTRY_PRICING.PK);
+    const [isDetectingLocation, setIsDetectingLocation] = useState(true);
 
     const navigateToAuth = (view) => navigate('/auth', { state: { view } });
 
@@ -164,6 +206,65 @@ export default function LandingPage() {
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Detect User Country via IP with TimeZone Fallback
+    useEffect(() => {
+        let isMounted = true;
+
+        async function detectUserCountry() {
+            try {
+                // Try fast IP geolocation API
+                const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+                if (res.ok) {
+                    const data = await res.json();
+                    const countryCode = data.country_code?.toUpperCase();
+                    if (countryCode && COUNTRY_PRICING[countryCode] && isMounted) {
+                        setSelectedCountry(countryCode);
+                        setPricing(COUNTRY_PRICING[countryCode]);
+                        setIsDetectingLocation(false);
+                        return;
+                    }
+                }
+            } catch {
+                // Fallback to client timezone
+                try {
+                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+                    if (tz.includes('Karachi') || tz.includes('Pakistan')) {
+                        setSelectedCountry('PK');
+                        setPricing(COUNTRY_PRICING.PK);
+                    } else if (tz.includes('Calcutta') || tz.includes('Kolkata') || tz.includes('India')) {
+                        setSelectedCountry('IN');
+                        setPricing(COUNTRY_PRICING.IN);
+                    } else if (tz.includes('London')) {
+                        setSelectedCountry('GB');
+                        setPricing(COUNTRY_PRICING.GB);
+                    } else if (tz.includes('Europe') || tz.includes('Berlin') || tz.includes('Paris')) {
+                        setSelectedCountry('EU');
+                        setPricing(COUNTRY_PRICING.EU);
+                    } else if (tz.includes('New_York') || tz.includes('America') || tz.includes('Los_Angeles')) {
+                        setSelectedCountry('US');
+                        setPricing(COUNTRY_PRICING.US);
+                    } else {
+                        setSelectedCountry('PK');
+                        setPricing(COUNTRY_PRICING.DEFAULT);
+                    }
+                } catch {
+                    setSelectedCountry('PK');
+                    setPricing(COUNTRY_PRICING.DEFAULT);
+                }
+            } finally {
+                if (isMounted) setIsDetectingLocation(false);
+            }
+        }
+
+        detectUserCountry();
+        return () => { isMounted = false; };
+    }, []);
+
+    const handleCountryChange = (countryKey) => {
+        setSelectedCountry(countryKey);
+        setPricing(COUNTRY_PRICING[countryKey] || COUNTRY_PRICING.DEFAULT);
+    };
 
     const toggleFaq = (index) => {
         setOpenFaq(openFaq === index ? -1 : index);
@@ -189,7 +290,6 @@ export default function LandingPage() {
                         <span className="landing-brand-text">
                             Muscle<span className="landing-brand-accent">Bot</span>
                         </span>
-                        <span className="landing-brand-badge">SaaS 2.0</span>
                     </a>
 
                     {/* Desktop Navigation Links */}
@@ -274,13 +374,6 @@ export default function LandingPage() {
                 <section className="landing-hero" aria-labelledby="landing-title">
                     <div className="landing-shell landing-hero-grid">
                         <div className="landing-hero-copy">
-                            <div className="landing-eyebrow-pill">
-                                <Sparkles size={14} className="landing-eyebrow-spark" />
-                                <span>AI-Guided Fitness Intelligence 2.0</span>
-                                <span className="landing-pill-divider" />
-                                <span className="landing-pill-highlight">Web & Mobile</span>
-                            </div>
-
                             <h1 id="landing-title">
                                 The Intelligent OS for <span>Your Fitness.</span>
                             </h1>
@@ -304,15 +397,15 @@ export default function LandingPage() {
                                 </a>
                             </div>
 
-                            {/* Trust badges */}
+                            {/* Trust Rating Block */}
                             <div className="landing-hero-trust">
                                 <div className="landing-hero-stars">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={15} fill="#f59e0b" color="#f59e0b" />
+                                        <Star key={i} size={16} fill="#f59e0b" color="#f59e0b" />
                                     ))}
                                 </div>
                                 <span className="landing-trust-text">
-                                    <strong>4.9/5</strong> rating from 10,000+ lifters & coaches · No credit card required
+                                    <span className="trust-number-highlight">4.9 / 5.0</span> score from <strong>10,000+</strong> active lifters & trainers
                                 </span>
                             </div>
                         </div>
@@ -325,9 +418,6 @@ export default function LandingPage() {
                                     <span className="dot dot--yellow" />
                                     <span className="dot dot--green" />
                                     <span className="landing-frame-title">app.musclebot.ai / live-insights</span>
-                                    <small className="landing-frame-status">
-                                        <span className="live-indicator" /> RECOVERY: 94%
-                                    </small>
                                 </div>
                                 
                                 <div className="landing-frame-image-wrap">
@@ -370,7 +460,7 @@ export default function LandingPage() {
                     <div className="landing-shell">
                         <div className="landing-stats-grid">
                             <div className="landing-stat-item">
-                                <h3 className="landing-stat-value">500K+</h3>
+                                <h3 className="landing-stat-value">500,000+</h3>
                                 <p className="landing-stat-label">Workouts & Sets Logged</p>
                             </div>
                             <div className="landing-stat-divider" />
@@ -380,8 +470,8 @@ export default function LandingPage() {
                             </div>
                             <div className="landing-stat-divider" />
                             <div className="landing-stat-item">
-                                <h3 className="landing-stat-value">4.9 / 5.0</h3>
-                                <p className="landing-stat-label">App Store & Web Rating</p>
+                                <h3 className="landing-stat-value">4.9 / 5</h3>
+                                <p className="landing-stat-label">App Rating by Athletes</p>
                             </div>
                             <div className="landing-stat-divider" />
                             <div className="landing-stat-item">
@@ -405,10 +495,12 @@ export default function LandingPage() {
                         </div>
 
                         <div className="landing-process-grid">
-                            {processSteps.map((step, idx) => (
+                            {processSteps.map((step) => (
                                 <div className="landing-process-card" key={step.step}>
                                     <div className="landing-process-header">
-                                        <span className="landing-process-number">{step.step}</span>
+                                        <div className="landing-process-step-badge">
+                                            <span className="landing-process-number">{step.step}</span>
+                                        </div>
                                         <span className="landing-process-tag">{step.tag}</span>
                                         <span className="landing-process-icon">
                                             {React.createElement(step.icon, { size: 20 })}
@@ -447,15 +539,13 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                {/* 5. BENTO GRID FEATURES SHOWCASE */}
+                {/* 5. BENTO GRID FEATURES SHOWCASE (CENTERED UNIFORM HEADING) */}
                 <section className="landing-product" id="features" aria-labelledby="product-title">
                     <div className="landing-shell">
-                        <div className="landing-section-heading">
-                            <div>
-                                <p className="landing-section-label">UNIFIED CAPABILITIES</p>
-                                <h2 id="product-title">Engineered for Lifters Who Demand Results.</h2>
-                            </div>
-                            <p className="landing-section-lead">
+                        <div className="landing-section-heading landing-section-heading--centered">
+                            <p className="landing-section-label">UNIFIED CAPABILITIES</p>
+                            <h2 id="product-title">Engineered for Lifters Who Demand Results</h2>
+                            <p className="landing-section-subtitle">
                                 Every tool in MuscleBot connects with the rest of the ecosystem. Your training informs your nutrition, and your nutrition informs your recovery.
                             </p>
                         </div>
@@ -586,20 +676,23 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                {/* 6. SOCIAL PROOF & TESTIMONIALS */}
+                {/* 6. SOCIAL PROOF & TESTIMONIALS (ANIMATED MARQUEE CARDS) */}
                 <section className="landing-testimonials-section" aria-labelledby="testimonials-title">
                     <div className="landing-shell">
                         <div className="landing-section-heading landing-section-heading--centered">
                             <p className="landing-section-label">COMMUNITY PROOF</p>
                             <h2 id="testimonials-title">Loved by Athletes, Lifters, and Coaches</h2>
                             <p className="landing-section-subtitle">
-                                Read why dedicated lifters switched to MuscleBot as their primary fitness operating system.
+                                Read why thousands of dedicated athletes made MuscleBot their daily training OS.
                             </p>
                         </div>
+                    </div>
 
-                        <div className="landing-testimonials-grid">
-                            {testimonials.map((t) => (
-                                <div className="landing-testimonial-card" key={t.name}>
+                    {/* Infinite Moving Marquee Track */}
+                    <div className="testimonials-marquee-container">
+                        <div className="testimonials-marquee-track">
+                            {[...testimonials, ...testimonials].map((t, idx) => (
+                                <div className="landing-testimonial-card" key={`${t.name}-${idx}`}>
                                     <div className="testimonial-stars">
                                         {[...Array(t.rating)].map((_, i) => (
                                             <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />
@@ -624,49 +717,57 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                {/* 7. PRICING SECTION */}
+                {/* 7. PRICING SECTION (MATCHING APP: FREE, PRO MONTHLY, PRO YEARLY) */}
                 <section className="landing-pricing-section" id="pricing" aria-labelledby="pricing-title">
                     <div className="landing-shell">
                         <div className="landing-section-heading landing-section-heading--centered">
                             <p className="landing-section-label">SIMPLE, TRANSPARENT PRICING</p>
-                            <h2 id="pricing-title">Invest in Your Health with Zero Risk</h2>
+                            <h2 id="pricing-title">Unlock MuscleBot Pro</h2>
                             <p className="landing-section-subtitle">
-                                Start free forever, or unlock full AI coaching, 3D recovery heatmaps, and advanced volume analytics.
+                                Get AI-powered coaching, advanced analytics, and unlimited workouts.
                             </p>
 
-                            {/* Billing Switcher */}
-                            <div className="landing-billing-switcher" role="radiogroup" aria-label="Billing frequency">
-                                <button
-                                    className={`billing-toggle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
-                                    type="button"
-                                    onClick={() => setBillingCycle('monthly')}
-                                >
-                                    Monthly
-                                </button>
-                                <button
-                                    className={`billing-toggle-btn ${billingCycle === 'annual' ? 'active' : ''}`}
-                                    type="button"
-                                    onClick={() => setBillingCycle('annual')}
-                                >
-                                    <span>Annual</span>
-                                    <span className="annual-save-badge">Save 40%</span>
-                                </button>
+                            {/* Location / Currency Badge & Selector */}
+                            <div className="landing-currency-selector-wrap">
+                                <div className="landing-location-badge">
+                                    <Globe size={14} className="text-blue-400" />
+                                    <span>
+                                        {isDetectingLocation ? 'Detecting local currency...' : `Pricing for ${pricing.name}`}
+                                    </span>
+                                </div>
+                                <div className="landing-country-picker">
+                                    <select
+                                        value={selectedCountry}
+                                        onChange={(e) => handleCountryChange(e.target.value)}
+                                        aria-label="Select Country Currency"
+                                        className="landing-country-select"
+                                    >
+                                        <option value="PK">🇵🇰 Pakistan (PKR - Rs 400)</option>
+                                        <option value="IN">🇮🇳 India (INR - ₹499)</option>
+                                        <option value="US">🇺🇸 United States (USD - $4.99)</option>
+                                        <option value="GB">🇬🇧 United Kingdom (GBP - £4.49)</option>
+                                        <option value="EU">🇪🇺 Europe (EUR - €4.99)</option>
+                                        <option value="AE">🇦🇪 UAE (AED - 19 AED)</option>
+                                        <option value="SA">🇸🇦 Saudi Arabia (SAR - 19 SAR)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Pricing Cards Grid */}
+                        {/* Pricing Cards Grid - 3 Plans */}
                         <div className="landing-pricing-grid">
-                            {/* Tier 1: Starter */}
+                            {/* Plan 1: Free Starter */}
                             <div className="landing-pricing-card">
                                 <div className="pricing-card-header">
-                                    <h3 className="pricing-tier-name">Starter Free</h3>
-                                    <p className="pricing-tier-desc">Essential workout & nutrition tracking for everyday lifters.</p>
+                                    <h3 className="pricing-tier-name">Free Starter</h3>
+                                    <p className="pricing-tier-desc">Essential workout & macro tracking for everyday lifters.</p>
                                 </div>
                                 <div className="pricing-price-wrap">
-                                    <span className="pricing-currency">$</span>
+                                    <span className="pricing-currency">{pricing.currency}</span>
                                     <span className="pricing-amount">0</span>
-                                    <span className="pricing-period">/ forever</span>
+                                    <span className="pricing-period">/ month</span>
                                 </div>
+                                <p className="pricing-billing-subtext">Free forever · 10 AI credits refresh monthly</p>
                                 <button
                                     className="landing-button landing-button--outline w-full"
                                     type="button"
@@ -675,8 +776,9 @@ export default function LandingPage() {
                                     Get Started Free
                                 </button>
                                 <div className="pricing-features-list">
-                                    <p className="pricing-features-header">Included in Starter:</p>
+                                    <p className="pricing-features-header">Included in Free:</p>
                                     <ul>
+                                        <li><Check size={16} className="text-blue-400" /> <strong>10 Free AI Credits / Month</strong> (Refreshes monthly)</li>
                                         <li><Check size={16} className="text-blue-400" /> Core workout logger & rest timer</li>
                                         <li><Check size={16} className="text-blue-400" /> Basic nutrition & daily calorie log</li>
                                         <li><Check size={16} className="text-blue-400" /> 2D muscle target map</li>
@@ -686,72 +788,73 @@ export default function LandingPage() {
                                 </div>
                             </div>
 
-                            {/* Tier 2: Pro Athlete (Featured) */}
-                            <div className="landing-pricing-card landing-pricing-card--popular">
-                                <div className="popular-badge">
-                                    <Sparkles size={13} />
-                                    MOST POPULAR
-                                </div>
+                            {/* Plan 2: MuscleBot Pro Monthly (From App) */}
+                            <div className="landing-pricing-card">
                                 <div className="pricing-card-header">
-                                    <h3 className="pricing-tier-name">Pro Athlete</h3>
-                                    <p className="pricing-tier-desc">The complete AI coaching, recovery, and hypertrophy engine.</p>
+                                    <h3 className="pricing-tier-name">MuscleBot Pro Monthly</h3>
+                                    <p className="pricing-tier-desc">Full AI-guided training intelligence billed monthly.</p>
                                 </div>
                                 <div className="pricing-price-wrap">
-                                    <span className="pricing-currency">$</span>
-                                    <span className="pricing-amount">{billingCycle === 'annual' ? '5.99' : '9.99'}</span>
+                                    <span className="pricing-currency">{pricing.currency}</span>
+                                    <span className="pricing-amount">{pricing.monthly}</span>
                                     <span className="pricing-period">/ month</span>
                                 </div>
+                                <p className="pricing-billing-subtext">Billed monthly · Cancel anytime</p>
+                                <button
+                                    className="landing-button landing-button--secondary w-full"
+                                    type="button"
+                                    onClick={() => navigateToAuth('signup')}
+                                >
+                                    <span>Subscribe for {pricing.currency} {pricing.monthly}</span>
+                                    <ArrowRight size={15} />
+                                </button>
+                                <div className="pricing-features-list">
+                                    <p className="pricing-features-header">Pro Monthly Features:</p>
+                                    <ul>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Unlimited personalized AI coach chat</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>AI meal planner & macro scanner</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Advanced readiness & recovery analytics</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Weekly & monthly progress reports</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> 3D interactive muscle heatmaps</li>
+                                        <li><Check size={16} className="text-emerald-400" /> Global leaderboards & priority cloud sync</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Plan 3: MuscleBot Pro Yearly (BEST VALUE - From App) */}
+                            <div className="landing-pricing-card landing-pricing-card--popular">
+                                <div className="popular-badge">
+                                    BEST VALUE
+                                </div>
+                                <div className="pricing-card-header">
+                                    <h3 className="pricing-tier-name">MuscleBot Pro Yearly</h3>
+                                    <p className="pricing-tier-desc">The most popular choice for committed athletes.</p>
+                                </div>
+                                <div className="pricing-price-wrap">
+                                    <span className="pricing-currency">{pricing.currency}</span>
+                                    <span className="pricing-amount">{pricing.yearly}</span>
+                                    <span className="pricing-period">/ year</span>
+                                </div>
                                 <p className="pricing-billing-subtext">
-                                    {billingCycle === 'annual' ? 'Billed annually ($71.88/yr) · 7-day free trial' : 'Billed monthly · Cancel anytime'}
+                                    Save ~33% vs monthly billing · Cancel anytime
                                 </p>
                                 <button
                                     className="landing-button landing-button--primary landing-button--glow w-full"
                                     type="button"
                                     onClick={() => navigateToAuth('signup')}
                                 >
-                                    <span>Start 7-Day Free Trial</span>
+                                    <span>Subscribe for {pricing.currency} {pricing.yearly}</span>
                                     <ArrowRight size={16} />
-                                </button>
-                                <div className="pricing-features-list">
-                                    <p className="pricing-features-header">Everything in Starter, plus:</p>
-                                    <ul>
-                                        <li><Check size={16} className="text-emerald-400" /> <strong>Unlimited AI Coach Chat</strong> & Routine Generator</li>
-                                        <li><Check size={16} className="text-emerald-400" /> <strong>3D Interactive Muscle Heatmaps</strong> & Readiness</li>
-                                        <li><Check size={16} className="text-emerald-400" /> <strong>Smart AI Meal Planner</strong> & Macro Scanner</li>
-                                        <li><Check size={16} className="text-emerald-400" /> <strong>Advanced Volume & 1RM</strong> Trajectory Analytics</li>
-                                        <li><Check size={16} className="text-emerald-400" /> Global Leaderboards, Streaks & XP Ranks</li>
-                                        <li><Check size={16} className="text-emerald-400" /> Cloud Sync & Unlimited History Backup</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            {/* Tier 3: Lifetime Elite */}
-                            <div className="landing-pricing-card">
-                                <div className="pricing-card-header">
-                                    <h3 className="pricing-tier-name">Lifetime Elite</h3>
-                                    <p className="pricing-tier-desc">Permanent access for dedicated athletes and trainers.</p>
-                                </div>
-                                <div className="pricing-price-wrap">
-                                    <span className="pricing-currency">$</span>
-                                    <span className="pricing-amount">99</span>
-                                    <span className="pricing-period">/ one-time</span>
-                                </div>
-                                <p className="pricing-billing-subtext">Pay once, own MuscleBot Pro forever</p>
-                                <button
-                                    className="landing-button landing-button--outline w-full"
-                                    type="button"
-                                    onClick={() => navigateToAuth('signup')}
-                                >
-                                    Get Lifetime Access
                                 </button>
                                 <div className="pricing-features-list">
                                     <p className="pricing-features-header">Everything in Pro, plus:</p>
                                     <ul>
-                                        <li><Check size={16} className="text-purple-400" /> <strong>Lifetime Pro Membership</strong> (Zero recurring fees)</li>
-                                        <li><Check size={16} className="text-purple-400" /> All future AI engine updates included</li>
-                                        <li><Check size={16} className="text-purple-400" /> VIP Discord Athlete badge & direct feedback</li>
-                                        <li><Check size={16} className="text-purple-400" /> Early beta access to new biometrics features</li>
-                                        <li><Check size={16} className="text-purple-400" /> Priority cloud sync speed</li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Best Value (~33% Savings)</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Unlimited personalized AI coach chat</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>AI meal planner & macro scanner</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Advanced readiness & recovery analytics</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> <strong>Weekly & monthly progress reports</strong></li>
+                                        <li><Check size={16} className="text-emerald-400" /> Priority cloud sync & unlimited workout history</li>
                                     </ul>
                                 </div>
                             </div>
@@ -761,7 +864,7 @@ export default function LandingPage() {
                         <div className="landing-pricing-guarantee">
                             <Shield size={18} className="text-blue-400" />
                             <span>
-                                <strong>Risk-Free Guarantee:</strong> 7-day free trial on Pro. Cancel anytime with a single click in your settings.
+                                <strong>Secure Billing:</strong> Synced seamlessly between Mobile App and Web. Cancel anytime with a single click in your settings.
                             </span>
                         </div>
                     </div>
@@ -810,14 +913,11 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                {/* 9. FINAL HIGH-CONVERSION CTA */}
+                {/* 9. FINAL HIGH-CONVERSION CTA (CLEAN - NO TOP AI ICON) */}
                 <section className="landing-final-section" aria-labelledby="final-cta-title">
                     <div className="landing-shell">
                         <div className="landing-final-card">
                             <div className="landing-final-card-glow" />
-                            <span className="landing-final-icon" aria-hidden="true">
-                                <Sparkles size={22} strokeWidth={1.8} />
-                            </span>
                             <p className="landing-section-label">START YOUR TRANSFORMATION</p>
                             <h2 id="final-cta-title">Make Every Single Session Count.</h2>
                             <p>
@@ -841,14 +941,14 @@ export default function LandingPage() {
                                 </button>
                             </div>
                             <p className="landing-final-microtext">
-                                Free 7-day trial · No credit card required · Instant access
+                                Free 10 AI credits monthly · Instant access on Web, iOS & Android
                             </p>
                         </div>
                     </div>
                 </section>
             </main>
 
-            {/* 10. MULTI-COLUMN SAAS FOOTER */}
+            {/* 10. MULTI-COLUMN SAAS FOOTER (CLEAN - NO ALL SYSTEMS OPERATIONAL) */}
             <footer className="landing-footer">
                 <div className="landing-shell">
                     <div className="landing-footer-grid">
@@ -868,10 +968,6 @@ export default function LandingPage() {
                             <p className="landing-footer-tagline">
                                 The intelligent operating system for training, nutrition, and progressive overload.
                             </p>
-                            <div className="landing-status-badge">
-                                <span className="status-dot-pulse" />
-                                <span>All Systems Operational</span>
-                            </div>
                         </div>
 
                         {/* Product Links */}

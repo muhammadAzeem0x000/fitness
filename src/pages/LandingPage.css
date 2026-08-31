@@ -133,19 +133,6 @@
     color: var(--landing-blue-light);
 }
 
-.landing-brand-badge {
-    margin-left: 6px;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    color: var(--landing-blue-light);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
 /* Nav Links */
 .landing-nav-links {
     display: flex;
@@ -341,6 +328,11 @@
     color: var(--landing-ink);
 }
 
+.landing-button--secondary:hover {
+    background: var(--landing-surface-hover);
+    border-color: var(--landing-line-bright);
+}
+
 .landing-button--light {
     background: #ffffff;
     color: #0b1120;
@@ -363,8 +355,8 @@
 
 .landing-hero {
     position: relative;
-    padding-top: 130px;
-    padding-bottom: 90px;
+    padding-top: 135px;
+    padding-bottom: 85px;
 }
 
 .landing-hero::before {
@@ -391,45 +383,13 @@
     max-width: 620px;
 }
 
-/* Eyebrow Pill */
-.landing-eyebrow-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.25);
-    color: var(--landing-blue-light);
-    font-size: 0.8rem;
-    font-weight: 650;
-    margin-bottom: 24px;
-}
-
-.landing-eyebrow-spark {
-    color: #60a5fa;
-    animation: pulse 2s infinite ease-in-out;
-}
-
-.landing-pill-divider {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.landing-pill-highlight {
-    color: #93c5fd;
-    font-weight: 500;
-}
-
 /* Main Hero Heading */
 .landing-hero h1 {
     margin: 0;
-    font-size: clamp(2.8rem, 5.5vw, 4.4rem);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.04em;
+    font-size: clamp(2.9rem, 5.8vw, 4.5rem);
+    font-weight: 850;
+    line-height: 1.04;
+    letter-spacing: -0.045em;
     color: #ffffff;
 }
 
@@ -452,7 +412,7 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-top: 36px;
+    margin-top: 34px;
 }
 
 .landing-hero-trust {
@@ -460,7 +420,7 @@
     align-items: center;
     gap: 12px;
     margin-top: 32px;
-    padding-top: 24px;
+    padding-top: 22px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -471,13 +431,20 @@
 }
 
 .landing-trust-text {
-    font-size: 0.84rem;
-    color: #94a3b8;
+    font-size: 0.86rem;
+    color: #cbd5e1;
     line-height: 1.4;
 }
 
+.trust-number-highlight {
+    color: #f59e0b;
+    font-weight: 800;
+    font-size: 0.96rem;
+    margin-right: 2px;
+}
+
 .landing-trust-text strong {
-    color: #f1f5f9;
+    color: #ffffff;
 }
 
 /* Hero Visual Frame & Floating Chips */
@@ -537,26 +504,6 @@
     margin-left: 6px;
 }
 
-.landing-frame-status {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: #34d399;
-    letter-spacing: 0.05em;
-}
-
-.live-indicator {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 8px #10b981;
-    animation: pulse 1.8s infinite;
-}
-
 .landing-frame-image-wrap {
     position: relative;
     background: #090d16;
@@ -610,14 +557,14 @@
 }
 
 /* ==========================================================================
-   3. STATS & PROOF RIBBON
+   3. STATS & PROOF RIBBON (IMPROVED HIGH-CONTRAST NUMBERS)
    ========================================================================== */
 
 .landing-stats-ribbon {
     position: relative;
     border-block: 1px solid var(--landing-line);
     background: rgba(255, 255, 255, 0.015);
-    padding: 40px 0;
+    padding: 44px 0;
 }
 
 .landing-stats-grid {
@@ -634,19 +581,22 @@
 
 .landing-stat-value {
     margin: 0;
-    font-size: clamp(2rem, 3.5vw, 2.75rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
+    font-size: clamp(2.2rem, 3.6vw, 3rem);
+    font-weight: 850;
+    letter-spacing: -0.04em;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ffffff 60%, #93c5fd 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    line-height: 1.1;
 }
 
 .landing-stat-label {
-    margin: 6px 0 0;
-    font-size: 0.85rem;
+    margin: 8px 0 0;
+    font-size: 0.88rem;
     color: #94a3b8;
-    font-weight: 550;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .landing-stat-divider {
@@ -656,14 +606,16 @@
 }
 
 /* ==========================================================================
-   4. SECTION HEADINGS (COMMON)
+   4. SECTION HEADINGS (CENTERED & UNIFORM)
    ========================================================================== */
 
 .landing-section-heading {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: end;
-    gap: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 760px;
+    margin-inline: auto;
     margin-bottom: 56px;
 }
 
@@ -674,7 +626,7 @@
     text-align: center;
     max-width: 760px;
     margin-inline: auto;
-    margin-bottom: 60px;
+    margin-bottom: 56px;
 }
 
 .landing-section-label {
@@ -689,26 +641,21 @@
 .landing-section-heading h2 {
     margin: 0;
     font-size: clamp(2.2rem, 4vw, 3.2rem);
-    font-weight: 750;
+    font-weight: 800;
     letter-spacing: -0.04em;
     line-height: 1.12;
     color: #ffffff;
 }
 
-.landing-section-lead,
 .landing-section-subtitle {
-    margin: 0;
+    margin: 14px 0 0;
     color: var(--landing-ink-muted);
     font-size: 1.05rem;
     line-height: 1.65;
 }
 
-.landing-section-subtitle {
-    margin-top: 14px;
-}
-
 /* ==========================================================================
-   5. PROCESS SECTION: HOW IT WORKS
+   5. PROCESS SECTION: HOW IT WORKS (CLEARLY VISIBLE NUMBERS)
    ========================================================================== */
 
 .landing-process-section {
@@ -747,10 +694,24 @@
     margin-bottom: 20px;
 }
 
+/* Distinct, Prominent Step Badge */
+.landing-process-step-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+}
+
 .landing-process-number {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: rgba(255, 255, 255, 0.2);
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.02em;
     font-family: ui-monospace, SFMono-Regular, monospace;
 }
 
@@ -758,10 +719,11 @@
     font-size: 0.68rem;
     font-weight: 750;
     letter-spacing: 0.08em;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 3px 9px;
+    border-radius: 6px;
     background: rgba(59, 130, 246, 0.12);
     color: var(--landing-blue-light);
+    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .landing-process-icon {
@@ -1103,7 +1065,7 @@
 }
 
 /* ==========================================================================
-   8. TESTIMONIALS & SOCIAL PROOF
+   8. TESTIMONIALS & SOCIAL PROOF (INFINITE MOVING MARQUEE)
    ========================================================================== */
 
 .landing-testimonials-section {
@@ -1111,18 +1073,44 @@
     position: relative;
     border-top: 1px solid var(--landing-line);
     background: rgba(255, 255, 255, 0.01);
+    overflow: hidden;
 }
 
-.landing-testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+.testimonials-marquee-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 12px 0 20px;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.testimonials-marquee-track {
+    display: flex;
     gap: 24px;
+    width: max-content;
+    animation: marqueeScroll 40s linear infinite;
+}
+
+.testimonials-marquee-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes marqueeScroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
 }
 
 .landing-testimonial-card {
-    padding: 32px;
+    width: 360px;
+    flex-shrink: 0;
+    padding: 30px;
     border-radius: 20px;
-    background: linear-gradient(180deg, rgba(16, 22, 35, 0.7) 0%, rgba(10, 14, 23, 0.9) 100%);
+    background: linear-gradient(180deg, rgba(16, 22, 35, 0.75) 0%, rgba(10, 14, 23, 0.95) 100%);
     border: 1px solid var(--landing-line);
     display: flex;
     flex-direction: column;
@@ -1130,8 +1118,8 @@
 }
 
 .landing-testimonial-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.35);
 }
 
 .testimonial-stars {
@@ -1189,7 +1177,7 @@
 }
 
 /* ==========================================================================
-   9. PRICING SECTION
+   9. PRICING SECTION (MATCHING CAPACITOR APP)
    ========================================================================== */
 
 .landing-pricing-section {
@@ -1197,43 +1185,50 @@
     position: relative;
 }
 
-/* Billing Toggle Switcher */
-.landing-billing-switcher {
+/* Location & Country Currency Picker */
+.landing-currency-selector-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.landing-location-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 5px;
+    gap: 7px;
+    padding: 6px 14px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    font-size: 0.8rem;
+    color: #93c5fd;
+    font-weight: 600;
+}
+
+.landing-country-select {
+    padding: 7px 14px;
+    border-radius: 10px;
+    background: rgba(16, 22, 35, 0.95);
     border: 1px solid var(--landing-line-bright);
-    margin-top: 28px;
-}
-
-.billing-toggle-btn {
-    padding: 8px 18px;
-    border-radius: 999px;
-    font-size: 0.88rem;
-    font-weight: 650;
-    color: #94a3b8;
-    transition: all 180ms ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.billing-toggle-btn.active {
-    background: #2563eb;
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 160ms ease;
 }
 
-.annual-save-badge {
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: #10b981;
+.landing-country-select:hover,
+.landing-country-select:focus {
+    border-color: rgba(96, 165, 250, 0.6);
+}
+
+.landing-country-select option {
+    background: #0d121c;
     color: #ffffff;
-    font-size: 0.68rem;
-    font-weight: 750;
 }
 
 /* Pricing Grid */
@@ -1281,12 +1276,11 @@
     transform: translateX(-50%);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
     padding: 4px 14px;
     border-radius: 999px;
     background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
     color: #ffffff;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
@@ -1313,18 +1307,18 @@
 .pricing-price-wrap {
     display: flex;
     align-items: baseline;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 
 .pricing-currency {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.6rem;
+    font-weight: 750;
     color: #94a3b8;
 }
 
 .pricing-amount {
-    font-size: 3.2rem;
+    font-size: 3rem;
     font-weight: 850;
     color: #ffffff;
     letter-spacing: -0.04em;
@@ -1471,7 +1465,7 @@
 }
 
 /* ==========================================================================
-   11. FINAL HIGH-CONVERSION CTA
+   11. FINAL HIGH-CONVERSION CTA (CLEAN - NO TOP AI ICON)
    ========================================================================== */
 
 .landing-final-section {
@@ -1499,21 +1493,6 @@
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 36px 36px;
     pointer-events: none;
-}
-
-.landing-final-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(96, 165, 250, 0.4);
-    color: #ffffff;
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 1;
 }
 
 .landing-final-card h2 {
@@ -1575,7 +1554,7 @@
 }
 
 /* ==========================================================================
-   12. MULTI-COLUMN SAAS FOOTER
+   12. MULTI-COLUMN SAAS FOOTER (CLEAN - NO ALL SYSTEMS OPERATIONAL)
    ========================================================================== */
 
 .landing-footer {
@@ -1604,27 +1583,6 @@
     font-size: 0.88rem;
     color: #94a3b8;
     line-height: 1.6;
-}
-
-.landing-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #34d399;
-}
-
-.status-dot-pulse {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 6px #10b981;
 }
 
 .landing-footer-col h4 {
@@ -1678,11 +1636,6 @@
    13. ANIMATIONS & MICRO-INTERACTIONS
    ========================================================================== */
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.95); }
-}
-
 @keyframes floatSlow {
     0% { transform: translateY(0px); }
     100% { transform: translateY(-8px); }
@@ -1734,7 +1687,7 @@
 
     .landing-pricing-grid {
         grid-template-columns: 1fr;
-        max-width: 500px;
+        max-width: 480px;
         margin-inline: auto;
     }
 
@@ -1796,11 +1749,6 @@
         height: 1px;
     }
 
-    .landing-section-heading {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
     .landing-process-grid {
         grid-template-columns: 1fr;
     }
@@ -1822,10 +1770,6 @@
     }
 
     .landing-mini-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .landing-testimonials-grid {
         grid-template-columns: 1fr;
     }
 
@@ -1855,6 +1799,11 @@
 
     .chip-top-right,
     .chip-bottom-left {
-        display: none; /* Hide floating telemetry chips on small mobile to avoid overlaying the mockup */
+        display: none;
+    }
+
+    .landing-testimonial-card {
+        width: 300px;
+        padding: 24px;
     }
 }
